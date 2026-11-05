@@ -27,18 +27,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Login ID or Recovery Code is incorrect." }, { status: 401 });
     }
 
+    const { error: passwordError } = await admin.auth.admin.updateUserById(profile.user_id, { password: newPassword });
+    if (passwordError) return NextResponse.json({ error: "Password reset failed. Your existing Recovery Code remains valid." }, { status: 500 });
+
     const nextRecoveryCode = createRecoveryCode();
     const { hash, salt } = hashRecoveryCode(nextRecoveryCode);
     const { error: rotateError } = await admin.from("vault_profiles").update({
       recovery_code_hash: hash, recovery_code_salt: salt
     }).eq("user_id", profile.user_id);
-    if (rotateError) return NextResponse.json({ error: "Recovery Code could not be renewed. Password was not changed." }, { status: 500 });
-
-    const { error: passwordError } = await admin.auth.admin.updateUserById(profile.user_id, { password: newPassword });
-    if (passwordError) {
-      // Restore no prior code: the newly issued code is returned only on success.
-      return NextResponse.json({ error: "Password reset failed. Contact support before retrying with your old Recovery Code." }, { status: 500 });
-    }
+    if (rotateError) return NextResponse.json({ error: "Password reset succeeded, but Recovery Code renewal failed. Keep your existing code safe and sign in with the new password." }, { status: 500 });
 
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
     const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
