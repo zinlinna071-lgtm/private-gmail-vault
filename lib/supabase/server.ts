@@ -4,21 +4,16 @@ import { cookies } from "next/headers";
 
 export async function createSupabaseServerClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !anonKey) throw new Error("Supabase URL and anon key must be configured.");
+  const publicKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !publicKey) throw new Error("Supabase URL and publishable key must be configured.");
 
   const cookieStore = await cookies();
-  return createServerClient(url, anonKey, {
+  return createServerClient(url, publicKey, {
     cookies: {
-      getAll() {
-        return cookieStore.getAll();
-      },
+      getAll() { return cookieStore.getAll(); },
       setAll(cookiesToSet) {
-        try {
-          cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
-        } catch {
-          // Server Components cannot always write cookies; refresh in a Route Handler/Proxy.
-        }
+        try { cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options)); }
+        catch { /* Server Components cannot always write cookies; refresh in a Route Handler. */ }
       }
     }
   });
