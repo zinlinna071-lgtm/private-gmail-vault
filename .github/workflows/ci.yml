@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - "setup/**"
+      - "feature/**"
   pull_request:
 
 permissions:
