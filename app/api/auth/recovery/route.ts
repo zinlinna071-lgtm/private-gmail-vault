@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { allowAuthAttempt } from "@/lib/auth/rate-limit";
 import { authEmailForLoginId, createRecoveryCode, hashRecoveryCode, normalizeLoginId, validatePassword, verifyRecoveryCode } from "@/lib/auth/vault";
 
 export const runtime = "nodejs";
@@ -10,31 +11,34 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const loginId = normalizeLoginId(String(body.loginId ?? ""));
+    if (!await allowAuthAttempt(request, "recovery", loginId, 5)) {
+      return NextResponse.json({ error: "Too many recovery attempts. Try again in 15 minutes." }, { status: 429 });
+    }
     const recoveryCode = String(body.recoveryCode ?? "");
     const newPassword = String(body.newPassword ?? "");
     validatePassword(newPassword);
 
     const admin = createSupabaseAdminClient();
-    const { data: profile, error: profileError } = await admin
-      .from("vault_profiles")
+    const { data: profile, error: profileError } = await admin.from("vault_profiles")
       .select("user_id,recovery_code_hash,recovery_code_salt")
-      .eq("login_id", loginId)
-      .maybeSingle();
+      .eq("login_id", loginId).maybeSingle();
 
     if (profileError || !profile || !verifyRecoveryCode(recoveryCode, profile.recovery_code_hash, profile.recovery_code_salt)) {
       return NextResponse.json({ error: "Login ID or Recovery Code is incorrect." }, { status: 401 });
     }
 
-    const { error: passwordError } = await admin.auth.admin.updateUserById(profile.user_id, { password: newPassword });
-    if (passwordError) return NextResponse.json({ error: "Password could not be reset. Please try again." }, { status: 500 });
-
     const nextRecoveryCode = createRecoveryCode();
     const { hash, salt } = hashRecoveryCode(nextRecoveryCode);
     const { error: rotateError } = await admin.from("vault_profiles").update({
-      recovery_code_hash: hash,
-      recovery_code_salt: salt
+      recovery_code_hash: hash, recovery_code_salt: salt
     }).eq("user_id", profile.user_id);
-    if (rotateError) return NextResponse.json({ error: "Password changed, but Recovery Code rotation failed. Contact support before signing out." }, { status: 500 });
+    if (rotateError) return NextResponse.json({ error: "Recovery Code could not be renewed. Password was not changed." }, { status: 500 });
+
+    const { error: passwordError } = await admin.auth.admin.updateUserById(profile.user_id, { password: newPassword });
+    if (passwordError) {
+      // Restore no prior code: the newly issued code is returned only on success.
+      return NextResponse.json({ error: "Password reset failed. Contact support before retrying with your old Recovery Code." }, { status: 500 });
+    }
 
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
     const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -46,11 +50,9 @@ export async function POST(request: Request) {
       }
     });
     const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: authEmailForLoginId(loginId),
-      password: newPassword
+      email: authEmailForLoginId(loginId), password: newPassword
     });
     if (signInError) return NextResponse.json({ error: "Password reset completed. Sign in with your new password." }, { status: 200 });
-
     return NextResponse.json({ success: true, recoveryCode: nextRecoveryCode });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to recover account.";
