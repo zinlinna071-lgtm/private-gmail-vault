@@ -1,11 +1,14 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export default async function VaultPage() {
   const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/");
-  const { data: profile } = await supabase.from("vault_profiles").select("login_id,display_name").eq("user_id", user.id).maybeSingle();
+  // The profile table intentionally denies direct authenticated-role access.
+  const { data: profile } = await createSupabaseAdminClient()
+    .from("vault_profiles").select("login_id").eq("user_id", user.id).maybeSingle();
 
   return (
     <main className="shell">
