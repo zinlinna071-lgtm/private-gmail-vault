@@ -3,11 +3,12 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { allowAuthAttempt } from "@/lib/auth/rate-limit";
-import { authEmailForLoginId, createRecoveryCode, hashRecoveryCode, normalizeLoginId, validatePassword, verifyRecoveryCode } from "@/lib/auth/vault";
+import { authEmailForLoginId, createRecoveryCode, hashRecoveryCode, isSameOriginRequest, normalizeLoginId, validatePassword, verifyRecoveryCode } from "@/lib/auth/vault";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
+  if (!isSameOriginRequest(request)) return NextResponse.json({ error: "Invalid request origin." }, { status: 403 });
   try {
     const body = await request.json();
     const loginId = normalizeLoginId(String(body.loginId ?? ""));
