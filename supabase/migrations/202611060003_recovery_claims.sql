@@ -20,7 +20,7 @@ security definer
 set search_path = public
 as $$
 declare
-  v_claimed boolean;
+  v_rows integer;
 begin
   if p_lease_seconds < 60 or p_lease_seconds > 1800 then
     raise exception 'Invalid recovery claim lease';
@@ -34,8 +34,8 @@ begin
     and recovery_code_salt = p_expected_salt
     and (recovery_claim_token is null or recovery_claim_expires_at <= now());
 
-  get diagnostics v_claimed = row_count;
-  return v_claimed;
+  get diagnostics v_rows = row_count;
+  return v_rows > 0;
 end;
 $$;
 
@@ -50,7 +50,7 @@ security definer
 set search_path = public
 as $$
 declare
-  v_finished boolean;
+  v_rows integer;
 begin
   update public.vault_profiles
   set recovery_code_hash = p_new_hash,
@@ -61,8 +61,8 @@ begin
     and recovery_claim_token = p_claim_token
     and recovery_claim_expires_at > now();
 
-  get diagnostics v_finished = row_count;
-  return v_finished;
+  get diagnostics v_rows = row_count;
+  return v_rows > 0;
 end;
 $$;
 
@@ -75,7 +75,7 @@ security definer
 set search_path = public
 as $$
 declare
-  v_released boolean;
+  v_rows integer;
 begin
   update public.vault_profiles
   set recovery_claim_token = null,
@@ -83,8 +83,8 @@ begin
   where user_id = p_user_id
     and recovery_claim_token = p_claim_token;
 
-  get diagnostics v_released = row_count;
-  return v_released;
+  get diagnostics v_rows = row_count;
+  return v_rows > 0;
 end;
 $$;
 
