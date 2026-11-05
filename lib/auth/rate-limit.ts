@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export async function allowAuthAttempt(request: Request, action: string, loginId: string, limit: number) {
-  const ip = request.headers.get("x-real-ip") ?? request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? request.headers.get("x-vercel-forwarded-for") ?? "unknown";
+  const ip = request.headers.get("x-real-ip") ?? request.headers.get("x-vercel-forwarded-for")?.split(",")[0]?.trim() ?? request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
   const admin = createSupabaseAdminClient();
   const buckets = [
     { key: `${action}|ip|${ip}`, max: 50 },
