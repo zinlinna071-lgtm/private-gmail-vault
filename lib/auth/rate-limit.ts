@@ -1,0 +1,16 @@
+import "server-only";
+import { createHash } from "node:crypto";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+
+export async function allowAuthAttempt(request: Request, action: string, loginId: string, limit: number) {
+  const ip = request.headers.get("x-real-ip") ?? request.headers.get("x-vercel-forwarded-for") ?? "unknown";
+  const bucket = createHash("sha256").update(`${action}| ${ip}| ${loginId}`).digest("hex");
+  const admin = createSupabaseAdminClient();
+  const { data, error } = await admin.rpc("consume_vault_auth_attempt", {
+    p_bucket_hash: bucket,
+    p_max_attempts: limit,
+    p_window_seconds: 900
+  });
+  if (error) throw new Error("Authentication protection is not ready. Apply the latest Vault database migration.");
+  return data === true;
+}
