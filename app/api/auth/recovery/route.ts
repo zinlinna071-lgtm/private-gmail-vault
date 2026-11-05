@@ -33,10 +33,18 @@ export async function POST(request: Request) {
 
     const nextRecoveryCode = createRecoveryCode();
     const { hash, salt } = hashRecoveryCode(nextRecoveryCode);
-    const { error: rotateError } = await admin.from("vault_profiles").update({
+    // Compare-and-swap prevents two requests using the same old Recovery Code
+    // from both successfully rotating it.
+    const { data: rotatedProfile, error: rotateError } = await admin.from("vault_profiles").update({
       recovery_code_hash: hash, recovery_code_salt: salt
-    }).eq("user_id", profile.user_id);
-    if (rotateError) return NextResponse.json({ error: "Password reset succeeded, but Recovery Code renewal failed. Keep your existing code safe and sign in with the new password." }, { status: 500 });
+    }).eq("user_id", profile.user_id)
+      .eq("recovery_code_hash", profile.recovery_code_hash)
+      .eq("recovery_code_salt", profile.recovery_code_salt)
+      .select("user_id")
+      .maybeSingle();
+    if (rotateError || !rotatedProfile) {
+      return NextResponse.json({ error: "Password reset may have succeeded, but this Recovery Code was already used or could not be renewed. Try signing in with your new password. If that fails, contact support before retrying recovery." }, { status: 409 });
+    }
 
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
     const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
