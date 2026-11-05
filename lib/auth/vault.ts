@@ -44,3 +44,19 @@ export function verifyRecoveryCode(code: string, expectedHash: string, salt: str
     return false;
   }
 }
+
+/**
+ * Validate browser-originated state-changing requests.
+ * These Vault endpoints are browser-only and require an explicit same-origin Origin.
+ */
+export function isSameOriginRequest(request: Request) {
+  const origin = request.headers.get("origin");
+  if (!origin) return false;
+  try {
+    if (new URL(origin).origin !== new URL(request.url).origin) return false;
+  } catch {
+    return false;
+  }
+  const fetchSite = request.headers.get("sec-fetch-site");
+  return !fetchSite || fetchSite === "same-origin" || fetchSite === "none";
+}
