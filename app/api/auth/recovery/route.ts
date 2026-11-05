@@ -49,8 +49,7 @@ export async function POST(request: Request) {
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email: authEmailForLoginId(loginId), password: newPassword
     });
-    if (signInError) return NextResponse.json({ error: "Password reset completed. Sign in with your new password." }, { status: 200 });
-    return NextResponse.json({ success: true, recoveryCode: nextRecoveryCode });
+    return NextResponse.json({ success: true, signedIn: !signInError, recoveryCode: nextRecoveryCode });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to recover account.";
     return NextResponse.json({ error: message }, { status: 400 });
