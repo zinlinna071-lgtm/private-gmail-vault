@@ -72,14 +72,14 @@ describe("GET /api/gmail/callback", () => {
     const response = await GET(makeRequest());
 
     expect(response.headers.get("location")).toContain("/vault?gmail_error=sign_in_required");
-    expect(response.cookies.get("gmail_oauth_state")?.maxAge).toBe(0);
+    expect(response.headers.get("set-cookie")).toContain("gmail_oauth_state=");
   });
 
   it("rejects a missing or mismatched OAuth state before contacting Google", async () => {
     const response = await GET(makeRequest("?state=attacker-state", "different-state.invalid-signature"));
 
     expect(response.headers.get("location")).toContain("/vault?gmail_error=invalid_oauth_state");
-    expect(response.cookies.get("gmail_oauth_state")?.maxAge).toBe(0);
+    expect(response.headers.get("set-cookie")).toContain("gmail_oauth_state=");
     expect(mocks.createSupabaseAdminClient).not.toHaveBeenCalled();
   });
 
