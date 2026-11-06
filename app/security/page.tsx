@@ -1,4 +1,10 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Security & Transparency | Private Account Vault",
+  description: "Public, read-only security testing methods, verified evidence, and development status for Private Account Vault."
+};
 
 const checks = [
   { name: "RFC 9106 Argon2id known-answer vector", scope: "Node.js · isolated harness", run: "42272387331", href: "https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42272387331" },
