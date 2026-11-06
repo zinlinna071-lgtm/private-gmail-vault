@@ -33,6 +33,8 @@ jobs:
           node -e 'const fs=require("fs");try{const a=JSON.parse(fs.readFileSync("npm-audit-fix-dry-run.json","utf8"));console.log("Dry-run package changes:",JSON.stringify({added:a.added,removed:a.removed,changed:a.changed,audited:a.audited,auditTotals:a.audit?.metadata?.vulnerabilities||a.metadata?.vulnerabilities||null}));}catch(e){console.log("Dry-run output was not JSON; inspect npm output in this job log.");}'
       - name: Dependency tree diagnostics
         run: npm ls --all @typescript-eslint/eslint-plugin @typescript-eslint/parser @typescript-eslint/typescript-estree minimatch || true
+      - name: Automated tests
+        run: npm test
       - name: Type check
         run: npm run typecheck
       - name: Production build
