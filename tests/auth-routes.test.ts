@@ -208,6 +208,32 @@ describe("Vault registration and login API", () => {
     expect(mocks.createSupabaseAdminClient).not.toHaveBeenCalled();
   });
 
+  it("does not expose unexpected login exception details", async () => {
+    mocks.createSupabaseAdminClient.mockImplementation(() => { throw new Error("private database host detail"); });
+    const response = await login(request("/api/auth/login", {
+      loginId: "myvault",
+      password: "a-strong-master-password"
+    }));
+    const body = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(body.error).toBe("Unable to complete sign-in. Please try again.");
+    expect(JSON.stringify(body)).not.toContain("private database host detail");
+  });
+
+  it("does not expose unexpected registration exception details", async () => {
+    mocks.createUser.mockRejectedValue(new Error("private auth provider detail"));
+    const response = await register(request("/api/auth/register", {
+      loginId: "myvault",
+      password: "a-strong-master-password"
+    }));
+    const body = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(body.error).toBe("Unable to create the Vault account. Please try again.");
+    expect(JSON.stringify(body)).not.toContain("private auth provider detail");
+  });
+
   it("returns a safe retry response when recovery status cannot be read", async () => {
     mocks.maybeSingle.mockResolvedValue({ data: null, error: new Error("database unavailable") });
     const response = await login(request("/api/auth/login", {
