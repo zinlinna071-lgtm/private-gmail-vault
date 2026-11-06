@@ -73,3 +73,22 @@ These observations are not public vulnerability findings. No research paper or d
 **Status:** These controls are present in source, but actual cookie flags, configured session timeouts, refresh-token reuse handling, and cross-device revocation behavior cannot be established from this repository alone.
 
 **Next authorized test:** Use a disposable Supabase project with synthetic users. Record cookie names and attributes without recording token values; inspect configured session timeouts; test expiry, logout, refresh-token rotation, parallel refresh, and post-logout access. Do not change production Auth settings as part of this review.
+
+
+### AUTH-SESSION-04 — Middleware scope and authenticated response caching
+
+**Source observation:** The first middleware revision ran for every dynamic route, including public Security, Research, Support, and SEO endpoints that do not use Supabase Auth. It also did not explicitly mark matched Vault responses as non-cacheable.
+
+**Remediation added:** The matcher is now limited to `/vault/:path*` and `/api/vault/:path*`. Every matched response is marked `Cache-Control: private, no-store` and `Pragma: no-cache`, including responses where no token refresh occurs. When refreshed cookies are written, the replacement response receives the same cache policy before the cookies are attached.
+
+**Regression coverage added:** Middleware tests assert the private/no-store policy for refreshed and ordinary Vault responses and assert the route matcher is restricted to the authenticated Vault UI/API.
+
+**Limitations:** These are unit tests using mocked Supabase behavior. They do not validate CDN behavior in a deployed environment. The public pages are not expected to invoke this middleware after the matcher change; a real deployment check remains outstanding.
+
+### Dependency reproducibility note
+
+The repository declares `@supabase/ssr` as `^0.7.0` and the inspected branch contains no npm, pnpm, Yarn, or Bun lockfile. CI currently runs `npm install`, so dependency resolution is not pinned to a committed lockfile. This is a supply-chain reproducibility gap, not evidence of a known exploitable dependency. A lockfile should be generated and reviewed in a controlled dependency-update change before relying on repeatable installs.
+
+**Verification status:** CI run `42295821623` passed on the pre-follow-up commit `b3bafcbc96c967d17495458929bf39850b3d5465`. The middleware scope/cache changes are newer and must be verified by CI on their exact resulting commit before being marked passed. No production deployment or Supabase project configuration was changed.
+
+**Reference:** Supabase SSR guide — https://supabase.com/docs/guides/auth/server-side/creating-a-client
