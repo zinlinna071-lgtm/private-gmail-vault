@@ -106,7 +106,7 @@ export default function SecurityPage() {
       <footer className="security-footer">
         <div><span className="security-brand-mark">V</span><strong>PRIVATE ACCOUNT VAULT</strong></div>
         <p>Security transparency, not a security certification. No software can honestly promise to be unhackable.</p>
-        <Link href="/">Return to Vault</Link>
+        <div className="security-footer-links"><Link href="/support">Research Fund Transparency ↗</Link><Link href="/">Return to Vault</Link></div>
       </footer>
     </main>
   );
