@@ -1,0 +1,81 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("server-only", () => ({}));
+
+const rpc = vi.fn();
+vi.mock("../lib/supabase/admin", () => ({
+  createSupabaseAdminClient: () => ({ rpc })
+}));
+
+import { persistVerifiedWorkflowRunEvent } from "../lib/security-research/github-webhook-store";
+import type { VerifiedWorkflowRunEvent } from "../lib/security-research/github-webhook";
+
+const event: VerifiedWorkflowRunEvent = {
+  deliveryId: "9a5f81a2-6f27-4f7a-8a65-3f91d6d50a91",
+  action: "completed",
+  repository: "zinlinna071-lgtm/private-gmail-vault",
+  workflowPath: ".github/workflows/ci.yml",
+  runId: 42298920558,
+  runAttempt: 1,
+  headBranch: "feature/vault-authentication",
+  headSha: "a".repeat(40),
+  status: "completed",
+  conclusion: "success",
+  createdAt: "2026-11-07T01:00:00Z",
+  runStartedAt: "2026-11-07T01:00:02Z",
+  updatedAt: "2026-11-07T01:02:00Z",
+  htmlUrl: "https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42298920558"
+};
+
+describe("GitHub webhook event store adapter", () => {
+  beforeEach(() => {
+    rpc.mockReset();
+  });
+
+  it("sends only the SHA-256 body fingerprint and allowlisted metadata", async () => {
+    rpc.mockResolvedValue({ data: "APPLIED", error: null });
+
+    const result = await persistVerifiedWorkflowRunEvent({
+      event,
+      rawBody: '{"signed":"payload"}'
+    });
+
+    expect(result).toBe("APPLIED");
+    expect(rpc).toHaveBeenCalledTimes(1);
+    const [functionName, args] = rpc.mock.calls[0];
+    expect(functionName).toBe("ingest_github_workflow_event");
+    expect(args.p_payload_sha256).toMatch(/^[a-f0-9]{64}$/);
+    expect(args.p_payload_sha256).toBe(
+      "e4b5f6e4e44f7e5a7b31b2d3a53f7f2b0b6a6d6b2b8d8d3e0c9a6d4a8d5b7c9f"
+    );
+    expect(args.p_delivery_id).toBe(event.deliveryId);
+    expect(args).not.toHaveProperty("rawBody");
+    expect(args).not.toHaveProperty("signature");
+  });
+
+  it.each(["DUPLICATE", "DELIVERY_ID_CONFLICT", "STALE"] as const)(
+    "returns the database's %s idempotency result",
+    async (data) => {
+      rpc.mockResolvedValue({ data, error: null });
+      await expect(persistVerifiedWorkflowRunEvent({ event, rawBody: "body" })).resolves.toBe(data);
+    }
+  );
+
+  it("does not disclose database error details", async () => {
+    rpc.mockResolvedValue({
+      data: null,
+      error: { message: "sensitive database connection detail" }
+    });
+
+    await expect(
+      persistVerifiedWorkflowRunEvent({ event, rawBody: "body" })
+    ).rejects.toThrow("Unable to persist the verified workflow event.");
+  });
+
+  it("rejects unexpected RPC result values", async () => {
+    rpc.mockResolvedValue({ data: "PUBLIC", error: null });
+    await expect(
+      persistVerifiedWorkflowRunEvent({ event, rawBody: "body" })
+    ).rejects.toThrow("The workflow event store returned an invalid result.");
+  });
+});
