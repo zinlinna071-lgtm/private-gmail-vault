@@ -41,7 +41,14 @@ Implemented primitives:
 - Validate the nested run repository when supplied; reject malformed nested repository values.
 - Exclude raw payloads, logs, environment variables, and secret material from the projection.
 
-The verifier does not itself provide delivery replay protection, persistence, event ordering, owner approval, or public publication. A valid HMAC proves that the payload was signed by a party holding the webhook secret; it does not prove that a security test was adequate or that a passing CI workflow constitutes a penetration test.
+A proposed Supabase migration is committed at `supabase/migrations/202611070001_github_webhook_ingestion.sql`. It defines:
+- A unique `delivery_id` ledger with a SHA-256 fingerprint of the exact raw body; same-ID/same-hash deliveries return `DUPLICATE`, while same-ID/different-hash deliveries return `DELIVERY_ID_CONFLICT`.
+- A private workflow-run table keyed by `run_id + run_attempt`.
+- A single transactional RPC that claims a delivery and advances run metadata only when the incoming timestamp/status rank is newer, preventing an older event from rolling state backwards.
+- RLS enabled, no `anon` or `authenticated` table access, and RPC execution granted only to `service_role`.
+- A default `PRIVATE` publication state; webhook ingestion cannot approve a public record.
+
+The migration has received source-level review only. It has **not** been applied to any Supabase project or tested against a live/isolated PostgreSQL instance. No server adapter calls this RPC yet. The verifier alone still does not provide durable replay protection or public publication. A valid HMAC proves that the payload was signed by a party holding the webhook secret; it does not prove that a security test was adequate or that a passing CI workflow constitutes a penetration test.
 
 Required before endpoint activation:
 1. Configure a high-entropy webhook secret in server-side environment configuration only.
@@ -51,7 +58,7 @@ Required before endpoint activation:
 5. Keep the publication state private/pending until the owner completes technical, privacy, and security review.
 6. Never expose a GitHub private-repository token or webhook secret to the client.
 
-No webhook endpoint, webhook secret, private-repository token, database table, or GitHub webhook configuration has been created. Do not enable or publish the feed until these dependencies are explicitly configured and tested.
+No webhook endpoint, webhook secret, private-repository token, live database table, or GitHub webhook configuration has been created. The migration file is only a proposed schema change in the feature branch; it must not be applied until owner approval and isolated PostgreSQL migration/transaction tests are complete. Do not enable or publish the feed until these dependencies are explicitly configured and tested.
 
 ## Lifecycle and publication
 
@@ -94,13 +101,14 @@ When the ingestion layer is added, dashboard motion may be driven only by verifi
 
 ## Outstanding work
 
-1. Configure and validate a server-only GitHub webhook secret.
-2. Implement an authenticated endpoint with raw-body signature verification, replay protection, idempotency, and rate/size limits.
-3. Add durable append-only event storage and out-of-order transition handling.
+1. Review and test the proposed migration in an isolated PostgreSQL/Supabase project; do not apply it to production.
+2. Configure and validate a server-only GitHub webhook secret.
+3. Implement a server-only endpoint that verifies the event header, bounded raw body, HMAC, and delivery metadata before calling the atomic ingestion RPC.
+4. Add database-backed replay protection, idempotency, and out-of-order transition tests.
 4. Verify CI run/job metadata against GitHub's authoritative API.
 5. Design a signed or otherwise authenticated event source for private-lab runs.
 6. Implement a read-only public projection that exposes approved sanitized records only.
 7. Add tests for provider mismatch, forged events, duplicate events, out-of-order transitions, revoked publication, and secret-redaction review.
 8. Connect the public dashboard only after the ingestion and publication gates are verified.
 
-No live event feed, private lab runner, public API, database table, webhook configuration, or deployment was created as part of this contract.
+No live event feed, private lab runner, public API, live database table, webhook configuration, or deployment was created as part of this contract. The proposed migration remains unapplied and unverified against PostgreSQL.
