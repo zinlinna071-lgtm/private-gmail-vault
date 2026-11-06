@@ -83,7 +83,7 @@ describe("GitHub webhook event store adapter", () => {
   it("rejects unexpected RPC result values", async () => {
     rpc.mockResolvedValue({ data: "PUBLIC", error: null });
     await expect(
-      persistVerifiedWorkflowRunEvent({ event, rawBody: "body" })
+      persistVerifiedWorkflowRunEvent({ event, verification, rawBody: "body" })
     ).rejects.toThrow("The workflow event store returned an invalid result.");
   });
 });
