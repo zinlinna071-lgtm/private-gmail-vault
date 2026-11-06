@@ -14,8 +14,7 @@ import { GET } from "@/app/api/gmail/connect/route";
 const originalEnv = {
   clientId: process.env.GOOGLE_CLIENT_ID,
   redirectUri: process.env.GOOGLE_REDIRECT_URI,
-  encryptionKey: process.env.VAULT_ENCRYPTION_KEY,
-  nodeEnv: process.env.NODE_ENV
+  encryptionKey: process.env.VAULT_ENCRYPTION_KEY
 };
 
 function makeRequest() {
@@ -32,7 +31,7 @@ describe("GET /api/gmail/connect", () => {
     process.env.GOOGLE_CLIENT_ID = "synthetic-google-client-id";
     process.env.GOOGLE_REDIRECT_URI = "https://vault.example/api/gmail/callback";
     process.env.VAULT_ENCRYPTION_KEY = "f".repeat(64);
-    process.env.NODE_ENV = "test";
+    vi.stubEnv("NODE_ENV", "test");
   });
 
   afterEach(() => {
@@ -42,8 +41,7 @@ describe("GET /api/gmail/connect", () => {
     else process.env.GOOGLE_REDIRECT_URI = originalEnv.redirectUri;
     if (originalEnv.encryptionKey === undefined) delete process.env.VAULT_ENCRYPTION_KEY;
     else process.env.VAULT_ENCRYPTION_KEY = originalEnv.encryptionKey;
-    if (originalEnv.nodeEnv === undefined) delete process.env.NODE_ENV;
-    else process.env.NODE_ENV = originalEnv.nodeEnv;
+    vi.unstubAllEnvs();
   });
 
   it("redirects unauthenticated visitors to the app root", async () => {
