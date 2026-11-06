@@ -56,7 +56,7 @@ const jobs = {
 
 function mockGitHubApi(input: { run: unknown; workflow: unknown; jobs: unknown } = { run, workflow, jobs }) {
   const responses = [input.run, input.workflow, input.jobs];
-  const fetchMock = vi.fn(async (url: string | URL | Request) => {
+  const fetchMock = vi.fn(async (url: string | URL | Request, options?: RequestInit) => {
     const value = responses.shift();
     return new Response(JSON.stringify(value), {
       status: 200,
