@@ -12,6 +12,8 @@ The initial schema migration (001) and independent Vault credentials migration (
 
 Migration 003 (recovery claims and encrypted pending Recovery Codes) is present in the feature branch but has **not** been applied. Do not run it until the Recovery Flow review and automated checks are complete and the migration is explicitly approved.
 
+Migration 004 (Gmail token encryption format version) is present in the feature branch but has **not** been applied. It adds the `encryption_format_version` column required by the updated Gmail callback and read API. Do not apply it until a read-only live schema/data preflight is completed and the migration is separately approved. Do not deploy the feature branch against a database that has not applied the required migration.
+
 The expected result after migration 002 is:
 - vault_profiles includes login_id, recovery_code_hash, and recovery_code_salt.
 - vault_auth_rate_limits exists.
@@ -24,7 +26,11 @@ Configure these in Vercel or local .env.local:
 - NEXT_PUBLIC_SUPABASE_URL
 - NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 - SUPABASE_SECRET_KEY (server only)
-- VAULT_ENCRYPTION_KEY (server only; exactly 64 hexadecimal characters representing 32 random bytes)
+- VAULT_ENCRYPTION_KEY (server only; existing legacy key, exactly 64 hexadecimal characters representing 32 random bytes)
+- GMAIL_TOKEN_ENCRYPTION_KEY_V1, GMAIL_TOKEN_ENCRYPTION_KEY_V2, etc. (server only; each exactly 64 hexadecimal characters; V1 must be byte-for-byte equivalent to the existing legacy key before it is configured)
+- GMAIL_TOKEN_ENCRYPTION_ACTIVE_KEY_VERSION (server only; positive integer; defaults to 1)
+- GMAIL_TOKEN_ENCRYPTION_ACTIVE_FORMAT_VERSION (server only; 1 or 2; defaults to 1)
+- GMAIL_OAUTH_STATE_HMAC_KEY (server only; separate 32-byte random key, exactly 64 hexadecimal characters; do not reuse the Gmail token encryption key)
 
 The code temporarily accepts the legacy NEXT_PUBLIC_SUPABASE_ANON_KEY and SUPABASE_SERVICE_ROLE_KEY variable names as fallbacks. New configuration should use publishable and secret key names.
 
