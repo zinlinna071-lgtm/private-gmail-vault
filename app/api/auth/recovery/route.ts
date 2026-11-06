@@ -157,7 +157,6 @@ export async function POST(request: Request) {
       }
     }
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unable to recover account.";
-    return noStoreJson({ error: message }, { status: 400 });
+    return noStoreJson({ error: "Unable to complete account recovery. Please try again." }, { status: 500 });
   }
 }
