@@ -43,6 +43,10 @@ export function evaluateSepoliaTransfer(
   candidate: EvmTransferCandidate,
   requiredConfirmations = SEPOLIA_MIN_CONFIRMATIONS
 ): EvmVerificationResult {
+  if (!Number.isSafeInteger(requiredConfirmations) || requiredConfirmations < 1) {
+    return { status: "REJECTED", reason: "Invalid confirmation policy" };
+  }
+
   let transactionHash: string;
   let recipient: string;
   let expectedRecipient: string;
@@ -79,10 +83,6 @@ export function evaluateSepoliaTransfer(
   if (candidate.blockNumber <= 0n || candidate.latestBlockNumber < candidate.blockNumber) {
     return { status: "PENDING", confirmations: 0n, requiredConfirmations: BigInt(requiredConfirmations) };
   }
-  if (!Number.isSafeInteger(requiredConfirmations) || requiredConfirmations < 1) {
-    return { status: "REJECTED", reason: "Invalid confirmation policy" };
-  }
-
   const confirmations = candidate.latestBlockNumber - candidate.blockNumber + 1n;
   const required = BigInt(requiredConfirmations);
   if (confirmations < required) {
