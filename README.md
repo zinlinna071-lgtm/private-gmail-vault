@@ -1,53 +1,42 @@
 # Private Account Vault
 
-A simple private vault for storing account passwords and backup codes.
+A minimal private vault for storing credentials for any account.
 
 ## What it does
 
-- Create a private Vault Login ID and Master Password.
+- Create a private Vault login.
 - Save an account name, email or username, password, and backup codes.
-- Search saved accounts.
-- Show or hide passwords and backup codes.
-- Copy credentials when needed.
-- Edit or delete saved accounts.
+- Search, reveal, conceal, copy, edit, and delete saved accounts.
 
-There is no Gmail connection, mailbox access, AI, analytics, or extra dashboard.
+No Gmail connection, provider integration, AI, analytics, advertising, or unnecessary dashboard.
 
-## Security
+## Security status
 
-- Account entries are encrypted with AES-256-GCM before they are stored in the database.
-- Each entry uses a unique random IV and authenticated data bound to its Vault user and record ID.
-- The account-data encryption key is server-only and separate from the Vault Recovery Code key.
-- Database access is restricted to server-side routes that verify the signed-in Vault user and filter every record by that user's ID.
-- API responses containing credentials are marked no-store.
-- Never log or expose passwords, backup codes, recovery codes, or encryption keys.
+The long-term security target is a **zero-knowledge, client-side encrypted vault**. The governing design and release requirements are documented in [Security Foundation](docs/SECURITY-FOUNDATION.md).
 
-**Important:** This first version uses server-side encryption at rest. The hosting server must access the encryption key to display saved credentials, so this is not a zero-knowledge vault. A zero-knowledge design would require a more complex client-side key and recovery system.
+**Important implementation status:** Do not assume the zero-knowledge target is already implemented. The current codebase has used server-side encryption at rest, which means the server can access the encryption key when serving secrets. Until the client-side encryption phase is implemented, independently tested, and verified in the deployed build, this application must not be used to store high-value real credentials.
+
+The security foundation requires:
+- Client-side encryption with a reviewed key hierarchy and authenticated encryption.
+- A server that stores ciphertext and cannot decrypt vault records.
+- Passkey/WebAuthn for phishing-resistant authentication, separate from encryption keys.
+- An independently reviewed recovery and encrypted-backup protocol.
+- Strict authorization, browser security, supply-chain controls, and security tests.
+- No absolute or "unhackable" security claims.
 
 ## Setup
 
-1. Configure a Supabase project.
-2. Apply migrations in order:
-   - `supabase/migrations/202611060001_initial_vault_schema.sql`
-   - `supabase/migrations/202611060002_vault_auth_credentials.sql`
-   - `supabase/migrations/202611060003_recovery_claims.sql`
-   - `supabase/migrations/202611060004_gmail_token_encryption_format_version.sql` (legacy schema compatibility)
-   - `supabase/migrations/202611060005_vault_items.sql`
-3. Set these server/deployment environment variables:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-   - `SUPABASE_SECRET_KEY`
-   - `VAULT_ENCRYPTION_KEY`
-   - `VAULT_DATA_ENCRYPTION_KEY`
-4. Both encryption keys must be 64 hexadecimal characters (32 cryptographically random bytes). Keep them separate, server-only, and backed up securely.
-5. Install dependencies and run:
+1. Configure a dedicated Supabase project.
+2. Review all migrations and apply them in order only after confirming the target database and its existing migration state.
+3. Configure required server-only environment variables using the project's setup documentation. Never place secret keys in client-side variables or commit them to source control.
+4. Install dependencies and run:
    - `npm install`
    - `npm run typecheck`
    - `npm test`
    - `npm run build`
    - `npm run dev`
 
-Do not deploy until all migrations are applied to the intended database, both keys are configured, and authentication, authorization, encryption, and recovery tests pass.
+Do not deploy until the intended database, authentication, authorization, encryption, recovery, and release gates have been reviewed and tested. Production deployment requires explicit approval.
 
 ## Project boundaries
 
