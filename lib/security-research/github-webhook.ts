@@ -17,6 +17,61 @@ function isIsoUtcTimestamp(value: unknown): value is string {
 }
 
 /**
+ * Reads a webhook body with an incremental byte limit. Rejects absent bodies,
+ * oversized Content-Length values, malformed UTF-8, and streams that exceed
+ * the cap even when Content-Length is missing or dishonest.
+ */
+export async function readBoundedWebhookBody(request: Request): Promise<string | null> {
+  const contentLength = request.headers.get("content-length");
+  if (contentLength !== null) {
+    if (!/^\d+$/.test(contentLength) || Number(contentLength) > MAX_WEBHOOK_BODY_BYTES) {
+      return null;
+    }
+  }
+  if (!request.body) return null;
+
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let totalBytes = 0;
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (!value) continue;
+      totalBytes += value.byteLength;
+      if (totalBytes > MAX_WEBHOOK_BODY_BYTES) {
+        await reader.cancel();
+        return null;
+      }
+      chunks.push(value);
+    }
+
+    const body = new Uint8Array(totalBytes);
+    let offset = 0;
+    for (const chunk of chunks) {
+      body.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+
+    try {
+      return new TextDecoder("utf-8", { fatal: true }).decode(body);
+    } catch {
+      return null;
+    }
+  } catch {
+    try {
+      await reader.cancel();
+    } catch {
+      // The stream may already be closed.
+    }
+    return null;
+  } finally {
+    reader.releaseLock();
+  }
+}
+
+/**
  * Verifies GitHub's X-Hub-Signature-256 against the exact raw request body.
  * Call this before parsing JSON or trusting any event fields.
  */
