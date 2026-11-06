@@ -156,6 +156,26 @@ No wallet address may be published and no fundraising may be launched until the 
 - Owner explicitly approves the exact addresses, networks, disclosures, and public page.
 - Start with a low-risk, clearly documented amount and reconcile before broader promotion.
 
-## 10. Current truthful status
+## 11. Initial testnet policy-core implementation
+
+The branch now contains `lib/research-fund/evm-verification.ts` and a focused Vitest suite. This is a **pure policy evaluator**, not a blockchain client or a live verifier.
+
+Current scope:
+- Sepolia testnet chain ID only (`11155111`); mainnet transfers are rejected.
+- Validates EVM address and transaction-hash shapes.
+- Checks successful execution, exact receiving address, configured token-contract match for the USDT-like test case, positive/minimum base-unit amount, and confirmation threshold.
+- Uses JavaScript `bigint` and decimal strings for exact base-unit accounting; no floating-point coin arithmetic.
+- Returns `PENDING`, `CONFIRMED`, or `REJECTED` from supplied facts.
+
+Important limitations:
+- The caller must supply decoded RPC facts. No RPC endpoint, explorer, wallet, token contract, event-log decoder, transaction receipt fetcher, or independent provider comparison is connected.
+- A caller-supplied object is not proof. Do not use this module to accept real donations or publish live balances.
+- No real token contract is configured; "USDT" is only a typed test case for policy validation.
+- Reorg monitoring, idempotent persistent ledger storage, owner review, and public projection are not implemented.
+- Unit tests have been added but must pass in CI before this code is considered verified.
+
+The next implementation stage is a Sepolia-only read adapter that independently fetches and decodes transaction/receipt/log facts, then passes verified facts to this policy core. It must remain testnet-only and must not hold private keys or sign transactions.
+
+## 12. Current truthful status
 
 As of this document revision, the repository contains a static `/support` disclosure and empty-state page. There are no active receiving addresses, no blockchain RPC/indexer integration, no transaction verification service, no live donation records, and no live balance calculation. The public page must continue to say so until each capability is implemented and verified.
