@@ -3,7 +3,13 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Research Fund Transparency | Private Account Vault",
-  description: "Public disclosure and verified accounting for the personally managed independent cybersecurity research fund."
+  description: "Public disclosure of the personally managed cybersecurity research fund, contribution verification policy, and transparent accounting status.",
+  alternates: { canonical: "/support" },
+  openGraph: {
+    type: "website",
+    title: "Cybersecurity Research Fund Transparency | Private Account Vault",
+    description: "Personal project disclosure, contribution verification policy, and research fund accounting status."
+  }
 };
 
 const fundAssets = [
