@@ -46,7 +46,13 @@ describe("Vault API authorization boundary", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    mocks.getUser.mockResolvedValue({ id: ownerId });
+    const query = {
+      eq: mocks.eq,
+      order: mocks.order,
+      select: mocks.select,
+      maybeSingle: mocks.maybeSingle
+    };
+    mocks.getUser.mockResolvedValue({ data: { user: { id: ownerId } } });
     mocks.createSupabaseServerClient.mockResolvedValue({
       auth: { getUser: mocks.getUser }
     });
@@ -57,10 +63,10 @@ describe("Vault API authorization boundary", () => {
       })
     });
 
-    mocks.select.mockReturnValue({ eq: mocks.eq });
+    mocks.select.mockReturnValue(query);
     mocks.order.mockResolvedValue({ data: [], error: null });
-    mocks.eq.mockReturnValue({ order: mocks.order, eq: mocks.eq, select: mocks.select, maybeSingle: mocks.maybeSingle });
-    mocks.delete.mockReturnValue({ eq: mocks.eq });
+    mocks.eq.mockReturnValue(query);
+    mocks.delete.mockReturnValue(query);
     mocks.maybeSingle.mockResolvedValue({ data: null, error: null });
 
     mocks.decryptVaultItem.mockReturnValue(JSON.stringify({
@@ -73,7 +79,7 @@ describe("Vault API authorization boundary", () => {
   });
 
   it("denies Vault reads when there is no authenticated session", async () => {
-    mocks.getUser.mockResolvedValue(null);
+    mocks.getUser.mockResolvedValue({ data: { user: null } });
 
     const response = await GET();
     const body = await response.json();
