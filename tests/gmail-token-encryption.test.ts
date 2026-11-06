@@ -45,8 +45,8 @@ describe("Gmail refresh token encryption", () => {
 
   it("rejects missing or malformed encryption keys", () => {
     delete process.env.VAULT_ENCRYPTION_KEY;
-    expect(() => encryptRefreshToken("secret-token")).toThrow();
+    expect(() => encryptRefreshToken("secret-token", context)).toThrow();
     process.env.VAULT_ENCRYPTION_KEY = "not-a-key";
-    expect(() => encryptRefreshToken("secret-token")).toThrow();
+    expect(() => encryptRefreshToken("secret-token", context)).toThrow();
   });
 });
