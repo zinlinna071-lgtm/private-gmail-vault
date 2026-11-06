@@ -196,7 +196,7 @@ export async function decryptVaultRecord(
           tagLength: 128
         },
         key,
-        combined
+        toArrayBuffer(combined)
       );
     } finally {
       new Uint8Array(ivBuffer).fill(0);
