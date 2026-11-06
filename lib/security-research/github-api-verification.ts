@@ -101,7 +101,8 @@ export async function verifyWorkflowRunWithGitHubApi(
     !equalString(workflow.path, ".github/workflows/ci.yml") ||
     !Array.isArray(jobs) ||
     jobs.length < 1 ||
-    jobs.length > MAX_JOBS
+    jobs.length > MAX_JOBS ||
+    jobsValue.total_count !== jobs.length
   ) {
     throw new Error("GitHub canonical run metadata does not match the signed event.");
   }
