@@ -55,6 +55,10 @@ function getHeader(headers: Array<{ name?: string; value?: string }> | undefined
 
 export async function GET(_request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
+  const accountId = _request.nextUrl.searchParams.get("accountId") ?? "";
+  if (accountId && !/^[0-9a-f-]{36}$/i.test(accountId)) {
+    return NextResponse.json({ error: "invalid_gmail_account" }, { status: 400 });
+  }
   if (!/^[a-zA-Z0-9_-]{1,200}$/.test(id)) {
     return NextResponse.json({ error: "invalid_message_id" }, { status: 400 });
   }
@@ -76,11 +80,13 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ id
 
   try {
     const admin = createSupabaseAdminClient();
-    const { data: connection, error } = await admin
+    let connectionQuery = admin
       .from("gmail_connections")
       .select("id,email_address,refresh_token_ciphertext,refresh_token_iv,refresh_token_auth_tag,connection_status,granted_scopes")
       .eq("user_id", user.id)
-      .eq("connection_status", "active")
+      .eq("connection_status", "active");
+    if (accountId) connectionQuery = connectionQuery.eq("id", accountId);
+    const { data: connection, error } = await connectionQuery
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
