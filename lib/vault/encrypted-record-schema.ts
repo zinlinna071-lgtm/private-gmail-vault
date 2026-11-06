@@ -1,8 +1,13 @@
-import {
-  VAULT_RECORD_ALGORITHM,
-  VAULT_RECORD_FORMAT_VERSION,
-  type EncryptedVaultRecord
-} from "./client-encryption";
+const VAULT_RECORD_FORMAT_VERSION = 1 as const;
+const VAULT_RECORD_ALGORITHM = "AES-256-GCM" as const;
+
+export type EncryptedVaultRecord = {
+  version: typeof VAULT_RECORD_FORMAT_VERSION;
+  algorithm: typeof VAULT_RECORD_ALGORITHM;
+  iv: string;
+  ciphertext: string;
+  authTag: string;
+};
 
 const IV_BYTES = 12;
 const AUTH_TAG_BYTES = 16;
