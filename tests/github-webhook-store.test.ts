@@ -15,6 +15,7 @@ const event: VerifiedWorkflowRunEvent = {
   action: "completed",
   repository: "zinlinna071-lgtm/private-gmail-vault",
   workflowPath: ".github/workflows/ci.yml",
+  workflowId: 408741606,
   runId: 42298920558,
   runAttempt: 1,
   headBranch: "feature/vault-authentication",
@@ -35,8 +36,10 @@ describe("GitHub webhook event store adapter", () => {
   it("sends only the SHA-256 body fingerprint and allowlisted metadata", async () => {
     rpc.mockResolvedValue({ data: "APPLIED", error: null });
 
+    const verification = { verifiedAt: "2026-11-07T01:02:01Z", workflowId: 408741606, jobCount: 2, jobsSha256: "e".repeat(64) };
     const result = await persistVerifiedWorkflowRunEvent({
       event,
+      verification,
       rawBody: '{"signed":"payload"}'
     });
 
@@ -49,6 +52,10 @@ describe("GitHub webhook event store adapter", () => {
       "f6a13d99585a00d82c6896606f9a379cf15f90b42f9f4285f13fd8d6f401da0e"
     );
     expect(args.p_delivery_id).toBe(event.deliveryId);
+    expect(args.p_workflow_id).toBe(408741606);
+    expect(args.p_authoritative_verified_at).toBe(verification.verifiedAt);
+    expect(args.p_verified_job_count).toBe(2);
+    expect(args.p_verified_jobs_sha256).toBe("e".repeat(64));
     expect(args).not.toHaveProperty("rawBody");
     expect(args).not.toHaveProperty("signature");
   });
@@ -57,7 +64,7 @@ describe("GitHub webhook event store adapter", () => {
     "returns the database's %s idempotency result",
     async (data) => {
       rpc.mockResolvedValue({ data, error: null });
-      await expect(persistVerifiedWorkflowRunEvent({ event, rawBody: "body" })).resolves.toBe(data);
+      await expect(persistVerifiedWorkflowRunEvent({ event, verification: { verifiedAt: "2026-11-07T01:02:01Z", workflowId: 408741606, jobCount: 2, jobsSha256: "e".repeat(64) }, rawBody: "body" })).resolves.toBe(data);
     }
   );
 
