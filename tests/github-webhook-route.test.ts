@@ -3,9 +3,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-const { persist } = vi.hoisted(() => ({ persist: vi.fn() }));
+const { persist, verify } = vi.hoisted(() => ({ persist: vi.fn(), verify: vi.fn() }));
 vi.mock("../lib/security-research/github-webhook-store", () => ({
   persistVerifiedWorkflowRunEvent: persist
+}));
+vi.mock("../lib/security-research/github-api-verification", () => ({
+  verifyWorkflowRunWithGitHubApi: verify
 }));
 
 import { POST } from "../app/api/webhooks/github/route";
@@ -16,7 +19,7 @@ const repository = "zinlinna071-lgtm/private-gmail-vault";
 const payload = {
   action: "completed",
   repository: { full_name: repository },
-  workflow: { path: ".github/workflows/ci.yml" },
+  workflow: { id: 408741606, path: ".github/workflows/ci.yml" },
   workflow_run: {
     id: 42301937504,
     run_attempt: 1,
@@ -54,6 +57,8 @@ describe("GitHub webhook route", () => {
     vi.stubEnv("GITHUB_WEBHOOK_SECRET", secret);
     persist.mockReset();
     persist.mockResolvedValue("APPLIED");
+    verify.mockReset();
+    verify.mockResolvedValue({ verifiedAt: "2026-11-07T01:02:01Z", workflowId: 408741606, jobCount: 1, jobsSha256: "b".repeat(64) });
   });
 
   afterEach(() => {
@@ -65,6 +70,7 @@ describe("GitHub webhook route", () => {
     const response = await POST(request());
     expect(response.status).toBe(404);
     expect(persist).not.toHaveBeenCalled();
+    expect(verify).not.toHaveBeenCalled();
   });
 
   it("fails closed when the feature flag is enabled but the secret is missing or weak", async () => {
@@ -79,6 +85,8 @@ describe("GitHub webhook route", () => {
     expect(response.status).toBe(202);
     expect(await response.json()).toEqual({ accepted: true });
     expect(response.headers.get("cache-control")).toContain("no-store");
+    expect(verify).toHaveBeenCalledTimes(1);
+    expect(verify.mock.calls[0][0]).toMatchObject({ workflowId: 408741606 });
     expect(persist).toHaveBeenCalledTimes(1);
     expect(persist.mock.calls[0][0].event).toMatchObject({
       runId: 42301937504,
@@ -94,6 +102,7 @@ describe("GitHub webhook route", () => {
     }));
     expect(response.status).toBe(401);
     expect(persist).not.toHaveBeenCalled();
+    expect(verify).not.toHaveBeenCalled();
   });
 
   it("rejects wrong event types and non-JSON content types", async () => {
@@ -110,6 +119,15 @@ describe("GitHub webhook route", () => {
     expect(malformed.status).toBe(400);
     const invalidEvent = await POST(request(JSON.stringify({ action: "push" })));
     expect(invalidEvent.status).toBe(400);
+    expect(persist).not.toHaveBeenCalled();
+    expect(verify).not.toHaveBeenCalled();
+  });
+
+  it("fails closed when authoritative GitHub verification fails", async () => {
+    verify.mockRejectedValueOnce(new Error("canonical run mismatch"));
+    const response = await POST(request());
+    expect(response.status).toBe(503);
+    expect(await response.text()).not.toContain("canonical run mismatch");
     expect(persist).not.toHaveBeenCalled();
   });
 
