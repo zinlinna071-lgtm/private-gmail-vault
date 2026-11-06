@@ -23,6 +23,18 @@ export async function persistVerifiedWorkflowRunEvent(input: {
   verification: GitHubApiVerification;
   rawBody: string;
 }): Promise<WebhookIngestionResult> {
+  if (
+    input.verification.workflowId !== input.event.workflowId ||
+    !Number.isSafeInteger(input.verification.jobCount) ||
+    input.verification.jobCount < 0 ||
+    input.verification.jobCount > 100 ||
+    !/^[a-f0-9]{64}$/.test(input.verification.jobsSha256) ||
+    !Number.isFinite(Date.parse(input.verification.verifiedAt)) ||
+    (input.event.status !== "queued" && input.verification.jobCount < 1)
+  ) {
+    throw new Error("Canonical GitHub verification evidence is invalid.");
+  }
+
   const bodyBytes = new TextEncoder().encode(input.rawBody);
   const digest = await crypto.subtle.digest("SHA-256", bodyBytes);
   const payloadSha256 = Array.from(new Uint8Array(digest))
