@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
     if (!encrypted) return vaultRedirect(request, "error=refresh_token_missing");
 
     const scopeString = typeof tokenData.scope === "string" ? tokenData.scope : "";
-    const grantedScopes = scopeString.split(" ").filter(Boolean);
+    const grantedScopes = scopeString\n      ? scopeString.split(" ").filter(Boolean)\n      : ["openid", "email", "profile", "https://www.googleapis.com/auth/gmail.readonly"];\n    if (!grantedScopes.includes("https://www.googleapis.com/auth/gmail.readonly")) {\n      return vaultRedirect(request, "error=gmail_readonly_scope_missing");\n    }
     const { data: connection, error: saveError } = await admin
       .from("gmail_connections")
       .upsert({
