@@ -2,6 +2,7 @@ import "server-only";
 
 import { createSupabaseAdminClient } from "../supabase/admin";
 import type { VerifiedWorkflowRunEvent } from "./github-webhook";
+import type { GitHubApiVerification } from "./github-api-verification";
 
 export type WebhookIngestionResult =
   | "APPLIED"
@@ -19,6 +20,7 @@ export type WebhookIngestionResult =
  */
 export async function persistVerifiedWorkflowRunEvent(input: {
   event: VerifiedWorkflowRunEvent;
+  verification: GitHubApiVerification;
   rawBody: string;
 }): Promise<WebhookIngestionResult> {
   const bodyBytes = new TextEncoder().encode(input.rawBody);
@@ -35,6 +37,7 @@ export async function persistVerifiedWorkflowRunEvent(input: {
     p_action: event.action,
     p_repository: event.repository,
     p_workflow_path: event.workflowPath,
+    p_workflow_id: event.workflowId,
     p_run_id: event.runId,
     p_run_attempt: event.runAttempt,
     p_head_branch: event.headBranch,
@@ -44,7 +47,10 @@ export async function persistVerifiedWorkflowRunEvent(input: {
     p_created_at: event.createdAt,
     p_run_started_at: event.runStartedAt,
     p_updated_at: event.updatedAt,
-    p_html_url: event.htmlUrl
+    p_html_url: event.htmlUrl,
+    p_authoritative_verified_at: input.verification.verifiedAt,
+    p_verified_job_count: input.verification.jobCount,
+    p_verified_jobs_sha256: input.verification.jobsSha256
   });
 
   if (error) {
