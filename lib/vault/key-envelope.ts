@@ -122,7 +122,7 @@ export async function createVaultKeyEnvelope(
     ));
     const dataKey = await globalThis.crypto.subtle.importKey(
       "raw",
-      rawDataKey,
+      toArrayBuffer(rawDataKey),
       { name: "AES-GCM" },
       false,
       ["encrypt", "decrypt"]
