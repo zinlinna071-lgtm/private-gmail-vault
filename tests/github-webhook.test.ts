@@ -10,6 +10,8 @@ import {
 
 const secret = randomBytes(32).toString("hex");
 const rawBody = JSON.stringify({ action: "completed", workflow_run: { id: 12345678 } });
+const delivery = "9a5f81a2-6f27-4f7a-8a65-3f91d6d50a91";
+const repository = "zinlinna071-lgtm/private-gmail-vault";
 
 function sign(body: string, key = secret) {
   return `sha256=${createHmac("sha256", key).update(body).digest("hex")}`;
@@ -17,7 +19,7 @@ function sign(body: string, key = secret) {
 
 const payload = {
   action: "completed",
-  repository: { full_name: "zinlinna071-lgtm/private-gmail-vault" },
+  repository: { full_name: repository },
   workflow: { path: ".github/workflows/ci.yml" },
   workflow_run: {
     id: 42298920558,
@@ -27,10 +29,10 @@ const payload = {
     status: "completed",
     conclusion: "success",
     created_at: "2026-11-07T01:00:00Z",
-    run_started_at: "2026-11-07T01:00:02Z",
+    run_started_at: "2026-11-07T01:00:02.123Z",
     updated_at: "2026-11-07T01:02:00Z",
-    html_url: "https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42298920558",
-    repository: { full_name: "zinlinna071-lgtm/private-gmail-vault" }
+    html_url: `https://github.com/${repository}/actions/runs/42298920558`,
+    repository: { full_name: repository }
   }
 };
 
@@ -58,43 +60,64 @@ describe("GitHub workflow webhook verification", () => {
     })).toBe(false);
   });
 
-  it("projects only the allowlisted repository workflow metadata", () => {
-    const parsed = parseVerifiedWorkflowRunEvent(
-      payload,
-      "9a5f81a2-6f27-4f7a-8a65-3f91d6d50a91",
-      "zinlinna071-lgtm/private-gmail-vault"
-    );
+  it("projects only allowlisted workflow metadata and accepts fractional UTC timestamps", () => {
+    const parsed = parseVerifiedWorkflowRunEvent(payload, delivery, repository);
     expect(parsed).toMatchObject({
       runId: 42298920558,
       status: "completed",
       conclusion: "success",
       headBranch: "feature/vault-authentication",
-      headSha: "a".repeat(40)
+      headSha: "a".repeat(40),
+      runStartedAt: "2026-11-07T01:00:02.123Z"
     });
     expect(parsed).not.toHaveProperty("rawBody");
     expect(parsed).not.toHaveProperty("secrets");
   });
 
-  it("rejects wrong repository, workflow, branch, commit, and forged run URL", () => {
-    const delivery = "9a5f81a2-6f27-4f7a-8a65-3f91d6d50a91";
+  it("rejects malformed delivery IDs and invalid calendar timestamps", () => {
+    expect(parseVerifiedWorkflowRunEvent(payload, "not-a-delivery-id", repository)).toBeNull();
+    expect(parseVerifiedWorkflowRunEvent({
+      ...payload,
+      workflow_run: { ...payload.workflow_run, created_at: "2026-99-99T99:99:99Z" }
+    }, delivery, repository)).toBeNull();
+  });
+
+  it("rejects wrong repository, workflow, branch, commit, and forged run URLs", () => {
     expect(parseVerifiedWorkflowRunEvent(payload, delivery, "someone/else")).toBeNull();
     expect(parseVerifiedWorkflowRunEvent({
       ...payload, workflow: { path: ".github/workflows/other.yml" }
-    }, delivery, "zinlinna071-lgtm/private-gmail-vault")).toBeNull();
+    }, delivery, repository)).toBeNull();
     expect(parseVerifiedWorkflowRunEvent({
       ...payload, workflow_run: { ...payload.workflow_run, head_branch: "main" }
-    }, delivery, "zinlinna071-lgtm/private-gmail-vault")).toBeNull();
+    }, delivery, repository)).toBeNull();
     expect(parseVerifiedWorkflowRunEvent({
       ...payload, workflow_run: { ...payload.workflow_run, head_sha: "not-a-sha" }
-    }, delivery, "zinlinna071-lgtm/private-gmail-vault")).toBeNull();
+    }, delivery, repository)).toBeNull();
     expect(parseVerifiedWorkflowRunEvent({
       ...payload, workflow_run: { ...payload.workflow_run, html_url: "https://evil.example/run" }
-    }, delivery, "zinlinna071-lgtm/private-gmail-vault")).toBeNull();
+    }, delivery, repository)).toBeNull();
+    expect(parseVerifiedWorkflowRunEvent({
+      ...payload,
+      workflow_run: { ...payload.workflow_run, html_url: `https://user@github.com/${repository}/actions/runs/42298920558` }
+    }, delivery, repository)).toBeNull();
+    expect(parseVerifiedWorkflowRunEvent({
+      ...payload,
+      workflow_run: { ...payload.workflow_run, html_url: `https://github.com/${repository}/actions/runs/42298920558?redirect=1` }
+    }, delivery, repository)).toBeNull();
   });
 
-  it("rejects event action and run status mismatches", () => {
+  it("rejects inconsistent action/status pairs and malformed nested repositories", () => {
     expect(parseVerifiedWorkflowRunEvent({
       ...payload, action: "in_progress"
-    }, "9a5f81a2-6f27-4f7a-8a65-3f91d6d50a91", "zinlinna071-lgtm/private-gmail-vault")).toBeNull();
+    }, delivery, repository)).toBeNull();
+    expect(parseVerifiedWorkflowRunEvent({
+      ...payload,
+      action: "requested",
+      workflow_run: { ...payload.workflow_run, status: "queued", conclusion: null }
+    }, delivery, repository)).not.toBeNull();
+    expect(parseVerifiedWorkflowRunEvent({
+      ...payload,
+      workflow_run: { ...payload.workflow_run, repository: "unexpected" }
+    }, delivery, repository)).toBeNull();
   });
 });
