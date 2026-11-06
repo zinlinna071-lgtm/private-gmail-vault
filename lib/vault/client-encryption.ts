@@ -32,6 +32,7 @@ function assertDataKey(key: CryptoKey) {
   const algorithm = key.algorithm as AesKeyAlgorithm;
   if (
     key.type !== "secret" ||
+    key.extractable ||
     algorithm.name !== "AES-GCM" ||
     algorithm.length !== 256 ||
     !key.usages.includes("encrypt") ||
@@ -90,7 +91,7 @@ function fromBase64(value: unknown, maxEncodedLength: number): Uint8Array {
 export async function generateVaultDataKey(): Promise<CryptoKey> {
   return globalThis.crypto.subtle.generateKey(
     { name: "AES-GCM", length: 256 },
-    true,
+    false,
     ["encrypt", "decrypt"]
   );
 }
