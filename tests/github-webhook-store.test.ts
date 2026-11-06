@@ -10,6 +10,8 @@ vi.mock("../lib/supabase/admin", () => ({
 import { persistVerifiedWorkflowRunEvent } from "../lib/security-research/github-webhook-store";
 import type { VerifiedWorkflowRunEvent } from "../lib/security-research/github-webhook";
 
+const verification = { verifiedAt: "2026-11-07T01:02:01Z", workflowId: 408741606, jobCount: 2, jobsSha256: "e".repeat(64) };
+
 const event: VerifiedWorkflowRunEvent = {
   deliveryId: "9a5f81a2-6f27-4f7a-8a65-3f91d6d50a91",
   action: "completed",
@@ -36,7 +38,6 @@ describe("GitHub webhook event store adapter", () => {
   it("sends only the SHA-256 body fingerprint and allowlisted metadata", async () => {
     rpc.mockResolvedValue({ data: "APPLIED", error: null });
 
-    const verification = { verifiedAt: "2026-11-07T01:02:01Z", workflowId: 408741606, jobCount: 2, jobsSha256: "e".repeat(64) };
     const result = await persistVerifiedWorkflowRunEvent({
       event,
       verification,
@@ -64,7 +65,7 @@ describe("GitHub webhook event store adapter", () => {
     "returns the database's %s idempotency result",
     async (data) => {
       rpc.mockResolvedValue({ data, error: null });
-      await expect(persistVerifiedWorkflowRunEvent({ event, verification: { verifiedAt: "2026-11-07T01:02:01Z", workflowId: 408741606, jobCount: 2, jobsSha256: "e".repeat(64) }, rawBody: "body" })).resolves.toBe(data);
+      await expect(persistVerifiedWorkflowRunEvent({ event, verification, rawBody: "body" })).resolves.toBe(data);
     }
   );
 
@@ -75,7 +76,7 @@ describe("GitHub webhook event store adapter", () => {
     });
 
     await expect(
-      persistVerifiedWorkflowRunEvent({ event, rawBody: "body" })
+      persistVerifiedWorkflowRunEvent({ event, verification, rawBody: "body" })
     ).rejects.toThrow("Unable to persist the verified workflow event.");
   });
 
