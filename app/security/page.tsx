@@ -128,7 +128,7 @@ export default function SecurityPage() {
       </section>
 
       <section className="security-section security-method">
-        <div><span className="section-index">05 / RESEARCH PUBLICATIONS</span><h2>Evidence becomes knowledge.</h2><p className="security-lead">Approved papers document objectives, safe methodology, isolated environment, findings, remediation, retest results, limitations, and references in English and Burmese.</p><Link href="/security/research">Open the bilingual research library ↗</Link></div>
+        <div><span className="section-index">05 / RESEARCH PUBLICATIONS</span><h2>Evidence becomes knowledge.</h2><p className="security-lead">Approved papers document objectives, safe methodology, isolated environment, findings, remediation, retest results, limitations, and references in English and Burmese.</p><Link href="/security/research">Open the bilingual research library ↗</Link><p className="security-footnote" style={{ marginTop: 16 }}>Authentication testing plan: <a href="https://github.com/zinlinna071-lgtm/private-gmail-vault/blob/feature/vault-authentication/docs/SECURITY-LOGIN-TEST-PLAN.md" target="_blank" rel="noreferrer">review the Vault Login Security Test Plan ↗</a></p></div>
         <div className="method-steps">
           <div><b>01</b><span><strong>Draft from verified evidence</strong><small>No invented findings, fabricated telemetry, or synthetic publications.</small></span></div>
           <div><b>02</b><span><strong>Technical and security review</strong><small>Check reproducibility, severity, redaction, and disclosure safety.</small></span></div>
