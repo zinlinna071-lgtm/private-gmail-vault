@@ -26,17 +26,24 @@ The existing `vault_items.user_id` column remains the ownership boundary. Every 
 
 ## 3. Record envelope v1
 
-The browser sends this JSON object to create or update a record:
+The browser generates the record UUID before encryption so it can bind that UUID into AES-GCM AAD.
+
+For create, the browser sends:
 
 ```json
 {
-  "version": 1,
-  "algorithm": "AES-256-GCM",
-  "iv": "<canonical-base64-12-byte-nonce>",
-  "ciphertext": "<canonical-base64-ciphertext>",
-  "authTag": "<canonical-base64-16-byte-tag>"
+  "id": "<client-generated-record-uuid>",
+  "envelope": {
+    "version": 1,
+    "algorithm": "AES-256-GCM",
+    "iv": "<canonical-base64-12-byte-nonce>",
+    "ciphertext": "<canonical-base64-ciphertext>",
+    "authTag": "<canonical-base64-16-byte-tag>"
+  }
 }
 ```
+
+For update, it sends the same `envelope` shape to the route whose path contains the existing record UUID. The API never accepts a client-supplied owner ID or Vault ID.
 
 Validation requirements:
 - Reject unknown object fields and unknown protocol versions.
@@ -54,20 +61,20 @@ The record AAD is constructed in the browser from the protocol domain, version, 
 ### GET /api/vault/items
 - Authenticate the session.
 - Select only rows owned by the authenticated user.
-- Return each row's ID, opaque ciphertext envelope, and timestamps.
+- Return `{ items: [{ id, envelope, createdAt, updatedAt }] }` with each opaque ciphertext envelope and timestamps.
 - Do not call server-side decryption or read a server encryption key.
 
 ### POST /api/vault/items
 - Require same-origin, JSON content type, and a bounded streamed request body.
 - Authenticate the session.
-- Validate the record UUID and envelope shape.
-- Insert the opaque ciphertext fields and authenticated user ID.
+- Validate the client-generated record UUID and envelope shape with the shared strict envelope parser.
+- Insert the opaque ciphertext fields and authenticated user ID. Store `iv` in `iv`, `authTag` in `auth_tag`, and the envelope ciphertext in `ciphertext`; the format version and algorithm are represented by the explicit scheme marker described in the migration plan.
 - Return only the stored envelope and non-secret metadata.
 
 ### PUT /api/vault/items/:id
 - Require same-origin, JSON content type, and a bounded streamed request body.
 - Authenticate the session and validate the UUID.
-- Update only the row matching both record ID and authenticated user ID.
+- Validate the envelope and update only the row matching both record ID and authenticated user ID.
 - Store the opaque envelope without decrypting it.
 
 ### DELETE /api/vault/items/:id
