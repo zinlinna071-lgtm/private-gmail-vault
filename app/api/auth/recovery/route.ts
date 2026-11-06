@@ -22,16 +22,23 @@ async function signIn(loginId: string, password: string) {
   return supabase.auth.signInWithPassword({ email: authEmailForLoginId(loginId), password });
 }
 
+function noStoreJson(body: unknown, init?: ResponseInit) {
+  const headers = new Headers(init?.headers);
+  headers.set("Cache-Control", "no-store, max-age=0");
+  headers.set("Pragma", "no-cache");
+  return NextResponse.json(body, { ...init, headers });
+}
+
 export async function POST(request: Request) {
   if (!isSameOriginRequest(request)) {
-    return NextResponse.json({ error: "Invalid request origin." }, { status: 403 });
+    return noStoreJson({ error: "Invalid request origin." }, { status: 403 });
   }
 
   try {
     const body = await request.json();
     const loginId = normalizeLoginId(String(body.loginId ?? ""));
     if (!await allowAuthAttempt(request, "recovery", loginId, 5)) {
-      return NextResponse.json({ error: "Too many recovery attempts. Try again in 15 minutes." }, { status: 429 });
+      return noStoreJson({ error: "Too many recovery attempts. Try again in 15 minutes." }, { status: 429 });
     }
 
     const recoveryCode = String(body.recoveryCode ?? "");
@@ -44,7 +51,7 @@ export async function POST(request: Request) {
       .eq("login_id", loginId).maybeSingle();
 
     if (profileError || !profile || !verifyRecoveryCode(recoveryCode, profile.recovery_code_hash, profile.recovery_code_salt)) {
-      return NextResponse.json({ error: "Login ID or Recovery Code is incorrect." }, { status: 401 });
+      return noStoreJson({ error: "Login ID or Recovery Code is incorrect." }, { status: 401 });
     }
 
     const pendingIsValid = Boolean(
@@ -62,14 +69,14 @@ export async function POST(request: Request) {
     if (pendingIsValid) {
       const { error: signInError } = await signIn(loginId, newPassword);
       if (signInError) {
-        return NextResponse.json({ error: "The Recovery Code is pending. Enter the current Master Password to retrieve it safely." }, { status: 401 });
+        return noStoreJson({ error: "The Recovery Code is pending. Enter the current Master Password to retrieve it safely." }, { status: 401 });
       }
       const code = decryptPendingRecoveryCode({
         ciphertext: profile.pending_recovery_code_ciphertext!,
         iv: profile.pending_recovery_code_iv!,
         authTag: profile.pending_recovery_code_auth_tag!
       });
-      return NextResponse.json({ success: true, signedIn: true, recoveryCode: code, requiresAcknowledgement: true });
+      return noStoreJson({ success: true, signedIn: true, recoveryCode: code, requiresAcknowledgement: true });
     }
 
     const claimToken = randomUUID();
@@ -82,17 +89,17 @@ export async function POST(request: Request) {
     });
 
     if (claimError) {
-      return NextResponse.json({ error: "Recovery protection is not ready. Contact support before retrying." }, { status: 503 });
+      return noStoreJson({ error: "Recovery protection is not ready. Contact support before retrying." }, { status: 503 });
     }
     if (claimed !== true) {
-      return NextResponse.json({ error: "A recovery attempt is already in progress, or this Recovery Code has already been used. Please wait and try again." }, { status: 409 });
+      return noStoreJson({ error: "A recovery attempt is already in progress, or this Recovery Code has already been used. Please wait and try again." }, { status: 409 });
     }
 
     let recoveryFinished = false;
     try {
       const { error: passwordError } = await admin.auth.admin.updateUserById(profile.user_id, { password: newPassword });
       if (passwordError) {
-        return NextResponse.json({ error: "Password reset failed. Your existing Recovery Code remains valid." }, { status: 500 });
+        return noStoreJson({ error: "Password reset failed. Your existing Recovery Code remains valid." }, { status: 500 });
       }
 
       const nextRecoveryCode = createRecoveryCode();
@@ -111,14 +118,14 @@ export async function POST(request: Request) {
       });
 
       if (finishError || finished !== true) {
-        return NextResponse.json({
+        return noStoreJson({
           error: "The Master Password may have changed, but the Recovery Code is still pending. Retry with the existing Recovery Code and the new Master Password."
         }, { status: 503 });
       }
       recoveryFinished = true;
 
       const { error: signInError } = await signIn(loginId, newPassword);
-      return NextResponse.json({
+      return noStoreJson({
         success: true,
         signedIn: !signInError,
         recoveryCode: nextRecoveryCode,
@@ -136,6 +143,6 @@ export async function POST(request: Request) {
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to recover account.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return noStoreJson({ error: message }, { status: 400 });
   }
 }
