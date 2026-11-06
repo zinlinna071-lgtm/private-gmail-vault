@@ -105,13 +105,17 @@ export async function encryptVaultRecord(
 
   const iv = globalThis.crypto.getRandomValues(new Uint8Array(IV_BYTES));
   const plaintextBuffer = toArrayBuffer(plaintextBytes);
+  const ivBuffer = toArrayBuffer(iv);
+  const aadBytes = additionalData(vaultId, recordId);
+  const aadBuffer = toArrayBuffer(aadBytes);
   let encryptedBytes: ArrayBuffer;
+
   try {
     encryptedBytes = await globalThis.crypto.subtle.encrypt(
       {
         name: "AES-GCM",
-        iv: toArrayBuffer(iv),
-        additionalData: toArrayBuffer(additionalData(vaultId, recordId)),
+        iv: ivBuffer,
+        additionalData: aadBuffer,
         tagLength: 128
       },
       key,
@@ -120,19 +124,28 @@ export async function encryptVaultRecord(
   } finally {
     plaintextBytes.fill(0);
     new Uint8Array(plaintextBuffer).fill(0);
+    new Uint8Array(ivBuffer).fill(0);
+    aadBytes.fill(0);
+    new Uint8Array(aadBuffer).fill(0);
   }
+
   const encrypted = new Uint8Array(encryptedBytes);
+  try {
+    const splitAt = encrypted.length - AUTH_TAG_BYTES;
+    if (splitAt <= 0) throw new Error("Vault encryption failed.");
 
-  const splitAt = encrypted.length - AUTH_TAG_BYTES;
-  if (splitAt <= 0) throw new Error("Vault encryption failed.");
-
-  return {
-    version: VAULT_RECORD_FORMAT_VERSION,
-    algorithm: VAULT_RECORD_ALGORITHM,
-    iv: toBase64(iv),
-    ciphertext: toBase64(encrypted.subarray(0, splitAt)),
-    authTag: toBase64(encrypted.subarray(splitAt))
-  };
+    return {
+      version: VAULT_RECORD_FORMAT_VERSION,
+      algorithm: VAULT_RECORD_ALGORITHM,
+      iv: toBase64(iv),
+      ciphertext: toBase64(encrypted.subarray(0, splitAt)),
+      authTag: toBase64(encrypted.subarray(splitAt))
+    };
+  } finally {
+    encrypted.fill(0);
+    new Uint8Array(encryptedBytes).fill(0);
+    iv.fill(0);
+  }
 }
 
 export async function decryptVaultRecord(
@@ -157,30 +170,50 @@ export async function decryptVaultRecord(
   const iv = fromBase64(record.iv, 24);
   const ciphertext = fromBase64(record.ciphertext, 27_000);
   const authTag = fromBase64(record.authTag, 24);
-  if (iv.length !== IV_BYTES || authTag.length !== AUTH_TAG_BYTES || ciphertext.length === 0 ||
-      ciphertext.length + AUTH_TAG_BYTES > MAX_RECORD_BYTES + AUTH_TAG_BYTES) {
-    throw new Error("Invalid encrypted Vault record.");
-  }
+  let combined: Uint8Array | undefined;
 
-  const combined = new Uint8Array(ciphertext.length + authTag.length);
-  combined.set(ciphertext);
-  combined.set(authTag, ciphertext.length);
-
-  const plaintext = await globalThis.crypto.subtle.decrypt(
-    {
-      name: "AES-GCM",
-      iv: toArrayBuffer(iv),
-      additionalData: toArrayBuffer(additionalData(vaultId, recordId)),
-      tagLength: 128
-    },
-    key,
-    combined
-  );
-
-  const plaintextBytes = new Uint8Array(plaintext);
   try {
-    return new TextDecoder("utf-8", { fatal: true }).decode(plaintextBytes);
+    if (iv.length !== IV_BYTES || authTag.length !== AUTH_TAG_BYTES || ciphertext.length === 0 ||
+        ciphertext.length > MAX_RECORD_BYTES) {
+      throw new Error("Invalid encrypted Vault record.");
+    }
+
+    combined = new Uint8Array(ciphertext.length + authTag.length);
+    combined.set(ciphertext);
+    combined.set(authTag, ciphertext.length);
+
+    const ivBuffer = toArrayBuffer(iv);
+    const aadBytes = additionalData(vaultId, recordId);
+    const aadBuffer = toArrayBuffer(aadBytes);
+    let plaintext: ArrayBuffer;
+
+    try {
+      plaintext = await globalThis.crypto.subtle.decrypt(
+        {
+          name: "AES-GCM",
+          iv: ivBuffer,
+          additionalData: aadBuffer,
+          tagLength: 128
+        },
+        key,
+        combined
+      );
+    } finally {
+      new Uint8Array(ivBuffer).fill(0);
+      aadBytes.fill(0);
+      new Uint8Array(aadBuffer).fill(0);
+    }
+
+    const plaintextBytes = new Uint8Array(plaintext);
+    try {
+      return new TextDecoder("utf-8", { fatal: true }).decode(plaintextBytes);
+    } finally {
+      plaintextBytes.fill(0);
+    }
   } finally {
-    plaintextBytes.fill(0);
+    iv.fill(0);
+    ciphertext.fill(0);
+    authTag.fill(0);
+    combined?.fill(0);
   }
 }
