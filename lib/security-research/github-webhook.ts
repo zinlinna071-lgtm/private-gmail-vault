@@ -4,7 +4,7 @@ const MAX_WEBHOOK_BODY_BYTES = 256 * 1024;
 const SIGNATURE_PATTERN = /^sha256=[a-f0-9]{64}$/i;
 const DELIVERY_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const SHA = /^[a-f0-9]{40}$/i;
-const ISO_UTC_TIMESTAMP = /^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,9})?Z$/;
+const ISO_UTC_TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?Z$/;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -99,7 +99,7 @@ export function parseVerifiedWorkflowRunEvent(
       (!isRecord(run.repository) || run.repository.full_name !== expectedRepository)) return null;
   if (typeof run.id !== "number" || !Number.isSafeInteger(run.id) || run.id <= 0) return null;
   if (typeof run.run_attempt !== "number" || !Number.isSafeInteger(run.run_attempt) || run.run_attempt < 1) return null;
-  if (typeof run.head_branch !== "string" || !/^feature\\/[a-z0-9._/-]{1,80}$/i.test(run.head_branch)) return null;
+  if (typeof run.head_branch !== "string" || !/^feature\/[a-z0-9._/-]{1,80}$/i.test(run.head_branch)) return null;
   if (typeof run.head_sha !== "string" || !SHA.test(run.head_sha)) return null;
   if (!["queued", "in_progress", "completed"].includes(String(run.status))) return null;
   if (!isIsoUtcTimestamp(run.created_at) || !isIsoUtcTimestamp(run.updated_at)) return null;
@@ -119,7 +119,7 @@ export function parseVerifiedWorkflowRunEvent(
       url.password !== "" ||
       url.search !== "" ||
       url.hash !== "" ||
-      url.pathname !== `/${expectedRepository}/actions/runs/${run.id}`) return null;
+      url.pathname !== \`/\${expectedRepository}/actions/runs/\${run.id}\`) return null;
 
   const action = payload.action as VerifiedWorkflowRunEvent["action"];
   const status = run.status as VerifiedWorkflowRunEvent["status"];
