@@ -6,8 +6,10 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: "*",
-      allow: ["/security", "/support"],
-      disallow: ["/", "/api/"]
+      // Keep the root login page crawlable so Google can observe its noindex
+      // metadata. Public research pages remain indexable; API routes are not.
+      allow: ["/"],
+      disallow: ["/api/"]
     },
     ...(siteUrl ? { sitemap: new URL("/sitemap.xml", siteUrl).toString() } : {})
   };
