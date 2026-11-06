@@ -420,19 +420,21 @@ Request:
 }
 ```
 
-Server behavior:
+Server behavior — recoverable cross-system saga:
 
-- Validate claim ownership, operation ID, expiry, state, and expected active envelope version.
-- Require that the server-generated pending Recovery Code verifier already exists for this operation. The client cannot submit or replace it.
-- Validate wrapper/KDF fields and strict size bounds.
-- Update the Supabase Auth Master Password using the established server-side admin mechanism. The new Master Password is transmitted transiently over HTTPS for this purpose; never log it or store it outside Supabase Auth.
-- The browser derives the password wrapping key locally and submits only the encrypted VDK wrapper. The server must not derive or receive the VDK or either wrapping key.
-- Stage both wrappers without changing the active envelope wrappers or active Recovery Code verifier.
-- Do not repurpose legacy pending-code columns/RPCs for this protocol.
-- Make retries idempotent for the same operation and same staged payload. A conflicting payload returns `409 operation_state_conflict`.
-- Supabase Auth password update and Postgres staging cannot share one transaction. Implement a recoverable saga with explicit intermediate status and retry behavior; do not claim cross-system atomicity.
+1. Validate claim ownership, operation ID, expiry, state, and expected active envelope version.
+2. Require that the server-generated pending Recovery Code verifier already exists for this operation. The client cannot submit or replace it.
+3. Validate wrapper/KDF fields and strict size bounds.
+4. Persist the two pending wrappers and a canonical payload fingerprint first, transitioning the operation to `wrappers_staged`. This step must not modify active envelope/profile values. An identical retry is idempotent; a different payload for the same operation is rejected.
+5. Mark the Supabase Auth password update as `in_progress`, then update the Auth password using the established server-side admin mechanism. The new Master Password is transmitted transiently over HTTPS; never log it or store it outside Supabase Auth.
+6. On confirmed Auth success, mark the operation `staged`. If Auth fails, mark the operation `failed` while keeping pending wrappers inactive. The same operation may retry; do not issue a second Recovery Code or create a new operation.
+7. If the Auth response is ambiguous due to a network failure, retry only the same password update for the same operation. This retry behavior must be verified against the deployed Supabase Auth version before implementation.
+8. The browser derives the password wrapping key locally and submits only the encrypted VDK wrapper. The server must not derive or receive the VDK or either wrapping key.
+9. Do not repurpose legacy pending-code columns/RPCs for this protocol.
 
-Success `200`: `{ "operationId": "<uuid>", "status": "staged", "expiresAt": "<ISO-8601>" }`.
+Success `200` after confirmed Auth update: `{ "operationId": "<uuid>", "status": "staged", "expiresAt": "<ISO-8601>" }`.
+
+An intermediate `wrappers_staged` or `password_update_pending` response may be returned if the server has persisted the wrappers but has not yet confirmed the Auth password update. The client must resume the same operation, not start a new one.
 
 ### 5.4 Finalize recovery atomically
 
@@ -484,7 +486,7 @@ Success `200` returns only:
 }
 ```
 
-Allowed statuses: `claimed`, `staged`, `finalized`, `abandoned`, `expired`.
+Allowed statuses: `claimed`, `code_issued`, `wrappers_staged`, `staged`, `finalized`, `abandoned`, `expired`.
 
 Never return pending ciphertext, verifier hashes, Recovery Code, Master Password, or claim token.
 
@@ -588,7 +590,8 @@ Forbidden audit content: passwords, Recovery Codes, claim handles, VDK, derived 
 - Concurrent claims produce exactly one winner per envelope generation.
 - Expired/abandoned claims preserve the active generation.
 - The issue-code endpoint returns the same pending Recovery Code on retry for one operation; it never creates a second code for a retry.
-- Stage cannot change active wrappers/verifier and cannot accept client-supplied verifier hashes/salts.
+- Wrapper staging cannot change active wrappers/verifier and cannot accept client-supplied verifier hashes/salts.
+- A failure or ambiguous response during Supabase Auth password update resumes the same operation; pending wrappers remain inactive until finalization.
 - Finalize promotes password wrapper, recovery wrapper, and verifier in one transaction.
 - Injected failure at every promotion step rolls back all changes.
 - Wrong owner/handle/operation, stale version, expired lease, and incomplete pending fields cannot finalize.
@@ -600,6 +603,7 @@ Forbidden audit content: passwords, Recovery Codes, claim handles, VDK, derived 
 
 1. Review this contract against the existing SQL draft and state-machine design.
 2. Implement the server-generated Recovery Code issue step and resolve the exact verifier format; persist its pending verifier in a separate recovery-operation record, never from client input.
+3. Persist pending wrappers before the Supabase Auth password update and implement the documented saga checkpoints; never treat Supabase Auth and Postgres as one transaction.
 3. Approve and pin a maintained browser KDF implementation; benchmark Android and desktop.
 4. Review canonical AAD, ciphertext encodings, parameter bounds, and claim-handle storage.
 5. Review additive SQL/RPC design and failure-injection tests.
