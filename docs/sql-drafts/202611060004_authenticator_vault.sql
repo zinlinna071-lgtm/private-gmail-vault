@@ -45,6 +45,7 @@ create table if not exists public.vault_key_envelopes (
 
   schema_version integer not null default 1
     check (schema_version > 0),
+  version bigint not null default 1 check (version > 0),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -79,6 +80,7 @@ create table if not exists public.vault_auth_factors (
   totp_period_seconds smallint not null default 30
     check (totp_period_seconds between 15 and 120),
 
+  version bigint not null default 1 check (version > 0),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   disabled_at timestamptz,
@@ -143,5 +145,6 @@ commit;
 -- [ ] Review AES-GCM IV/tag encoding and canonical versioned AAD contract.
 -- [ ] Review RLS, grants, service-role route authorization, and cross-user isolation.
 -- [ ] Review factor ownership, duplicate identity handling, and concurrent updates.
+-- [ ] Every update must compare expected version and increment version atomically.
 -- [ ] Review recovery wrapper + Recovery Code acknowledgement atomicity separately.
 -- [ ] Add integration tests before moving this draft into supabase/migrations/.
