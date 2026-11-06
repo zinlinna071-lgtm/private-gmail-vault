@@ -137,6 +137,8 @@ Completed and committed:
 - Shared record protocol constants/types and strict API-boundary envelope validation (the validator is implemented but not yet wired into API routes).
 - Bounded streaming JSON reader for mutation endpoints; the streamed byte count is enforced even when Content-Length is absent or inaccurate.
 - Same-origin checks for create, update, and delete operations.
+- Exact `application/json` media-type validation (rejects lookalike values such as `application/jsonp`).
+- Best-effort cleanup of temporary plaintext, key, AAD, and crypto-operation buffers in the browser encryption utilities; JavaScript runtime memory zeroization is not guaranteed.
 - Unit tests for encryption, key envelopes, bounded request parsing, and encrypted record envelope validation.
 
 Not yet implemented or verified:
