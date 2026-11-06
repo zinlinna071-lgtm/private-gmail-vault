@@ -25,7 +25,7 @@ function fixture(overrides: Record<string, unknown> = {}) {
     status: "0x1",
     blockNumber: "0x64",
     blockHash,
-    logs: []
+    logs: [] as Array<{ address: string; topics: string[]; data: string; logIndex: string }>
   };
   const latest = { number: "0x66" };
   const canonical = { number: "0x64", hash: blockHash, timestamp: "0x6553f100" };
