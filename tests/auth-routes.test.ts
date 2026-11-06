@@ -103,6 +103,40 @@ describe("Vault registration and login API", () => {
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "public-test-key";
   });
 
+  it("rejects oversized login JSON before authenticating", async () => {
+    const oversized = new Request("https://vault.example/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Origin: "https://vault.example",
+        "Sec-Fetch-Site": "same-origin"
+      },
+      body: JSON.stringify({ loginId: "myvault", password: "x".repeat(9000) })
+    });
+
+    const response = await login(oversized);
+
+    expect(response.status).toBe(413);
+    expect(mocks.signInWithPassword).not.toHaveBeenCalled();
+  });
+
+  it("rejects non-JSON registration requests before creating an account", async () => {
+    const invalidContentType = new Request("https://vault.example/api/auth/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain",
+        Origin: "https://vault.example",
+        "Sec-Fetch-Site": "same-origin"
+      },
+      body: "{}"
+    });
+
+    const response = await register(invalidContentType);
+
+    expect(response.status).toBe(415);
+    expect(mocks.createUser).not.toHaveBeenCalled();
+  });
+
   it("rejects registration from another origin before creating an account", async () => {
     mocks.isSameOriginRequest.mockReturnValue(false);
     const response = await register(request("/api/auth/register", {
