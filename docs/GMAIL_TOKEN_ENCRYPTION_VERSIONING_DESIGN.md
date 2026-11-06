@@ -2,7 +2,7 @@
 
 Date: 2026-11-06
 Branch: `feature/vault-authentication`
-Status: design proposal only — no runtime code, migration, secret, or database change is authorized by this document.
+Status: implementation staged on this feature branch; additive migration file is committed but NOT applied. No secrets, live database rows, Gmail tokens, main branch, merge, or production deployment have been changed.
 
 ## 1. Verified current schema and implementation
 
@@ -46,6 +46,7 @@ AAD fields must be encoded unambiguously (for example, a canonical JSON object w
 Use server-only, purpose-specific configuration rather than sharing the OAuth state HMAC key:
 - `GMAIL_TOKEN_ENCRYPTION_ACTIVE_KEY_VERSION`: positive integer selecting the key used for new ciphertext.
 - `GMAIL_TOKEN_ENCRYPTION_KEY_V1`, `GMAIL_TOKEN_ENCRYPTION_KEY_V2`, ...: each exactly 64 hex characters (32 random bytes).
+- `GMAIL_TOKEN_ENCRYPTION_ACTIVE_FORMAT_VERSION`: `1` (legacy no-AAD) or `2` (AAD-bound); defaults to `1`.
 - `GMAIL_OAUTH_STATE_HMAC_KEY`: separate 32-byte key for OAuth state signatures.
 
 Compatibility phase:
@@ -57,7 +58,7 @@ This configuration proposal requires a deployment runbook and secret-manager cha
 
 ## 5. Application contract
 
-Proposed helper contracts (names illustrative; final API must be reviewed):
+Implemented helper contracts on this branch (still subject to CI and code review):
 - `encryptRefreshToken(token, context)` returns ciphertext, IV, tag, keyVersion, and formatVersion.
 - `decryptRefreshToken(envelope, context)` requires ciphertext, IV, tag, keyVersion, and formatVersion.
 - Key resolver accepts only an explicit positive integer and returns the exact configured key for that version.
@@ -103,9 +104,8 @@ Gmail read behavior:
 
 ## 8. Explicit non-changes
 
-This proposal does not:
-- change application runtime code or tests;
-- add or apply a database migration;
+The current feature-branch implementation does not:
+- apply the additive database migration (it is only a committed SQL file);
 - change any Vercel environment variable or secret;
 - access the live Supabase database or Google account;
 - rotate or re-encrypt any stored token;
@@ -113,11 +113,9 @@ This proposal does not:
 
 ## 9. Approval gates
 
-Before runtime implementation, approve:
-- the separate keyring and OAuth state HMAC configuration;
-- the separate encryption-format version column and additive migration;
-- the canonical AAD identity fields;
-- the compatibility and rollback plan;
-- the test-first implementation sequence.
+Before preview deployment or live rollout, separately approve:
+- provisioning `GMAIL_TOKEN_ENCRYPTION_KEY_V1` with the exact existing legacy key value (never send it in chat or GitHub), and `GMAIL_OAUTH_STATE_HMAC_KEY` as a separately generated 32-byte secret;
+- applying migration `202611060004_gmail_token_encryption_format_version.sql` after read-only live-schema/data preflight;
+- any active key version or format change from defaults (1/1).
 
 Before any live key provisioning, database migration, or token re-encryption, obtain a separate explicit approval for that operational change.
