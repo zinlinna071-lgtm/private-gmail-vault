@@ -33,7 +33,14 @@ as $$
 declare
   v_rows integer;
 begin
-  if p_lease_seconds < 60 or p_lease_seconds > 1800 then
+  if p_user_id is null
+     or p_expected_hash is null or btrim(p_expected_hash) = ''
+     or p_expected_salt is null or btrim(p_expected_salt) = ''
+     or p_claim_token is null then
+    raise exception 'Invalid recovery claim parameters';
+  end if;
+
+  if p_lease_seconds is null or p_lease_seconds < 60 or p_lease_seconds > 1800 then
     raise exception 'Invalid recovery claim lease';
   end if;
 
@@ -49,7 +56,11 @@ begin
   where user_id = p_user_id
     and recovery_code_hash = p_expected_hash
     and recovery_code_salt = p_expected_salt
-    and (recovery_claim_token is null or recovery_claim_expires_at <= now())
+    and (
+      recovery_claim_token is null
+      or recovery_claim_expires_at is null
+      or recovery_claim_expires_at <= now()
+    )
     and (pending_recovery_code_expires_at is null or pending_recovery_code_expires_at <= now());
 
   get diagnostics v_rows = row_count;
@@ -74,7 +85,18 @@ as $$
 declare
   v_rows integer;
 begin
-  if p_expires_at <= now() or p_expires_at > now() + interval '25 hours' then
+  if p_user_id is null or p_claim_token is null
+     or p_pending_hash is null or btrim(p_pending_hash) = ''
+     or p_pending_salt is null or btrim(p_pending_salt) = ''
+     or p_ciphertext is null or btrim(p_ciphertext) = ''
+     or p_iv is null or btrim(p_iv) = ''
+     or p_auth_tag is null or btrim(p_auth_tag) = '' then
+    raise exception 'Invalid pending Recovery Code material';
+  end if;
+
+  if p_expires_at is null
+     or p_expires_at <= now()
+     or p_expires_at > now() + interval '25 hours' then
     raise exception 'Invalid pending Recovery Code expiry';
   end if;
 
