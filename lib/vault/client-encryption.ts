@@ -185,6 +185,7 @@ export async function decryptVaultRecord(
     const ivBuffer = toArrayBuffer(iv);
     const aadBytes = additionalData(vaultId, recordId);
     const aadBuffer = toArrayBuffer(aadBytes);
+    const combinedBuffer = toArrayBuffer(combined);
     let plaintext: ArrayBuffer;
 
     try {
@@ -196,10 +197,11 @@ export async function decryptVaultRecord(
           tagLength: 128
         },
         key,
-        toArrayBuffer(combined)
+        combinedBuffer
       );
     } finally {
       new Uint8Array(ivBuffer).fill(0);
+      new Uint8Array(combinedBuffer).fill(0);
       aadBytes.fill(0);
       new Uint8Array(aadBuffer).fill(0);
     }
