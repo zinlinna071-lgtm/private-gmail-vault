@@ -26,18 +26,61 @@ const options = {
   maxmem: 1024 * 1024,
 };
 
+const derive = (pwd, s, opts) => argon2idAsync(pwd, s, opts);
 let actual;
+const mutationOutputs = [];
 try {
-  actual = await argon2idAsync(password, salt, options);
+  actual = await derive(password, salt, options);
   assert.equal(actual.length, 32, 'RFC 9106 output must be 32 bytes');
   assert.equal(
     toHex(actual),
     expected,
     'Argon2id output did not match RFC 9106 §5.3',
   );
-
   console.log('PASS: RFC 9106 §5.3 Argon2id known-answer test');
-  console.log('PASS: output length is 32 bytes');
+
+  const mutations = [
+    ['password', password, { ...options }],
+    ['salt', salt, { ...options }],
+    ['secret K', secret, { ...options }],
+    ['associated data X', associatedData, { ...options }],
+  ];
+
+  for (const [label, original, changedOptions] of mutations) {
+    const changedPassword = password.slice();
+    const changedSalt = salt.slice();
+    const changedSecret = secret.slice();
+    const changedAssociatedData = associatedData.slice();
+
+    if (label === 'password') changedPassword[0] ^= 0x01;
+    if (label === 'salt') changedSalt[0] ^= 0x01;
+    if (label === 'secret K') changedOptions.key = changedSecret.map((v, i) => i === 0 ? v ^ 0x01 : v);
+    if (label === 'associated data X') changedOptions.personalization = changedAssociatedData.map((v, i) => i === 0 ? v ^ 0x01 : v);
+
+    try {
+      const changed = await derive(
+        changedPassword,
+        changedSalt,
+        {
+          ...changedOptions,
+          key: changedOptions.key ?? changedSecret,
+          personalization: changedOptions.personalization ?? changedAssociatedData,
+        },
+      );
+      mutationOutputs.push(changed);
+      assert.notEqual(
+        toHex(changed),
+        expected,
+        `Changing ${label} must change the Argon2id output`,
+      );
+      console.log(`PASS: changing ${label} changes the output`);
+    } finally {
+      changedPassword.fill(0);
+      changedSalt.fill(0);
+      changedSecret.fill(0);
+      changedAssociatedData.fill(0);
+    }
+  }
 } finally {
   // Best-effort cleanup only; JavaScript runtimes do not guarantee zeroization.
   password.fill(0);
@@ -45,4 +88,5 @@ try {
   secret.fill(0);
   associatedData.fill(0);
   actual?.fill(0);
+  for (const output of mutationOutputs) output.fill(0);
 }
