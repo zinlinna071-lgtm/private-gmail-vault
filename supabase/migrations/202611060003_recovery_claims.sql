@@ -122,7 +122,7 @@ begin
     and pending_recovery_code_ciphertext is not null
     and pending_recovery_code_iv is not null
     and pending_recovery_code_auth_tag is not null
-    and pending_recovery_code_expires_at > now();
+    and (pending_recovery_code_expires_at is null or pending_recovery_code_expires_at > now());
 
   get diagnostics v_rows = row_count;
   return v_rows > 0;
