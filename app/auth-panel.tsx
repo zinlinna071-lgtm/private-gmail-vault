@@ -36,12 +36,18 @@ export default function AuthPanel() {
       if (!response.ok) throw new Error(data.error ?? "Request failed.");
       if (data.recoveryCode) {
         setIssuedCode(data.recoveryCode);
-        setRequiresAcknowledgement(Boolean(data.requiresAcknowledgement && data.signedIn !== false));
-        setMessage(mode === "recover"
-          ? data.signedIn === false
-            ? "Your password was updated and the new code is pending. Sign in with your new Master Password, then retry recovery with the previous Recovery Code and current password to retrieve the same code."
-            : "Your Master Password is updated. Save this new Recovery Code, then confirm below."
-          : "Vault account created. Save this Recovery Code before continuing.");
+        setRequiresAcknowledgement(Boolean(data.requiresAcknowledgement));
+        if (mode === "recover") {
+          setMessage(data.signedIn === false
+            ? "Your password was updated and the new code is pending. Sign in with your new Master Password to retrieve the same code."
+            : "Your Master Password is updated. Save this new Recovery Code, then confirm below.");
+        } else if (mode === "register") {
+          setMessage(data.signedIn === false
+            ? "Vault account created. Save this Recovery Code. Sign in afterward to retrieve it again if this response is lost."
+            : "Vault account created. Save this Recovery Code before continuing.");
+        } else {
+          setMessage("An unconfirmed Recovery Code was found. Save it safely, then confirm below.");
+        }
       } else if (mode === "login") {
         window.location.assign("/vault");
         return;
