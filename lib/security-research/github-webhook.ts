@@ -11,9 +11,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isIsoUtcTimestamp(value: unknown): value is string {
-  return typeof value === "string" &&
-    ISO_UTC_TIMESTAMP.test(value) &&
-    Number.isFinite(Date.parse(value));
+  if (typeof value !== "string" || !ISO_UTC_TIMESTAMP.test(value)) return false;
+  const parsed = new Date(value);
+  return Number.isFinite(parsed.getTime()) &&
+    parsed.toISOString().slice(0, 19) === value.slice(0, 19);
 }
 
 /**
