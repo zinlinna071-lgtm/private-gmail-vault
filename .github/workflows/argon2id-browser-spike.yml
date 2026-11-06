@@ -1,0 +1,35 @@
+name: Argon2id browser compatibility spike
+
+on:
+  push:
+    branches:
+      - feature/vault-authentication
+    paths:
+      - "tools/argon2id-browser-spike/**"
+      - ".github/workflows/argon2id-browser-spike.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-rfc9106:
+    name: Chromium RFC 9106 compatibility test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: tools/argon2id-browser-spike
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install isolated pinned dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Install Chromium
+        run: npx playwright install chromium
+      - name: Run browser RFC 9106 vector and mutation tests
+        run: npm test
