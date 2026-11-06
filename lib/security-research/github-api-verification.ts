@@ -31,6 +31,11 @@ function equalString(a: unknown, b: string): boolean {
   return typeof a === "string" && a === b;
 }
 
+function sameInstant(value: unknown, expected: string | null): boolean {
+  if (expected === null) return value === null;
+  return isIsoDate(value) && Date.parse(value) === Date.parse(expected);
+}
+
 async function githubGet(path: string, token: string): Promise<unknown> {
   const response = await fetch(`${API_ROOT}${path}`, {
     method: "GET",
@@ -96,9 +101,7 @@ export async function verifyWorkflowRunWithGitHubApi(
     !equalString(run.html_url, event.htmlUrl) ||
     !isIsoDate(run.created_at) ||
     !isIsoDate(run.updated_at) ||
-    (event.runStartedAt === null
-      ? run.run_started_at !== null
-      : !isIsoDate(canonicalRunStartedAt) || Date.parse(canonicalRunStartedAt) !== Date.parse(event.runStartedAt)) ||
+    !sameInstant(canonicalRunStartedAt, event.runStartedAt) ||
     Date.parse(run.created_at) !== Date.parse(event.createdAt) ||
     Date.parse(run.updated_at) < Date.parse(event.updatedAt) ||
     workflow.id !== event.workflowId ||
