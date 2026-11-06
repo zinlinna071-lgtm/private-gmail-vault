@@ -48,7 +48,9 @@ A proposed Supabase migration is committed at `supabase/migrations/202611070001_
 - RLS enabled, no `anon` or `authenticated` table access, and RPC execution granted only to `service_role`.
 - A default `PRIVATE` publication state; webhook ingestion cannot approve a public record.
 
-The migration has received source-level review only. It has **not** been applied to any Supabase project or tested against a live/isolated PostgreSQL instance. No server adapter calls this RPC yet. The verifier alone still does not provide durable replay protection or public publication. A valid HMAC proves that the payload was signed by a party holding the webhook secret; it does not prove that a security test was adequate or that a passing CI workflow constitutes a penetration test.
+A server-only adapter is also committed at `lib/security-research/github-webhook-store.ts`. It computes a SHA-256 fingerprint of the exact raw body, sends only the fingerprint and allowlisted event metadata to the RPC, validates the RPC result, and replaces provider/database errors with a generic server-side error. Its unit tests are in `tests/github-webhook-store.test.ts`.
+
+The adapter is not called by any route. The migration has received source-level review only. It has **not** been applied to any Supabase project or tested against a live/isolated PostgreSQL instance. No server adapter calls this RPC yet. The verifier alone still does not provide durable replay protection or public publication. A valid HMAC proves that the payload was signed by a party holding the webhook secret; it does not prove that a security test was adequate or that a passing CI workflow constitutes a penetration test.
 
 Required before endpoint activation:
 1. Configure a high-entropy webhook secret in server-side environment configuration only.
