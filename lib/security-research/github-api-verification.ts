@@ -31,8 +31,9 @@ function equalString(a: unknown, b: string): boolean {
   return typeof a === "string" && a === b;
 }
 
-function sameInstant(value: unknown, expected: string | null): boolean {
+function sameInstant(value: unknown, expected: unknown): boolean {
   if (expected === null) return value === null;
+  if (typeof expected !== "string") return false;
   return isIsoDate(value) && Date.parse(value) === Date.parse(expected);
 }
 
