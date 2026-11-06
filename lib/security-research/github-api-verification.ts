@@ -52,12 +52,12 @@ async function githubGet(path: string, token: string): Promise<unknown> {
   });
   if (!response.ok) throw new Error("GitHub authoritative verification failed.");
   const contentType = response.headers.get("content-type") ?? "";
-  if (!/^application\\/json(?:\\s*;|$)/i.test(contentType)) {
+  if (!/^application\/json(?:\s*;|$)/i.test(contentType)) {
     throw new Error("GitHub API returned an unexpected content type.");
   }
 
   const declaredLength = response.headers.get("content-length");
-  if (declaredLength !== null && /^\\d+$/.test(declaredLength) &&
+  if (declaredLength !== null && /^\d+$/.test(declaredLength) &&
       Number(declaredLength) > MAX_RESPONSE_BYTES) {
     throw new Error("GitHub API response exceeded the size limit.");
   }
