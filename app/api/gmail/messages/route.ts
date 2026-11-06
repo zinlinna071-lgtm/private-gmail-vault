@@ -18,6 +18,12 @@ export async function GET(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "authentication_required" }, { status: 401 });
 
+  const rawQuery = request.nextUrl.searchParams.get("q") ?? "";
+  const query = rawQuery.trim();
+  if (query.length > 200 || /[\u0000-\u001f\u007f]/.test(query)) {
+    return NextResponse.json({ error: "invalid_search_query" }, { status: 400 });
+  }
+
   try {
     const allowed = await allowAuthAttempt(request, "gmail_inbox", user.id, 30);
     if (!allowed) {
@@ -85,7 +91,8 @@ export async function GET(request: NextRequest) {
 
     const listUrl = new URL("https://gmail.googleapis.com/gmail/v1/users/me/messages");
     listUrl.searchParams.set("maxResults", "20");
-    listUrl.searchParams.set("labelIds", "INBOX");
+    if (query) listUrl.searchParams.set("q", query);
+    else listUrl.searchParams.set("labelIds", "INBOX");
     const listResponse = await fetch(listUrl, {
       headers: { Authorization: `Bearer ${accessToken}` },
       cache: "no-store"
@@ -120,6 +127,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       account: connection.email_address,
+      query,
       messages: messages.filter((message): message is NonNullable<typeof message> => message !== null)
     }, { headers: { "Cache-Control": "no-store, private" } });
   } catch {
