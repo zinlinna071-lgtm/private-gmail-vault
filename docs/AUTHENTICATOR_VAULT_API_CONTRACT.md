@@ -9,7 +9,7 @@
 
 This contract translates the existing Authenticator Vault design, SQL draft, state machine, and atomic-finalization design into route-level behavior that fits the current Next.js App Router project.
 
-The API stores and returns encrypted material only. Browser code generates the random Vault Data Key (VDK), derives wrapping keys, encrypts/decrypts TOTP seeds and backup-code collections, and generates TOTP values. The server authenticates the Vault user, validates request shape and cryptographic metadata bounds, stores ciphertext, and performs atomic state transitions.
+The API stores and returns encrypted material only, except the short-lived server-generated Recovery Code response during the dedicated recovery issue-code step. That code is returned only to the claimant with no-store headers and is never sent back to the server in plaintext. Browser code generates the random Vault Data Key (VDK), derives wrapping keys, encrypts/decrypts TOTP seeds and backup-code collections, and generates TOTP values. The server authenticates the Vault user, validates request shape and cryptographic metadata bounds, stores ciphertext, and performs atomic state transitions.
 
 This document does not authorize implementation, migration, production configuration changes, merge, or deployment.
 
@@ -62,7 +62,7 @@ Current route behavior relevant to this design:
 - The browser generates a random 256-bit VDK.
 - The browser encrypts TOTP seeds and the complete backup-code state collection with AES-256-GCM under the VDK.
 - The browser wraps the VDK separately for Master Password and Recovery Code unlock paths.
-- API payloads contain ciphertext, IV, authentication tag, KDF metadata, schema version, and concurrency version only.
+- Normal API payloads contain ciphertext, IV, authentication tag, KDF metadata, schema version, and concurrency version only. The explicitly documented recovery claim/issue-code/stage flow also carries the current Recovery Code for server verification, an opaque claim handle, and the new Master Password for the Supabase Auth password update; these values are transient, HTTPS-only, no-store, and never logged. The newly issued Recovery Code is returned once and is not submitted back to the server.
 - The server must not decrypt VDK, TOTP seed, backup codes, or user data ciphertext.
 - A successful Vault session alone does not imply that the browser has unlocked the VDK. The UI must distinguish authenticated session from unlocked encrypted vault state.
 
@@ -344,11 +344,48 @@ Success `200`:
 
 **Recovery Code transport note:** the existing project stores a server-verifiable scrypt hash, so the current verification approach requires the entered Recovery Code to reach the server transiently over HTTPS. It must never be logged, persisted as plaintext, placed in a URL, or returned. A future proof-based protocol could avoid sending the raw code, but it requires a separately reviewed verifier/proof design; do not invent one inside implementation.
 
-### 5.2 Stage recovery generation
+### 5.2 Issue the replacement Recovery Code
+
+**POST `/api/authenticator-vault/recovery/issue-code`**
+
+Authentication: valid recovery claim handle; same-origin; strict rate limit.
+
+Request:
+
+```json
+{
+  "operationId": "<uuid>",
+  "claimHandle": "<opaque high-entropy value>"
+}
+```
+
+Server behavior:
+
+1. Verify the claim handle, operation ID, owner, state, and expiry.
+2. Generate the replacement Recovery Code on the server using the approved project generator.
+3. Compute the Recovery Code verifier and salt on the server using the approved existing verifier format. Never accept a client-provided hash or salt as authoritative.
+4. Store the verifier/salt in the pending operation record, not in the active profile.
+5. Store a short-lived AES-256-GCM encrypted copy of the generated code for response-loss recovery. The encryption key remains server-only; never store plaintext.
+6. Return the generated code once to the claimant with no-store headers. A retry for the same operation returns the same pending code by decrypting the temporary copy; it must not generate a different code.
+7. Apply a short expiry and clear the encrypted copy after successful finalization, abandonment, or expiry.
+
+Success `200`:
+
+```json
+{
+  "operationId": "<uuid>",
+  "recoveryCode": "<new server-generated Recovery Code>",
+  "expiresAt": "<ISO-8601>"
+}
+```
+
+The browser uses this code locally to derive the recovery wrapping key and encrypt the VDK. The new Recovery Code is never sent back to the server in plaintext. The browser must display it for the user to save before continuing.
+
+### 5.3 Stage recovery generation
 
 **POST `/api/authenticator-vault/recovery/stage`**
 
-Authentication: valid recovery claim handle; same-origin; strict rate limit. This route is called after the browser has unlocked the VDK using the old Recovery Code and created the new password/recovery wrappers.
+Authentication: valid recovery claim handle; same-origin; strict rate limit. The browser calls this after it has received the server-generated replacement Recovery Code, unlocked the VDK using the old Recovery Code, and created both new VDK wrappers locally.
 
 Request:
 
@@ -379,10 +416,6 @@ Request:
       "salt": "<base64url>",
       "parameters": {}
     }
-  },
-  "pendingRecoveryCodeVerifier": {
-    "hash": "<server-generated-compatible verifier>",
-    "salt": "<base64url-or-existing-format>"
   }
 }
 ```
@@ -390,16 +423,18 @@ Request:
 Server behavior:
 
 - Validate claim ownership, operation ID, expiry, state, and expected active envelope version.
-- Validate all wrapper/KDF fields and strict size bounds.
-- Update the Supabase Auth Master Password using the established server-side admin mechanism. This means the new Master Password is transmitted to the server over HTTPS for the Auth password update; it must be handled transiently and never logged or stored outside Supabase Auth.
-- The browser must derive the password wrapping key locally and submit only the resulting encrypted VDK wrapper. The server must not derive or receive the VDK.
-- The Recovery Code verifier must be computed using the exact approved existing verifier format, or a separately versioned format with an explicit migration plan. Do not trust arbitrary client-selected hash parameters.
-- Stage the pending wrappers and pending verifier without changing the active envelope wrappers or active Recovery Code verifier.
-- Ensure the legacy pending-code columns/RPCs are not silently repurposed for this new protocol.
+- Require that the server-generated pending Recovery Code verifier already exists for this operation. The client cannot submit or replace it.
+- Validate wrapper/KDF fields and strict size bounds.
+- Update the Supabase Auth Master Password using the established server-side admin mechanism. The new Master Password is transmitted transiently over HTTPS for this purpose; never log it or store it outside Supabase Auth.
+- The browser derives the password wrapping key locally and submits only the encrypted VDK wrapper. The server must not derive or receive the VDK or either wrapping key.
+- Stage both wrappers without changing the active envelope wrappers or active Recovery Code verifier.
+- Do not repurpose legacy pending-code columns/RPCs for this protocol.
+- Make retries idempotent for the same operation and same staged payload. A conflicting payload returns `409 operation_state_conflict`.
+- Supabase Auth password update and Postgres staging cannot share one transaction. Implement a recoverable saga with explicit intermediate status and retry behavior; do not claim cross-system atomicity.
 
 Success `200`: `{ "operationId": "<uuid>", "status": "staged", "expiresAt": "<ISO-8601>" }`.
 
-### 5.3 Finalize recovery atomically
+### 5.4 Finalize recovery atomically
 
 **POST `/api/authenticator-vault/recovery/finalize`**
 
@@ -432,7 +467,7 @@ Success `200`: `{ "operationId": "<uuid>", "status": "finalized", "envelopeVersi
 - A stale version, wrong owner, wrong handle, expired claim, or mismatched operation must fail closed.
 - Do not call `acknowledge_vault_recovery_code(p_user_id)` from this route. That legacy RPC promotes only `vault_profiles.recovery_code_hash` and salt and does not atomically promote the Authenticator VDK wrappers.
 
-### 5.4 Query recovery operation status
+### 5.5 Query recovery operation status
 
 **GET `/api/authenticator-vault/recovery/operations/{operationId}`**
 
@@ -453,7 +488,7 @@ Allowed statuses: `claimed`, `staged`, `finalized`, `abandoned`, `expired`.
 
 Never return pending ciphertext, verifier hashes, Recovery Code, Master Password, or claim token.
 
-### 5.5 Abandon or expire recovery
+### 5.6 Abandon or expire recovery
 
 **POST `/api/authenticator-vault/recovery/abandon`**
 
@@ -552,7 +587,8 @@ Forbidden audit content: passwords, Recovery Codes, claim handles, VDK, derived 
 - Correct Recovery Code obtains one claim; wrong code gets a generic failure.
 - Concurrent claims produce exactly one winner per envelope generation.
 - Expired/abandoned claims preserve the active generation.
-- Stage cannot change active wrappers/verifier.
+- The issue-code endpoint returns the same pending Recovery Code on retry for one operation; it never creates a second code for a retry.
+- Stage cannot change active wrappers/verifier and cannot accept client-supplied verifier hashes/salts.
 - Finalize promotes password wrapper, recovery wrapper, and verifier in one transaction.
 - Injected failure at every promotion step rolls back all changes.
 - Wrong owner/handle/operation, stale version, expired lease, and incomplete pending fields cannot finalize.
@@ -563,7 +599,7 @@ Forbidden audit content: passwords, Recovery Codes, claim handles, VDK, derived 
 ## 9. Implementation sequence and approval gates
 
 1. Review this contract against the existing SQL draft and state-machine design.
-2. Resolve the recovery verifier format and whether a separate transition table or pending columns will hold claim/staged state.
+2. Implement the server-generated Recovery Code issue step and resolve the exact verifier format; persist its pending verifier in a separate recovery-operation record, never from client input.
 3. Approve and pin a maintained browser KDF implementation; benchmark Android and desktop.
 4. Review canonical AAD, ciphertext encodings, parameter bounds, and claim-handle storage.
 5. Review additive SQL/RPC design and failure-injection tests.
