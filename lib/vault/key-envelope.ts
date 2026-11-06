@@ -173,11 +173,23 @@ export async function unwrapVaultDataKey(
   const candidate = envelope as Record<string, unknown>;
   const iv = decodeBase64(candidate.iv, IV_BYTES);
   const wrappedKey = decodeBase64(candidate.wrappedKey, KEY_BYTES + 16);
-  const rawDataKey = new Uint8Array(await globalThis.crypto.subtle.decrypt(
-    { name: "AES-GCM", iv: toArrayBuffer(iv), additionalData: toArrayBuffer(keyEnvelopeAad(vaultId)), tagLength: 128 },
-    kek,
-    wrappedKey
-  ));
+  const wrappedKeyBuffer = toArrayBuffer(wrappedKey);
+  let decryptedBuffer: ArrayBuffer;
+
+  try {
+    decryptedBuffer = await globalThis.crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: toArrayBuffer(iv), additionalData: toArrayBuffer(keyEnvelopeAad(vaultId)), tagLength: 128 },
+      kek,
+      wrappedKeyBuffer
+    );
+  } finally {
+    // The wrapped key is ciphertext, but clear all temporary byte copies anyway.
+    new Uint8Array(wrappedKeyBuffer).fill(0);
+    wrappedKey.fill(0);
+    iv.fill(0);
+  }
+
+  const rawDataKey = new Uint8Array(decryptedBuffer);
 
   try {
     if (rawDataKey.length !== KEY_BYTES) throw new Error("Invalid Vault data key.");
