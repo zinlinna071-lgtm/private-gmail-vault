@@ -96,6 +96,13 @@ export default function SecurityPage() {
         </div>
       </section>
 
+      <section className="security-section">
+        <div className="security-section-heading"><div><span className="section-index">04 / RESEARCH</span><h2>Research publications</h2></div><span className="section-aside">EN · MY</span></div>
+        <p className="security-lead">Read approved cybersecurity research papers in English and Burmese, with evidence-backed findings and remediation history.</p>
+        <p className="security-lead" lang="my">အတည်ပြုထားသော ဆိုက်ဘာလုံခြုံရေး သုတေသနစာတမ်းများကို အင်္ဂလိပ်နှင့် မြန်မာဘာသာနှစ်မျိုးဖြင့် ဖတ်ရှုနိုင်မည့်နေရာ။</p>
+        <Link href="/security/research">Open the bilingual research library ↗</Link>
+      </section>
+
       <footer className="security-footer">
         <div><span className="security-brand-mark">V</span><strong>PRIVATE ACCOUNT VAULT</strong></div>
         <p>Security transparency, not a security certification. No software can honestly promise to be unhackable.</p>
