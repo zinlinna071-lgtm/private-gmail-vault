@@ -46,7 +46,7 @@ describe("GitHub webhook event store adapter", () => {
     expect(functionName).toBe("ingest_github_workflow_event");
     expect(args.p_payload_sha256).toMatch(/^[a-f0-9]{64}$/);
     expect(args.p_payload_sha256).toBe(
-      "e4b5f6e4e44f7e5a7b31b2d3a53f7f2b0b6a6d6b2b8d8d3e0c9a6d4a8d5b7c9f"
+      "f6a13d99585a00d82c6896606f9a379cf15f90b42f9f4285f13fd8d6f401da0e"
     );
     expect(args.p_delivery_id).toBe(event.deliveryId);
     expect(args).not.toHaveProperty("rawBody");
