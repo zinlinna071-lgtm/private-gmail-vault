@@ -130,6 +130,13 @@ describe("GitHub workflow webhook verification", () => {
     }, delivery, repository)).toBeNull();
   });
 
+  it("rejects unknown workflow conclusions before database persistence", () => {
+    expect(parseVerifiedWorkflowRunEvent({
+      ...payload,
+      workflow_run: { ...payload.workflow_run, conclusion: "made_up_state" }
+    }, delivery, repository)).toBeNull();
+  });
+
   it("rejects inconsistent action/status pairs and malformed nested repositories", () => {
     expect(parseVerifiedWorkflowRunEvent({
       ...payload, action: "in_progress"
