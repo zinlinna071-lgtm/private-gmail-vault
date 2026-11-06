@@ -84,7 +84,6 @@ export async function POST(request: Request) {
 
     return noStoreJson({ success: true });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unable to sign in.";
-    return noStoreJson({ error: message }, { status: 400 });
+    return noStoreJson({ error: "Unable to complete sign-in. Please try again." }, { status: 500 });
   }
 }
