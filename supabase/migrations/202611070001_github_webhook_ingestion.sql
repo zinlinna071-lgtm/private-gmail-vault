@@ -50,7 +50,7 @@ create table if not exists public.github_workflow_runs (
   ),
   check (updated_at >= created_at),
   check (run_started_at is null or (run_started_at >= created_at and run_started_at <= updated_at)),
-  check (html_url = 'https://github.com/' || repository || '/actions/runs/' || run_id::text)
+  check (html_url = ('https://github.com/' || repository || '/actions/runs/' || run_id::text))
 );
 
 create index if not exists github_workflow_runs_updated_idx
@@ -112,7 +112,7 @@ begin
      or (p_run_started_at is not null and
          (p_run_started_at < p_created_at or p_run_started_at > p_updated_at))
      or p_html_url is null
-     or p_html_url <> 'https://github.com/' || p_repository || '/actions/runs/' || p_run_id::text
+     or p_html_url <> ('https://github.com/' || p_repository || '/actions/runs/' || p_run_id::text)
      or (p_action = 'requested' and p_status <> 'queued')
      or (p_action = 'in_progress' and p_status <> 'in_progress')
      or (p_action = 'completed' and p_status <> 'completed')
