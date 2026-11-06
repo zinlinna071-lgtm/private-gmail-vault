@@ -45,6 +45,15 @@ describe("client-side Vault key envelope", () => {
       "22222222-2222-4222-8222-222222222222")).resolves.toBe("private account data");
   });
 
+  it("uses a fresh nonce when wrapping each new data key", async () => {
+    const kek = await makeKek();
+    const first = await createVaultKeyEnvelope(kek, vaultId);
+    const second = await createVaultKeyEnvelope(kek, vaultId);
+
+    expect(first.envelope.iv).not.toBe(second.envelope.iv);
+    expect(first.envelope.wrappedKey).not.toBe(second.envelope.wrappedKey);
+  });
+
   it("rejects a different Vault context, wrong KEK, and tampered envelope", async () => {
     const kek = await makeKek();
     const { envelope } = await createVaultKeyEnvelope(kek, vaultId);
