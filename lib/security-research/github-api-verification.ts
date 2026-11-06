@@ -126,12 +126,21 @@ export async function verifyWorkflowRunWithGitHubApi(
         !isPositiveSafeInteger(value.id) ||
         value.run_id !== event.runId ||
         value.run_attempt !== event.runAttempt ||
-        typeof value.name !== "string" ||
+        typeof value.name !== "string" || value.name.length < 1 || value.name.length > 256 ||
         !["queued", "in_progress", "completed"].includes(String(value.status)) ||
         (value.conclusion !== null && typeof value.conclusion !== "string") ||
         (value.started_at !== null && !isIsoDate(value.started_at)) ||
         (value.completed_at !== null && !isIsoDate(value.completed_at))) {
       throw new Error("GitHub canonical job metadata is invalid.");
+    }
+    const allowedJobConclusions = [
+      "success", "failure", "neutral", "cancelled", "skipped",
+      "timed_out", "action_required", "stale", "startup_failure"
+    ];
+    if ((value.status === "completed" &&
+         (typeof value.conclusion !== "string" || !allowedJobConclusions.includes(value.conclusion))) ||
+        (value.status !== "completed" && value.conclusion !== null)) {
+      throw new Error("GitHub canonical job conclusion is invalid.");
     }
     if (event.status === "completed" && value.status !== "completed") {
       throw new Error("GitHub reports an incomplete job for a completed run.");
