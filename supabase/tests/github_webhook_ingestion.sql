@@ -134,8 +134,14 @@ BEGIN
     RAISE EXCEPTION 'Public Supabase roles unexpectedly have direct table privileges';
   END IF;
   IF NOT has_table_privilege('service_role', 'public.github_webhook_deliveries', 'SELECT')
-     OR NOT has_table_privilege('service_role', 'public.github_workflow_runs', 'SELECT') THEN
-    RAISE EXCEPTION 'service_role is missing expected table access';
+     OR NOT has_table_privilege('service_role', 'public.github_webhook_deliveries', 'INSERT')
+     OR NOT has_table_privilege('service_role', 'public.github_webhook_deliveries', 'UPDATE')
+     OR NOT has_table_privilege('service_role', 'public.github_webhook_deliveries', 'DELETE')
+     OR NOT has_table_privilege('service_role', 'public.github_workflow_runs', 'SELECT')
+     OR NOT has_table_privilege('service_role', 'public.github_workflow_runs', 'INSERT')
+     OR NOT has_table_privilege('service_role', 'public.github_workflow_runs', 'UPDATE')
+     OR NOT has_table_privilege('service_role', 'public.github_workflow_runs', 'DELETE') THEN
+    RAISE EXCEPTION 'service_role is missing expected table read/write access';
   END IF;
 
   function_oid := to_regprocedure(
