@@ -51,7 +51,7 @@ export default async function VaultPage({ searchParams }: { searchParams: Promis
           <p>Permission requested: Gmail read-only access. This app never asks for your Gmail password.</p>
         </section>
 
-        {activeConnection && <GmailInbox accounts={(connections ?? []).map((connection) => ({
+        {activeConnection && <GmailInbox accounts={(connections ?? []).filter((connection) => connection.connection_status === "active").map((connection) => ({
           id: connection.id,
           email: connection.email_address,
           status: connection.connection_status
