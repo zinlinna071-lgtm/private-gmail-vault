@@ -101,11 +101,37 @@ BEGIN
     RAISE EXCEPTION 'Stale event rolled back the latest run state';
   END IF;
 
+  -- Public-facing Supabase roles must have no direct table privileges,
+  -- not merely no SELECT. RLS is defense in depth, not a substitute for grants.
   IF has_table_privilege('anon', 'public.github_webhook_deliveries', 'SELECT')
+     OR has_table_privilege('anon', 'public.github_webhook_deliveries', 'INSERT')
+     OR has_table_privilege('anon', 'public.github_webhook_deliveries', 'UPDATE')
+     OR has_table_privilege('anon', 'public.github_webhook_deliveries', 'DELETE')
+     OR has_table_privilege('anon', 'public.github_webhook_deliveries', 'TRUNCATE')
+     OR has_table_privilege('anon', 'public.github_webhook_deliveries', 'REFERENCES')
+     OR has_table_privilege('anon', 'public.github_webhook_deliveries', 'TRIGGER')
      OR has_table_privilege('authenticated', 'public.github_webhook_deliveries', 'SELECT')
+     OR has_table_privilege('authenticated', 'public.github_webhook_deliveries', 'INSERT')
+     OR has_table_privilege('authenticated', 'public.github_webhook_deliveries', 'UPDATE')
+     OR has_table_privilege('authenticated', 'public.github_webhook_deliveries', 'DELETE')
+     OR has_table_privilege('authenticated', 'public.github_webhook_deliveries', 'TRUNCATE')
+     OR has_table_privilege('authenticated', 'public.github_webhook_deliveries', 'REFERENCES')
+     OR has_table_privilege('authenticated', 'public.github_webhook_deliveries', 'TRIGGER')
      OR has_table_privilege('anon', 'public.github_workflow_runs', 'SELECT')
-     OR has_table_privilege('authenticated', 'public.github_workflow_runs', 'SELECT') THEN
-    RAISE EXCEPTION 'Public Supabase roles unexpectedly have table read access';
+     OR has_table_privilege('anon', 'public.github_workflow_runs', 'INSERT')
+     OR has_table_privilege('anon', 'public.github_workflow_runs', 'UPDATE')
+     OR has_table_privilege('anon', 'public.github_workflow_runs', 'DELETE')
+     OR has_table_privilege('anon', 'public.github_workflow_runs', 'TRUNCATE')
+     OR has_table_privilege('anon', 'public.github_workflow_runs', 'REFERENCES')
+     OR has_table_privilege('anon', 'public.github_workflow_runs', 'TRIGGER')
+     OR has_table_privilege('authenticated', 'public.github_workflow_runs', 'SELECT')
+     OR has_table_privilege('authenticated', 'public.github_workflow_runs', 'INSERT')
+     OR has_table_privilege('authenticated', 'public.github_workflow_runs', 'UPDATE')
+     OR has_table_privilege('authenticated', 'public.github_workflow_runs', 'DELETE')
+     OR has_table_privilege('authenticated', 'public.github_workflow_runs', 'TRUNCATE')
+     OR has_table_privilege('authenticated', 'public.github_workflow_runs', 'REFERENCES')
+     OR has_table_privilege('authenticated', 'public.github_workflow_runs', 'TRIGGER') THEN
+    RAISE EXCEPTION 'Public Supabase roles unexpectedly have direct table privileges';
   END IF;
   IF NOT has_table_privilege('service_role', 'public.github_webhook_deliveries', 'SELECT')
      OR NOT has_table_privilege('service_role', 'public.github_workflow_runs', 'SELECT') THEN
