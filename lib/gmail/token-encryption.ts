@@ -30,7 +30,7 @@ function encryptionKey(version: number): Buffer {
   const configured = process.env[`GMAIL_TOKEN_ENCRYPTION_KEY_V${version}`];
   // Compatibility only: version 1 is the existing deployed key. Never use it
   // as a fallback for an unknown/newer version.
-  const value = configured ?? (version === 1 ? process.env.VAULT_ENCRYPTION_KEY : undefined) ?? "";
+  const value = configured || (version === 1 ? process.env.VAULT_ENCRYPTION_KEY : undefined) || "";
   if (!/^[a-fA-F0-9]{64}$/.test(value)) {
     throw new Error(`Gmail token encryption key version ${version} is not configured correctly.`);
   }
