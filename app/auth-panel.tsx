@@ -117,7 +117,7 @@ export default function AuthPanel() {
         <button type="button" className="secondary-button" onClick={copyCode}>Copy Recovery Code</button>
         {requiresAcknowledgement && <button type="button" className="primary-button" disabled={busy} onClick={acknowledgeSavedCode}>{busy ? "Please wait…" : "I have safely saved this code"}</button>}
       </div>}
-      <p className="auth-footnote">Your Vault Login ID is independent of Gmail, your phone number, and your SIM card. Google may still require its own verification if a Gmail authorization is revoked or expires.</p>
+      <p className="auth-footnote">Your Vault Login ID and Master Password are used only to access this private vault.</p>
     </div>
   );
 }
