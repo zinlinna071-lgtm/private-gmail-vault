@@ -114,3 +114,21 @@ When the ingestion layer is added, dashboard motion may be driven only by verifi
 8. Connect the public dashboard only after the ingestion and publication gates are verified.
 
 No live event feed, private lab runner, public API, live database table, webhook configuration, or deployment was created as part of this contract. The proposed migration remains unapplied and unverified against PostgreSQL.
+
+
+## Isolated PostgreSQL migration test harness
+
+A disposable PostgreSQL 16 service has been added to the GitHub Actions CI job. The workflow runs `scripts/test-github-webhook-migration.sh`, which creates only local test roles in that ephemeral database, applies the proposed migration, and executes `supabase/tests/github_webhook_ingestion.sql`.
+
+The database assertions cover:
+- Fresh migration application.
+- First delivery returns `APPLIED`.
+- Same delivery ID and same fingerprint returns `DUPLICATE`.
+- Same delivery ID with a different fingerprint returns `DELIVERY_ID_CONFLICT`.
+- An older `in_progress` event cannot roll a completed run back and returns `STALE`.
+- `anon` and `authenticated` cannot read either table or execute the ingestion RPC; `service_role` has the intended grants.
+- Two concurrent sessions submitting the same delivery produce exactly one `APPLIED` and one `DUPLICATE`, with one stored delivery and one run row.
+
+The harness uses a disposable GitHub Actions PostgreSQL service only. It does not connect to Supabase, use production credentials, configure a webhook, or publish run data. These checks establish behavior for the tested PostgreSQL migration in CI; they do not establish that a hosted Supabase project has been configured or that production deployment is approved.
+
+**Verification status:** the harness and CI workflow have been committed, but their first CI execution must pass before these database behaviors are described as verified.
