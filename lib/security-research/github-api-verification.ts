@@ -80,6 +80,7 @@ export async function verifyWorkflowRunWithGitHubApi(
   const run = runValue;
   const workflow = workflowValue;
   const jobs = jobsValue.jobs;
+  const canonicalRunStartedAt = run.run_started_at;
 
   if (
     run.id !== event.runId ||
@@ -97,7 +98,7 @@ export async function verifyWorkflowRunWithGitHubApi(
     !isIsoDate(run.updated_at) ||
     (event.runStartedAt === null
       ? run.run_started_at !== null
-      : !isIsoDate(run.run_started_at) || Date.parse(run.run_started_at) !== Date.parse(event.runStartedAt)) ||
+      : !isIsoDate(canonicalRunStartedAt) || Date.parse(canonicalRunStartedAt) !== Date.parse(event.runStartedAt)) ||
     Date.parse(run.created_at) !== Date.parse(event.createdAt) ||
     Date.parse(run.updated_at) < Date.parse(event.updatedAt) ||
     workflow.id !== event.workflowId ||
