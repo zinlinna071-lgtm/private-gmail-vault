@@ -146,3 +146,12 @@ The first CI attempt used the Ubuntu 26.04 runner and failed before executing te
 **Execution status (verified):** GitHub Actions run [42281120467](https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42281120467) completed successfully for commit `70cbd9eadd3970896fc49852a07f7a28ec2dfab3`. In Chromium, the exact RFC 9106 §5.3 output matched byte-for-byte and all four mutation checks passed: password, salt, secret K, and associated data X.
 
 **Scope limitation:** This is a headless Chromium compatibility result on a hosted Linux runner. It is not a measurement on Android or iOS devices, does not establish real-device memory pressure or cancellation behavior, and does not approve production KDF parameters or the production dependency. The harness uses only public test-vector bytes and does not import application code or handle real user secrets.
+
+
+## 10. Multi-engine browser verification (2026-11-07)
+
+The isolated Playwright harness was expanded to execute the exact RFC 9106 §5.3 vector and four input-mutation checks in Chromium, Firefox, and WebKit. The workflow installs all three browser engines on the supported Ubuntu 24.04 runner.
+
+**Execution status (verified):** GitHub Actions run [42281411743](https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42281411743) completed successfully. The multi-engine job passed. The regular repository CI run [42281418698](https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42281418698) also completed successfully for the corresponding revision.
+
+**Scope limitation:** These are hosted Linux browser-engine compatibility checks, not real-device benchmarks. They do not establish Android/iOS performance, mobile memory behavior, cancellation behavior, production KDF parameters, or production dependency approval. The application still does not use this candidate KDF in its Vault unlock flow.
