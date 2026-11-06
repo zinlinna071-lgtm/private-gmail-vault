@@ -1,6 +1,6 @@
 # Security Test Run Record Contract
 
-**Status:** Signed GitHub webhook receiver, server-only GitHub API verifier, ingestion adapter, and PostgreSQL migration harness are implemented on the feature branch. The newest implementation is awaiting CI verification. Hosted Supabase activation, real webhook delivery, private-lab ingestion, and public dashboard integration remain disabled/not implemented.  
+**Status:** Signed GitHub webhook receiver, server-only GitHub API verifier, ingestion adapter, and PostgreSQL migration harness are implemented on the feature branch. The exact current implementation at commit `e6339738b07c834cc8d1e7fb9986f047dfd6b1dc` passed GitHub Actions CI run `42313273497`, including automated tests, type check, PostgreSQL 16 migration tests, dependency security audit, and production build. Hosted Supabase activation, real webhook delivery, private-lab ingestion, and public dashboard integration remain disabled/not implemented. Vercel Preview creation was blocked by the team's daily deployment API limit; no Preview URL exists for this commit yet.  
 **Branch:** `feature/vault-authentication`  
 **Public exposure:** No webhook feed or public API is exposed.  
 **Production impact:** None.
@@ -82,7 +82,7 @@ The adapter computes the raw-body SHA-256 fingerprint, sends only the fingerprin
 
 The PostgreSQL migration harness runs against a disposable PostgreSQL 16 service in GitHub Actions. It checks fresh migration application, idempotent and conflicting deliveries, stale event ordering, concurrent duplicate delivery, and role privileges. The updated SQL fixtures now also assert workflow ID and persisted canonical job-verification metadata.
 
-The earlier schema version passed its PostgreSQL 16 harness on commit `a1dbc57e6df0debde871f41ac893312605259fd5` (runs `42302994860` and `42303001122`). The current schema and expanded tests are changed since that commit; their CI result must be checked against the exact latest branch head before being called verified.
+The current schema and expanded tests passed the PostgreSQL 16 harness in GitHub Actions run `42313273497` for exact branch commit `e6339738b07c834cc8d1e7fb9986f047dfd6b1dc`. This is disposable CI PostgreSQL evidence, not a hosted Supabase test.
 
 This is disposable CI PostgreSQL evidence, not a hosted Supabase test. The migration has not been applied to any hosted Supabase project. No real GitHub webhook has been received. No webhook secret, API token, or repository webhook is configured in Vercel or another live environment. `GITHUB_WEBHOOK_INGESTION_ENABLED` remains false in `.env.example`.
 
@@ -122,13 +122,13 @@ Dashboard motion may be driven only by verified state transitions after the inge
 
 ## Outstanding work
 
-1. Run and pass CI for the exact latest implementation and SQL migration commit.
-2. Obtain explicit owner approval before applying the migration to a hosted non-production Supabase project.
-3. Generate/configure the server-only webhook secret and least-privilege GitHub API token; register the repository webhook only after approval.
-4. Verify an actual signed GitHub webhook end-to-end in a controlled environment.
-5. Design a signed or otherwise authenticated event source for private-lab runs.
-6. Implement a read-only public projection that exposes approved sanitized records only.
-7. Add tests for token permission failures, provider mismatch, forged events, revoked publication, and secret-redaction review.
-8. Connect the public dashboard only after ingestion and publication gates are verified.
+1. Obtain explicit owner approval before applying the migration to a hosted non-production Supabase project.
+2. Generate/configure the server-only webhook secret and least-privilege GitHub API token; register the repository webhook only after approval.
+3. Verify an actual signed GitHub webhook end-to-end in a controlled environment.
+4. Design a signed or otherwise authenticated event source for private-lab runs.
+5. Implement a read-only public projection that exposes approved sanitized records only.
+6. Add tests for token permission failures, provider mismatch, forged events, revoked publication, and secret-redaction review.
+7. Connect the public dashboard only after ingestion and publication gates are verified.
+8. Create and inspect the Vercel Preview for the verified commit after the deployment API limit resets; do not deploy to Production.
 
 No live event feed, private lab runner, public API, hosted database table, webhook configuration, or deployment has been created. The endpoint remains disabled by default, and the proposed migration remains unapplied to hosted Supabase.
