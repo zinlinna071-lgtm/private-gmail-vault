@@ -8,7 +8,16 @@ export async function middleware(request: NextRequest) {
     throw new Error("Supabase URL and publishable key must be configured.");
   }
 
-  let response = NextResponse.next({ request });
+  const createResponse = () => {
+    const nextResponse = NextResponse.next({ request });
+    // Vault responses can contain account metadata or refreshed auth cookies.
+    // Never allow a shared cache to reuse them across visitors.
+    nextResponse.headers.set("Cache-Control", "private, no-store");
+    nextResponse.headers.set("Pragma", "no-cache");
+    return nextResponse;
+  };
+
+  let response = createResponse();
 
   const supabase = createServerClient(url, key, {
     cookies: {
@@ -23,7 +32,7 @@ export async function middleware(request: NextRequest) {
         });
 
         // Persist the rotated session in the browser for the next request.
-        response = NextResponse.next({ request });
+        response = createResponse();
         cookiesToSet.forEach(({ name, value, options }) => {
           response.cookies.set(name, value, options);
         });
@@ -39,7 +48,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"
-  ]
+  // Public research, SEO, and support pages do not use Supabase Auth.
+  // Limit refresh work to the private Vault UI and its authenticated API.
+  matcher: ["/vault/:path*", "/api/vault/:path*"]
 };
