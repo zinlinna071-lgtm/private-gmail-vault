@@ -50,12 +50,12 @@ A proposed Supabase migration is committed at `supabase/migrations/202611070001_
 
 A server-only adapter is also committed at `lib/security-research/github-webhook-store.ts`. It computes a SHA-256 fingerprint of the exact raw body, sends only the fingerprint and allowlisted event metadata to the RPC, validates the RPC result, and replaces provider/database errors with a generic server-side error. Its unit tests are in `tests/github-webhook-store.test.ts`.
 
-The adapter is not called by any route. The migration has received source-level review only. It has **not** been applied to any Supabase project or tested against a live/isolated PostgreSQL instance. No server adapter calls this RPC yet. The verifier alone still does not provide durable replay protection or public publication. A valid HMAC proves that the payload was signed by a party holding the webhook secret; it does not prove that a security test was adequate or that a passing CI workflow constitutes a penetration test.
+The adapter is not called by any route. The migration has received source-level review only. It has **not** been applied to any Supabase project or tested against a live/isolated PostgreSQL instance. Therefore, durable replay protection is designed in the migration but is not active yet. A valid HMAC proves that the payload was signed by a party holding the webhook secret; it does not prove that a security test was adequate or that a passing CI workflow constitutes a penetration test.
 
 Required before endpoint activation:
-1. Configure a high-entropy webhook secret in server-side environment configuration only.
-2. Add durable storage for delivery IDs and run records; reject duplicate delivery IDs and enforce idempotency on repository + run ID + attempt.
-3. Enforce legal state transitions and retain an append-only audit trail.
+1. Review and test the proposed migration in an isolated PostgreSQL/Supabase project; do not apply it to production.
+2. Configure a high-entropy webhook secret in server-side environment configuration only.
+3. Implement the endpoint that checks `X-GitHub-Event`, reads the bounded raw body, verifies HMAC, parses the event, and then calls the server-only adapter.
 4. Verify event fields against GitHub's authoritative run/job API where required.
 5. Keep the publication state private/pending until the owner completes technical, privacy, and security review.
 6. Never expose a GitHub private-repository token or webhook secret to the client.
