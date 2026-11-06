@@ -5,7 +5,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 export const dynamic = "force-dynamic";
 
 function stateSignature(state: string, userId: string) {
-  const key = process.env.GMAIL_OAUTH_STATE_HMAC_KEY ?? process.env.VAULT_ENCRYPTION_KEY ?? "";
+  const key = process.env.GMAIL_OAUTH_STATE_HMAC_KEY || process.env.VAULT_ENCRYPTION_KEY || "";
   if (!/^[a-fA-F0-9]{64}$/.test(key)) throw new Error("OAuth state signing is not configured.");
   return createHmac("sha256", Buffer.from(key, "hex"))
     .update(`gmail-oauth:${state}:${userId}`)
