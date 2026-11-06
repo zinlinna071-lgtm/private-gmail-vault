@@ -135,3 +135,27 @@ The new password is never stored in this table, logs, analytics, or operation me
 ## 7. Explicit non-changes
 
 No active migration, Supabase database, legacy recovery RPC, runtime route, Gmail behavior, main branch, or Production deployment is changed by this proposal.
+
+
+## 8. Critical crash-recovery clarification
+
+Supabase Auth and Postgres cannot commit together. The operation must not be expired or deleted blindly once an Auth password update may have succeeded.
+
+If the provider update succeeds but the server loses the response, the operation may still say `in_progress`. A successful new Vault session for the same owner, established by signing in with the new password, is server-verifiable evidence that the Auth password changed. The authenticated finalize route may record that attestation and continue finalization only after rechecking owner, operation, expected envelope version, expiry/grace policy, and pending payload completeness.
+
+The exact post-Auth-update expiry policy is a blocker before executable SQL:
+
+- A cleanup job must not expire an operation in an unresolved `in_progress` state solely because its ordinary claim lease elapsed.
+- Define a bounded reconciliation/finalization grace period or a dedicated recoverable state.
+- If Auth password may have changed, preserve enough non-secret operation metadata and pending wrappers for the owner to reconcile safely.
+- Never silently delete the pending generation and leave the user with a new Auth password but only an old Recovery Code/VDK wrapper pairing.
+- A finalized retry returns the existing finalized result and must not increment the envelope version again.
+
+## 9. Remaining SQL review blockers
+
+- Verify exact `vault_profiles` key/foreign-key and Recovery Code verifier format from the complete migration history.
+- Verify every Vault account that can start Authenticator recovery has both an envelope and profile row.
+- Define claim response-loss idempotency and behavior after the encrypted issue-code retry copy expires.
+- Define claim-handle verifier, payload fingerprint canonicalization, and server-encrypted retry-copy AAD.
+- Review operation expiry and cleanup against the post-Auth-update crash window.
+- Test the complete RPC contract in a disposable Postgres database before implementation.
