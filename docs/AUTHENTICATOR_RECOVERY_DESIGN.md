@@ -66,9 +66,31 @@ Use a uniqueness constraint on (user_id, provider, google_subject). Do not make 
 5. Encrypt the backup-code collection locally, verify it can be decrypted, then show a one-time confirmation that setup is complete.
 6. Provide explicit lock, reveal, copy, mark-used, replace, and delete actions with re-authentication for high-risk operations.
 
+## KDF library evaluation (2026-11-06)
+
+The initial Argon2id preference is not approved for implementation yet.
+
+| Candidate | Findings | Decision |
+|---|---|---|
+| `argon2-browser` 1.18.0 | MIT; browser WebAssembly build; npm metadata shows the release is about five years old and maintenance is inactive. | Reject for a new security-critical dependency unless it receives a fresh maintenance/security review. |
+| `argon2id` 1.0.1 | MIT; pure JavaScript; npm metadata shows the release is about three years old and maintenance is inactive. | Reject as insufficiently maintained. |
+| `@noble/hashes` 2.4.0 `argon2id` | MIT; browser-compatible; the project's documented Cure53 audit scope explicitly excluded Argon2, and its maintainers warn that Argon2 is slow in JavaScript. | Do not select its Argon2 implementation as the default without an independent review and device benchmarks. |
+| `@noble/hashes` 2.4.0 `scryptAsync` | MIT; browser-compatible asynchronous Scrypt implementation. The project's documented 1.0.0 Cure53 audit scope included Scrypt but excluded Argon2; this is not a blanket audit claim for every later release. | Preferred candidate for a proof-of-concept evaluation, not yet approved for production. |
+
+### Provisional direction
+
+Evaluate the pinned `@noble/hashes` Scrypt implementation for deriving the password and Recovery Code wrapping keys. Scrypt is memory-hard and avoids choosing an inactive browser package or an Argon2 implementation that its maintainers explicitly say is not independently audited. Keep the KDF name, version, salt, and work parameters in each key envelope so a future migration remains possible.
+
+Before approval:
+- Verify the exact package version, release provenance, license, dependency tree, and relevant security advisories at implementation time.
+- Benchmark asynchronous derivation on representative Android phones and desktop browsers; select memory/work factors from measured latency and memory use, not copied defaults.
+- Set strict server-validated upper bounds for stored KDF parameters to prevent attacker-controlled resource exhaustion.
+- Test wrong-password/recovery-code behavior, concurrent derivations, cancellation/lock behavior, and known test vectors.
+- Obtain a focused security review of the chosen implementation and integration. Do not describe the package or this design as formally certified.
+
 ## Before implementation
 
-- Evaluate and pin a maintained, audited Argon2id implementation that works in the browser; do not silently substitute a weak or unreviewed KDF.
+- Complete the KDF evaluation above and obtain explicit approval before pinning or adding any KDF dependency.
 - Define canonical AAD encoding and versioning tests before persisting ciphertext.
 - Add tests for RFC 6238 known vectors, wrong-password and wrong-recovery-code failures, ciphertext tampering, cross-user isolation, key rotation, lost-response acknowledgement, and secret-free logs.
 - Add rate limits and same-origin checks to all state-changing routes.
