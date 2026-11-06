@@ -120,7 +120,7 @@ describe("Gmail OAuth callback success persistence", () => {
 
     expect(response.headers.get("location")).toContain("/vault?gmail_connected=1");
     expect(calls).toHaveLength(2);
-    expect(calls.map((call) => call.url)).not.toContain(expect.stringContaining("tokeninfo"));
+    expect(calls.some((call) => call.url.includes("tokeninfo"))).toBe(false);
     expect(calls[0].init?.method).toBe("POST");
     expect(String(calls[0].init?.body)).toContain("grant_type=authorization_code");
     expect(mocks.encryptRefreshToken).toHaveBeenCalledWith("synthetic-refresh-token", {
