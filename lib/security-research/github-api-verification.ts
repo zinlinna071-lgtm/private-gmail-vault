@@ -95,6 +95,9 @@ export async function verifyWorkflowRunWithGitHubApi(
     !equalString(run.html_url, event.htmlUrl) ||
     !isIsoDate(run.created_at) ||
     !isIsoDate(run.updated_at) ||
+    (event.runStartedAt === null
+      ? run.run_started_at !== null
+      : !isIsoDate(run.run_started_at) || Date.parse(run.run_started_at) !== Date.parse(event.runStartedAt)) ||
     Date.parse(run.created_at) !== Date.parse(event.createdAt) ||
     Date.parse(run.updated_at) < Date.parse(event.updatedAt) ||
     workflow.id !== event.workflowId ||
