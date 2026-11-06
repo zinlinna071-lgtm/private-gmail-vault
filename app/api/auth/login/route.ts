@@ -48,8 +48,8 @@ export async function POST(request: Request) {
       profile.pending_recovery_code_ciphertext &&
       profile.pending_recovery_code_iv &&
       profile.pending_recovery_code_auth_tag &&
-      profile.pending_recovery_code_expires_at &&
-      new Date(profile.pending_recovery_code_expires_at).getTime() > Date.now()
+      (!profile.pending_recovery_code_expires_at ||
+        new Date(profile.pending_recovery_code_expires_at).getTime() > Date.now())
     );
     if (pendingIsValid) {
       const recoveryCode = decryptPendingRecoveryCode({
