@@ -83,8 +83,8 @@ export async function POST(request: Request) {
   try {
     // A valid webhook HMAC authenticates the delivery, but GitHub API re-fetch
     // is required before its run/job metadata can enter the private ledger.
-    await verifyWorkflowRunWithGitHubApi(event);
-    const result = await persistVerifiedWorkflowRunEvent({ event, rawBody });
+    const verification = await verifyWorkflowRunWithGitHubApi(event);
+    const result = await persistVerifiedWorkflowRunEvent({ event, verification, rawBody });
     if (result === "DELIVERY_ID_CONFLICT") {
       return json(409, { error: "Webhook delivery conflict." });
     }
