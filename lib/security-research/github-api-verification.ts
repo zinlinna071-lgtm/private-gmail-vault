@@ -97,7 +97,7 @@ export async function verifyWorkflowRunWithGitHubApi(
     !equalString(run.head_branch, event.headBranch) ||
     !equalString(run.head_sha, event.headSha) ||
     !equalString(run.status, event.status) ||
-    (event.status === "completed" && !equalString(run.conclusion, event.conclusion)) ||
+    (event.status === "completed" && (event.conclusion === null || !equalString(run.conclusion, event.conclusion))) ||
     (event.status !== "completed" && run.conclusion !== null) ||
     !equalString(run.html_url, event.htmlUrl) ||
     !isIsoDate(run.created_at) ||
