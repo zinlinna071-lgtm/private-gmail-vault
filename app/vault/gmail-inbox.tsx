@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 type Mailbox = "INBOX" | "SENT" | "STARRED" | "DRAFT" | "SPAM" | "TRASH" | "IMPORTANT" | "UNREAD" | "ALL";
 type Message = { id: string; from: string; subject: string; date: string; snippet: string };
 type InboxResponse = { account?: string; query?: string; mailbox?: Mailbox; messages?: Message[]; error?: string };
+type GmailAccount = { id: string; email: string; status: string };
 type MessageDetail = {
   id: string;
   account: string;
@@ -29,8 +30,9 @@ const MAILBOXES: Array<{ id: Mailbox; label: string }> = [
   { id: "ALL", label: "All Mail" }
 ];
 
-export default function GmailInbox() {
+export default function GmailInbox({ accounts }: { accounts: GmailAccount[] }) {
   const [data, setData] = useState<InboxResponse | null>(null);
+  const [accountId, setAccountId] = useState(accounts[0]?.id ?? "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
@@ -40,11 +42,12 @@ export default function GmailInbox() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState("");
 
-  const load = useCallback(async (search = "", selectedMailbox: Mailbox = "INBOX") => {
+  const load = useCallback(async (search = "", selectedMailbox: Mailbox = "INBOX", selectedAccountId = accountId) => {
     setLoading(true);
     setError("");
     try {
-      const params = new URLSearchParams({ label: selectedMailbox });
+      if (!selectedAccountId) throw new Error("select_gmail_account");
+      const params = new URLSearchParams({ label: selectedMailbox, accountId: selectedAccountId });
       if (search.trim()) params.set("q", search.trim());
       const response = await fetch(`/api/gmail/messages?${params.toString()}`, { cache: "no-store" });
       const result = await response.json() as InboxResponse;
@@ -59,7 +62,7 @@ export default function GmailInbox() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [accountId]);
 
   const submitSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -76,7 +79,8 @@ export default function GmailInbox() {
     setDetailError("");
     setSelected(null);
     try {
-      const response = await fetch(`/api/gmail/messages/${encodeURIComponent(id)}`, { cache: "no-store" });
+      const params = new URLSearchParams({ accountId });
+      const response = await fetch(`/api/gmail/messages/${encodeURIComponent(id)}?${params.toString()}`, { cache: "no-store" });
       const result = await response.json() as MessageDetail & { error?: string };
       if (!response.ok) throw new Error(result.error ?? "message_load_failed");
       setSelected(result);
@@ -100,6 +104,12 @@ export default function GmailInbox() {
         </button>
       </div>
       <p>Browse Gmail folders and search messages. Each folder shows up to 20 recent messages.</p>
+      <label style={{ display: "grid", gap: 6, margin: "12px 0" }}>
+        Gmail account
+        <select value={accountId} onChange={(event) => { setAccountId(event.target.value); void load("", mailbox, event.target.value); }} disabled={!accounts.length || loading}>
+          {accounts.map((account) => <option key={account.id} value={account.id}>{account.email} ({account.status.replaceAll("_", " ")})</option>)}
+        </select>
+      </label>
       <nav aria-label="Gmail mailboxes" style={{ display: "flex", gap: 8, flexWrap: "wrap", margin: "14px 0" }}>
         {MAILBOXES.map((item) => (
           <button
