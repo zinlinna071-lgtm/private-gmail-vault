@@ -6,9 +6,16 @@ import { isSameOriginRequest } from "@/lib/auth/vault";
 
 export const runtime = "nodejs";
 
+function noStoreJson(body: unknown, init?: ResponseInit) {
+  const headers = new Headers(init?.headers);
+  headers.set("Cache-Control", "no-store, max-age=0");
+  headers.set("Pragma", "no-cache");
+  return NextResponse.json(body, { ...init, headers });
+}
+
 export async function POST(request: Request) {
   if (!isSameOriginRequest(request)) {
-    return NextResponse.json({ error: "Invalid request origin." }, { status: 403 });
+    return noStoreJson({ error: "Invalid request origin." }, { status: 403 });
   }
 
   try {
@@ -26,7 +33,7 @@ export async function POST(request: Request) {
 
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
-      return NextResponse.json({ error: "Sign in before confirming that you saved the Recovery Code." }, { status: 401 });
+      return noStoreJson({ error: "Sign in before confirming that you saved the Recovery Code." }, { status: 401 });
     }
 
     const admin = createSupabaseAdminClient();
@@ -35,14 +42,14 @@ export async function POST(request: Request) {
     });
 
     if (error) {
-      return NextResponse.json({ error: "Could not confirm the Recovery Code. Keep the displayed code and try again." }, { status: 503 });
+      return noStoreJson({ error: "Could not confirm the Recovery Code. Keep the displayed code and try again." }, { status: 503 });
     }
     if (acknowledged !== true) {
-      return NextResponse.json({ error: "The pending Recovery Code has expired or was already confirmed. Do not discard your saved code until you verify sign-in and recovery." }, { status: 409 });
+      return noStoreJson({ error: "The pending Recovery Code has expired or was already confirmed. Do not discard your saved code until you verify sign-in and recovery." }, { status: 409 });
     }
 
-    return NextResponse.json({ success: true });
+    return noStoreJson({ success: true });
   } catch {
-    return NextResponse.json({ error: "Unable to confirm the Recovery Code." }, { status: 500 });
+    return noStoreJson({ error: "Unable to confirm the Recovery Code." }, { status: 500 });
   }
 }
