@@ -175,7 +175,7 @@ export function parseVerifiedWorkflowRunEvent(
       url.password !== "" ||
       url.search !== "" ||
       url.hash !== "" ||
-      url.pathname !== \`/\${expectedRepository}/actions/runs/\${run.id}\`) return null;
+      url.pathname !== "/" + expectedRepository + "/actions/runs/" + run.id) return null;
 
   const action = payload.action as VerifiedWorkflowRunEvent["action"];
   const status = run.status as VerifiedWorkflowRunEvent["status"];
