@@ -86,16 +86,18 @@ export async function importVaultKeyEncryptionKey(derivedKey: Uint8Array): Promi
     throw new Error("Vault key derivation must produce exactly 32 bytes.");
   }
 
+  const rawKeyBuffer = toArrayBuffer(derivedKey);
   try {
     return await globalThis.crypto.subtle.importKey(
       "raw",
-      toArrayBuffer(derivedKey),
+      rawKeyBuffer,
       { name: "AES-GCM" },
       false,
       ["encrypt", "decrypt"]
     );
   } finally {
     derivedKey.fill(0);
+    new Uint8Array(rawKeyBuffer).fill(0);
   }
 }
 
@@ -111,18 +113,31 @@ export async function createVaultKeyEnvelope(
   const iv = globalThis.crypto.getRandomValues(new Uint8Array(IV_BYTES));
 
   try {
-    const wrappedKey = new Uint8Array(await globalThis.crypto.subtle.encrypt(
-      { name: "AES-GCM", iv: toArrayBuffer(iv), additionalData: toArrayBuffer(keyEnvelopeAad(vaultId)), tagLength: 128 },
-      kek,
-      toArrayBuffer(rawDataKey)
-    ));
-    const dataKey = await globalThis.crypto.subtle.importKey(
-      "raw",
-      toArrayBuffer(rawDataKey),
-      { name: "AES-GCM" },
-      false,
-      ["encrypt", "decrypt"]
-    );
+    const wrapBuffer = toArrayBuffer(rawDataKey);
+    let wrappedBytes: ArrayBuffer;
+    try {
+      wrappedBytes = await globalThis.crypto.subtle.encrypt(
+        { name: "AES-GCM", iv: toArrayBuffer(iv), additionalData: toArrayBuffer(keyEnvelopeAad(vaultId)), tagLength: 128 },
+        kek,
+        wrapBuffer
+      );
+    } finally {
+      new Uint8Array(wrapBuffer).fill(0);
+    }
+
+    const importBuffer = toArrayBuffer(rawDataKey);
+    let dataKey: CryptoKey;
+    try {
+      dataKey = await globalThis.crypto.subtle.importKey(
+        "raw",
+        importBuffer,
+        { name: "AES-GCM" },
+        false,
+        ["encrypt", "decrypt"]
+      );
+    } finally {
+      new Uint8Array(importBuffer).fill(0);
+    }
 
     return {
       dataKey,
@@ -130,7 +145,7 @@ export async function createVaultKeyEnvelope(
         version: VAULT_KEY_ENVELOPE_VERSION,
         algorithm: VAULT_KEY_ENVELOPE_ALGORITHM,
         iv: encodeBase64(iv),
-        wrappedKey: encodeBase64(wrappedKey)
+        wrappedKey: encodeBase64(new Uint8Array(wrappedBytes))
       }
     };
   } finally {
