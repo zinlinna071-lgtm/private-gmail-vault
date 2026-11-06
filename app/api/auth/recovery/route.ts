@@ -1,5 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
+import { readBoundedJson } from "@/lib/auth/bounded-json";
+import { isJsonContentType } from "@/lib/auth/content-type";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -35,7 +37,20 @@ export async function POST(request: Request) {
   }
 
   try {
-    const body = await request.json();
+    if (!isJsonContentType(request.headers.get("content-type"))) {
+      return noStoreJson({ error: "Content-Type must be application/json." }, { status: 415 });
+    }
+    const parsedBody = await readBoundedJson(request, 8 * 1024);
+    if (!parsedBody.ok) {
+      return noStoreJson(
+        { error: parsedBody.reason === "too_large" ? "Request body is too large." : "Invalid JSON request." },
+        { status: parsedBody.reason === "too_large" ? 413 : 400 }
+      );
+    }
+    if (!parsedBody.value || typeof parsedBody.value !== "object" || Array.isArray(parsedBody.value)) {
+      return noStoreJson({ error: "Invalid JSON request." }, { status: 400 });
+    }
+    const body = parsedBody.value as Record<string, unknown>;
     const loginId = normalizeLoginId(String(body.loginId ?? ""));
     if (!await allowAuthAttempt(request, "recovery", loginId, 5)) {
       return noStoreJson({ error: "Too many recovery attempts. Try again in 15 minutes." }, { status: 429 });
