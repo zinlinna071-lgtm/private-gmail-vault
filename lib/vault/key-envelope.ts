@@ -106,12 +106,8 @@ export async function createVaultKeyEnvelope(
   assertKek(kek);
   assertVaultId(vaultId);
 
-  const extractableDataKey = await globalThis.crypto.subtle.generateKey(
-    { name: "AES-GCM", length: 256 },
-    true,
-    ["encrypt", "decrypt"]
-  );
-  const rawDataKey = new Uint8Array(await globalThis.crypto.subtle.exportKey("raw", extractableDataKey));
+  // Generate raw key bytes directly so no extractable CryptoKey is created.
+  const rawDataKey = globalThis.crypto.getRandomValues(new Uint8Array(KEY_BYTES));
   const iv = globalThis.crypto.getRandomValues(new Uint8Array(IV_BYTES));
 
   try {
