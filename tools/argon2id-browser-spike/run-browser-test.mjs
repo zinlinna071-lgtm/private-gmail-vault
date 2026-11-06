@@ -2,11 +2,16 @@ import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { build } from "esbuild";
-import { chromium } from "playwright";
+import { chromium, firefox, webkit } from "playwright";
 
 const root = process.cwd();
 const output = resolve(root, "dist/browser-test.js");
 const port = 4178;
+const browsers = [
+  ["Chromium", chromium],
+  ["Firefox", firefox],
+  ["WebKit", webkit]
+];
 
 await build({
   entryPoints: [resolve(root, "browser-test-entry.js")],
@@ -42,23 +47,29 @@ await new Promise((resolveListen, reject) => {
   server.listen(port, "127.0.0.1", resolveListen);
 });
 
-let browser;
 try {
-  browser = await chromium.launch({ headless: true });
-  const page = await browser.newPage();
-  page.on("pageerror", (error) => {
-    throw error;
-  });
-  await page.goto("http://127.0.0.1:" + port);
-  await page.waitForFunction(() => window.__argon2Result?.done === true, {
-    timeout: 120_000
-  });
+  for (const [name, engine] of browsers) {
+    const browser = await engine.launch({ headless: true });
+    try {
+      const page = await browser.newPage();
+      page.on("pageerror", (error) => {
+        throw error;
+      });
+      await page.goto("http://127.0.0.1:" + port);
+      await page.waitForFunction(() => window.__argon2Result?.done === true, {
+        timeout: 120_000
+      });
 
-  const result = await page.evaluate(() => window.__argon2Result);
-  if (!result.ok) throw new Error(result.error || "Browser compatibility test failed.");
-  for (const check of result.checks) console.log(check);
-  console.log("PASS: Argon2id browser compatibility harness");
+      const result = await page.evaluate(() => window.__argon2Result);
+      if (!result.ok) {
+        throw new Error(name + ": " + (result.error || "Browser compatibility test failed."));
+      }
+      for (const check of result.checks) console.log(name + " — " + check);
+      console.log("PASS: " + name + " Argon2id compatibility");
+    } finally {
+      await browser.close();
+    }
+  }
 } finally {
-  await browser?.close();
   await new Promise((resolveClose) => server.close(resolveClose));
 }
