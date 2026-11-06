@@ -253,4 +253,23 @@ describe("POST /api/auth/recovery", () => {
     });
   });
 
+
+  it("returns the staged Recovery Code when automatic sign-in fails after reset", async () => {
+    mocks.signInWithPassword.mockResolvedValue({ error: new Error("temporary sign-in failure") });
+
+    const response = await POST(makeRequest({
+      loginId: "myvault",
+      recoveryCode: "old-code",
+      newPassword: "a-strong-new-password"
+    }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.signedIn).toBe(false);
+    expect(body.recoveryCode).toBe("ABCDE-12345-ABCDE-12345-ABCDE-12345-ABCDE-12345");
+    expect(body.requiresAcknowledgement).toBe(false);
+    expect(rpc).toHaveBeenCalledWith("finish_vault_recovery", expect.any(Object));
+    expect(rpc).not.toHaveBeenCalledWith("release_vault_recovery", expect.anything());
+  });
 });
