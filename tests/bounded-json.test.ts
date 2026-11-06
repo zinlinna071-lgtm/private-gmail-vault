@@ -19,14 +19,14 @@ describe("bounded streaming JSON reader", () => {
 
   it("rejects a body above the limit using Content-Length", async () => {
     const req = {
-      headers: new Headers({ "Content-Length": "100" }),
+      headers: { get: (name: string) => name.toLowerCase() === "content-length" ? "100" : null },
       body: new ReadableStream<Uint8Array>({
         start(controller) {
           controller.enqueue(new TextEncoder().encode("{}"));
           controller.close();
         }
       })
-    } as Request;
+    } as unknown as Request;
     await expect(readBoundedJson(req, 32))
       .resolves.toEqual({ ok: false, reason: "too_large" });
   });
