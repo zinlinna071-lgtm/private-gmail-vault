@@ -35,9 +35,10 @@ payload_hash="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 common="select public.ingest_github_workflow_event(
   '$delivery_id', '$payload_hash', 'requested',
   'zinlinna071-lgtm/private-gmail-vault', '.github/workflows/ci.yml',
-  990000001, 1, 'feature/postgres-test', repeat('a', 40), 'queued', null,
+  408741606, 990000001, 1, 'feature/postgres-test', repeat('a', 40), 'queued', null,
   '2026-11-07T00:00:00Z', null, '2026-11-07T00:00:00Z',
-  'https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/990000001'
+  'https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/990000001',
+  now(), 1, repeat('c', 64)
 );"
 
 tmp_dir="$(mktemp -d)"
