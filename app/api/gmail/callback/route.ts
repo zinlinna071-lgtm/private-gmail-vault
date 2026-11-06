@@ -67,17 +67,9 @@ export async function GET(request: NextRequest) {
     const accessToken = typeof tokenData.access_token === "string" ? tokenData.access_token : "";
     if (!accessToken) return vaultRedirect(request, "error=missing_access_token");
 
-    const tokenInfoResponse = await fetch(
-      `https://oauth2.googleapis.com/tokeninfo?access_token=${encodeURIComponent(accessToken)}`,
-      { cache: "no-store" }
-    );
-    if (!tokenInfoResponse.ok) return vaultRedirect(request, "error=scope_verification_failed");
-    const tokenInfo: unknown = await tokenInfoResponse.json();
-    if (!tokenInfo || typeof tokenInfo !== "object") {
-      return vaultRedirect(request, "error=scope_verification_failed");
-    }
-    const tokenInfoData = tokenInfo as Record<string, unknown>;
-    const verifiedScopeString = typeof tokenInfoData.scope === "string" ? tokenInfoData.scope : "";
+    // Google returns the granted scopes in the token response. Avoid sending the
+    // access token to the tokeninfo diagnostic endpoint during normal OAuth flow.
+    const verifiedScopeString = typeof tokenData.scope === "string" ? tokenData.scope : "";
     const grantedScopes = verifiedScopeString.split(" ").filter(Boolean);
     if (!grantedScopes.includes("https://www.googleapis.com/auth/gmail.readonly")) {
       return vaultRedirect(request, "error=gmail_readonly_scope_missing");
