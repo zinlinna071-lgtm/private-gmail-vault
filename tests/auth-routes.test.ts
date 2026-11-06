@@ -103,6 +103,36 @@ describe("Vault registration and login API", () => {
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "public-test-key";
   });
 
+  it("returns a safe client error for an invalid Login ID", async () => {
+    mocks.normalizeLoginId.mockImplementation(() => { throw new Error("private login validation detail"); });
+
+    const response = await login(request("/api/auth/login", {
+      loginId: "bad",
+      password: "any-password"
+    }));
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body.error).toBe("Invalid Login ID.");
+    expect(JSON.stringify(body)).not.toContain("private login validation detail");
+    expect(mocks.signInWithPassword).not.toHaveBeenCalled();
+  });
+
+  it("returns a safe client error for a short registration Master Password", async () => {
+    mocks.validatePassword.mockImplementation(() => { throw new Error("private password policy detail"); });
+
+    const response = await register(request("/api/auth/register", {
+      loginId: "myvault",
+      password: "short"
+    }));
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body.error).toBe("Master Password must be 12–128 characters.");
+    expect(JSON.stringify(body)).not.toContain("private password policy detail");
+    expect(mocks.createUser).not.toHaveBeenCalled();
+  });
+
   it("rejects oversized login JSON before authenticating", async () => {
     const oversized = new Request("https://vault.example/api/auth/login", {
       method: "POST",
