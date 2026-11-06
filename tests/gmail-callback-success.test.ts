@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   encryptRefreshToken: vi.fn(),
   maybeSingle: vi.fn(),
   upsertSingle: vi.fn(),
+  upsert: vi.fn(),
   auditInsert: vi.fn()
 }));
 
@@ -63,7 +64,8 @@ describe("Gmail OAuth callback success persistence", () => {
       ciphertext: "synthetic-ciphertext",
       iv: "synthetic-iv",
       authTag: "synthetic-auth-tag",
-      keyVersion: 1
+      keyVersion: 1,
+      formatVersion: 1
     });
     mocks.maybeSingle.mockResolvedValue({ data: null, error: null });
     mocks.upsertSingle.mockResolvedValue({ data: { id: "connection-1" }, error: null });
@@ -79,7 +81,7 @@ describe("Gmail OAuth callback success persistence", () => {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       maybeSingle: mocks.maybeSingle,
-      upsert: vi.fn().mockReturnValue({
+      upsert: mocks.upsert.mockReturnValue({
         select: vi.fn().mockReturnValue({ single: mocks.upsertSingle })
       }),
       insert: mocks.auditInsert
@@ -126,8 +128,55 @@ describe("Gmail OAuth callback success persistence", () => {
     expect(calls).toHaveLength(3);
     expect(calls[0].init?.method).toBe("POST");
     expect(String(calls[0].init?.body)).toContain("grant_type=authorization_code");
-    expect(mocks.encryptRefreshToken).toHaveBeenCalledWith("synthetic-refresh-token");
+    expect(mocks.encryptRefreshToken).toHaveBeenCalledWith("synthetic-refresh-token", {
+      userId: "vault-user-1",
+      googleSubject: "google-subject-1"
+    });
     expect(mocks.maybeSingle).toHaveBeenCalled();
+    expect(mocks.upsert).toHaveBeenCalledWith(expect.objectContaining({
+      encryption_key_version: 1,
+      encryption_format_version: 1,
+      refresh_token_ciphertext: "synthetic-ciphertext"
+    }), { onConflict: "user_id,google_subject" });
     expect(mocks.upsertSingle).toHaveBeenCalledWith();
   });
+  it("preserves the existing encrypted envelope and both versions when Google omits a refresh token", async () => {
+    const oldEnvelope = {
+      refresh_token_ciphertext: "old-ciphertext",
+      refresh_token_iv: "old-iv",
+      refresh_token_auth_tag: "old-auth-tag",
+      encryption_key_version: 7,
+      encryption_format_version: 2
+    };
+    mocks.maybeSingle.mockResolvedValue({ data: oldEnvelope, error: null });
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    globalThis.fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      calls.push({ url, init });
+      if (url === "https://oauth2.googleapis.com/token") {
+        return Response.json({ access_token: "synthetic-access-token" });
+      }
+      if (url.startsWith("https://oauth2.googleapis.com/tokeninfo")) {
+        return Response.json({ scope: "openid email https://www.googleapis.com/auth/gmail.readonly" });
+      }
+      if (url === "https://www.googleapis.com/oauth2/v3/userinfo") {
+        return Response.json({ sub: "google-subject-1", email: "owner@example.com", email_verified: true });
+      }
+      throw new Error("Unexpected external request");
+    }) as typeof fetch;
+
+    const state = signedState();
+    const response = await GET(makeRequest(`?state=${state.nonce}&code=synthetic-auth-code`, state.cookie));
+
+    expect(response.headers.get("location")).toContain("/vault?gmail_connected=1");
+    expect(mocks.encryptRefreshToken).not.toHaveBeenCalled();
+    expect(mocks.upsert).toHaveBeenCalledWith(expect.objectContaining({
+      refresh_token_ciphertext: oldEnvelope.refresh_token_ciphertext,
+      refresh_token_iv: oldEnvelope.refresh_token_iv,
+      refresh_token_auth_tag: oldEnvelope.refresh_token_auth_tag,
+      encryption_key_version: 7,
+      encryption_format_version: 2
+    }), { onConflict: "user_id,google_subject" });
+  });
+
 });
