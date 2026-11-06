@@ -69,7 +69,7 @@ export async function POST(request: Request) {
       success: true,
       signedIn: !signInError,
       recoveryCode,
-      requiresAcknowledgement: true
+      requiresAcknowledgement: !signInError
     });
   } catch (error) {
     if (createdUserId) {
