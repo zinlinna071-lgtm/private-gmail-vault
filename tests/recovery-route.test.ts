@@ -113,6 +113,20 @@ describe("POST /api/auth/recovery", () => {
     mocks.signInWithPassword.mockResolvedValue({ error: null });
   });
 
+  it("does not expose unexpected recovery exception details", async () => {
+    mocks.createSupabaseAdminClient.mockImplementation(() => { throw new Error("private recovery provider detail"); });
+    const response = await POST(makeRequest({
+      loginId: "myvault",
+      recoveryCode: "old-code",
+      newPassword: "a-strong-new-password"
+    }));
+    const body = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(body.error).toBe("Unable to complete account recovery. Please try again.");
+    expect(JSON.stringify(body)).not.toContain("private recovery provider detail");
+  });
+
   it("rejects a cross-origin request before touching account data", async () => {
     mocks.isSameOriginRequest.mockReturnValue(false);
     const response = await POST(makeRequest({
