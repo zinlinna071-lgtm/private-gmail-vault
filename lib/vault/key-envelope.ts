@@ -181,13 +181,18 @@ export async function unwrapVaultDataKey(
 
   try {
     if (rawDataKey.length !== KEY_BYTES) throw new Error("Invalid Vault data key.");
-    return await globalThis.crypto.subtle.importKey(
-      "raw",
-      rawDataKey,
-      { name: "AES-GCM" },
-      false,
-      ["encrypt", "decrypt"]
-    );
+    const importBuffer = toArrayBuffer(rawDataKey);
+    try {
+      return await globalThis.crypto.subtle.importKey(
+        "raw",
+        importBuffer,
+        { name: "AES-GCM" },
+        false,
+        ["encrypt", "decrypt"]
+      );
+    } finally {
+      new Uint8Array(importBuffer).fill(0);
+    }
   } finally {
     rawDataKey.fill(0);
   }
