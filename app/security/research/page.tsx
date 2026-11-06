@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { publishedResearch } from "@/lib/security-research/publications";
 
 export const metadata: Metadata = {
   title: "Security Research Library | Private Account Vault",
