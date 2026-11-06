@@ -16,7 +16,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!paper) return { title: "Research paper not found | Private Account Vault" };
   return {
     title: `${paper.title.en} | Security Research`,
-    description: paper.summary.en
+    description: paper.summary.en,
+    alternates: { canonical: `/security/research/${paper.slug}` },
+    openGraph: {
+      type: "article",
+      title: paper.title.en,
+      description: paper.summary.en
+    }
   };
 }
 
