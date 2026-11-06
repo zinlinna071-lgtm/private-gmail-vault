@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 
+type Mailbox = "INBOX" | "SENT" | "STARRED" | "DRAFT" | "SPAM" | "TRASH" | "IMPORTANT" | "UNREAD" | "ALL";
 type Message = { id: string; from: string; subject: string; date: string; snippet: string };
-type InboxResponse = { account?: string; query?: string; messages?: Message[]; error?: string };
+type InboxResponse = { account?: string; query?: string; mailbox?: Mailbox; messages?: Message[]; error?: string };
 type MessageDetail = {
   id: string;
   account: string;
@@ -16,31 +17,45 @@ type MessageDetail = {
   attachments: Array<{ filename: string; mimeType: string; size: number }>;
 };
 
+const MAILBOXES: Array<{ id: Mailbox; label: string }> = [
+  { id: "INBOX", label: "Inbox" },
+  { id: "SENT", label: "Sent" },
+  { id: "STARRED", label: "Starred" },
+  { id: "DRAFT", label: "Drafts" },
+  { id: "IMPORTANT", label: "Important" },
+  { id: "UNREAD", label: "Unread" },
+  { id: "SPAM", label: "Spam" },
+  { id: "TRASH", label: "Trash" },
+  { id: "ALL", label: "All Mail" }
+];
+
 export default function GmailInbox() {
   const [data, setData] = useState<InboxResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const [activeQuery, setActiveQuery] = useState("");
+  const [mailbox, setMailbox] = useState<Mailbox>("INBOX");
   const [selected, setSelected] = useState<MessageDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState("");
 
-  const load = useCallback(async (search = "") => {
+  const load = useCallback(async (search = "", selectedMailbox: Mailbox = "INBOX") => {
     setLoading(true);
     setError("");
     try {
-      const params = new URLSearchParams();
+      const params = new URLSearchParams({ label: selectedMailbox });
       if (search.trim()) params.set("q", search.trim());
-      const response = await fetch(`/api/gmail/messages${params.size ? `?${params.toString()}` : ""}`, { cache: "no-store" });
+      const response = await fetch(`/api/gmail/messages?${params.toString()}`, { cache: "no-store" });
       const result = await response.json() as InboxResponse;
       if (!response.ok) throw new Error(result.error ?? "inbox_load_failed");
       setData(result);
       setSelected(null);
       setDetailError("");
       setActiveQuery(search.trim());
+      setMailbox(selectedMailbox);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message.replaceAll("_", " ") : "Unable to load inbox");
+      setError(cause instanceof Error ? cause.message.replaceAll("_", " ") : "Unable to load Gmail messages");
     } finally {
       setLoading(false);
     }
@@ -48,12 +63,12 @@ export default function GmailInbox() {
 
   const submitSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    void load(query);
+    void load(query, mailbox);
   };
 
   const clearSearch = () => {
     setQuery("");
-    void load("");
+    void load("", mailbox);
   };
 
   const openMessage = async (id: string) => {
@@ -74,28 +89,44 @@ export default function GmailInbox() {
 
   useEffect(() => { void load(); }, [load]);
 
+  const currentMailboxLabel = MAILBOXES.find((item) => item.id === mailbox)?.label ?? "Inbox";
+
   return (
     <section className="notice" aria-labelledby="inbox-heading">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
         <strong id="inbox-heading">Gmail messages</strong>
-        <button className="secondary-button" type="button" onClick={() => void load(activeQuery)} disabled={loading}>
+        <button className="secondary-button" type="button" onClick={() => void load(activeQuery, mailbox)} disabled={loading}>
           {loading ? "Loading…" : "Refresh"}
         </button>
       </div>
-      <p>Search your Gmail mailbox or browse the 20 most recent Inbox messages.</p>
+      <p>Browse Gmail folders and search messages. Each folder shows up to 20 recent messages.</p>
+      <nav aria-label="Gmail mailboxes" style={{ display: "flex", gap: 8, flexWrap: "wrap", margin: "14px 0" }}>
+        {MAILBOXES.map((item) => (
+          <button
+            key={item.id}
+            className={mailbox === item.id ? "primary-button" : "secondary-button"}
+            type="button"
+            onClick={() => void load(activeQuery, item.id)}
+            disabled={loading}
+            aria-pressed={mailbox === item.id}
+          >
+            {item.label}
+          </button>
+        ))}
+      </nav>
       <form onSubmit={submitSearch} style={{ display: "flex", gap: 8, flexWrap: "wrap", margin: "14px 0" }}>
         <input
           aria-label="Search Gmail"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search Gmail (e.g. from:someone or has:attachment)"
+          placeholder="Search this mailbox (e.g. from:someone or has:attachment)"
           maxLength={200}
           style={{ flex: "1 1 220px", minWidth: 0 }}
         />
         <button className="primary-button" type="submit" disabled={loading || !query.trim()}>Search</button>
         {activeQuery && <button className="secondary-button" type="button" onClick={clearSearch} disabled={loading}>Clear</button>}
       </form>
-      {activeQuery && <p>Search results for: <strong>{activeQuery}</strong></p>}
+      {activeQuery && <p>Search in <strong>{currentMailboxLabel}</strong> for: <strong>{activeQuery}</strong></p>}
       {error && <p className="feedback error" role="alert">{error}</p>}
       {loading && !data && <p>Loading Gmail messages…</p>}
       {data && (
@@ -115,7 +146,7 @@ export default function GmailInbox() {
                 </li>
               ))}
             </ul>
-          ) : <p>{activeQuery ? "No messages matched your search." : "Your Inbox has no messages to display."}</p>}
+          ) : <p>{activeQuery ? "No messages matched your search in this mailbox." : `No messages in ${currentMailboxLabel}.`}</p>}
         </>
       )}
       {detailError && <p className="feedback error" role="alert">{detailError}</p>}
