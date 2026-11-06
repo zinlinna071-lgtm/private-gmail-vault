@@ -8,13 +8,12 @@ type Entry = {
   username: string;
   password: string;
   backupCodes: string;
-  notes: string;
   createdAt: string;
   updatedAt: string;
 };
 
 type EntryForm = Omit<Entry, "id" | "createdAt" | "updatedAt">;
-const emptyForm: EntryForm = { accountName: "", username: "", password: "", backupCodes: "", notes: "" };
+const emptyForm: EntryForm = { accountName: "", username: "", password: "", backupCodes: "" };
 
 export default function VaultManager() {
   const [items, setItems] = useState<Entry[]>([]);
@@ -70,7 +69,6 @@ export default function VaultManager() {
       username: item.username,
       password: item.password,
       backupCodes: item.backupCodes,
-      notes: item.notes
     });
     setShowForm(true);
     setError("");
@@ -162,8 +160,6 @@ export default function VaultManager() {
           <input id="account-password" type="password" autoComplete="new-password" maxLength={4096} value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
           <label htmlFor="account-codes">Backup codes</label>
           <textarea id="account-codes" rows={3} autoComplete="off" maxLength={12000} value={form.backupCodes} onChange={e => setForm({ ...form, backupCodes: e.target.value })} placeholder="One code per line" />
-          <label htmlFor="account-notes">Notes</label>
-          <textarea id="account-notes" rows={2} maxLength={4000} value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} />
           <div className="form-actions">
             <button className="primary-button" type="submit" disabled={saving}>{saving ? "Saving…" : "Save"}</button>
             <button className="secondary-button" type="button" disabled={saving} onClick={() => { setShowForm(false); setEditingId(null); setForm(emptyForm); }}>Cancel</button>
@@ -204,7 +200,6 @@ export default function VaultManager() {
                   </div>
                   {codesVisible && <pre>{item.backupCodes}</pre>}
                 </div>}
-                {item.notes && <p className="entry-notes">{item.notes}</p>}
               </article>
             );
           })}
