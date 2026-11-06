@@ -19,7 +19,7 @@ export async function readBoundedJson(
 
   const contentLength = request.headers.get("content-length");
   if (contentLength !== null) {
-    if (!/^\d+$/.test(contentLength)) {
+    if (!/^\\d+$/.test(contentLength)) {
       return { ok: false, reason: "invalid_json" };
     }
     if (Number(contentLength) > maxBytes) {
@@ -39,6 +39,8 @@ export async function readBoundedJson(
       if (done) break;
       totalBytes += value.byteLength;
       if (totalBytes > maxBytes) {
+        value.fill(0);
+        for (const chunk of chunks) chunk.fill(0);
         try {
           await reader.cancel();
         } catch {
@@ -49,22 +51,25 @@ export async function readBoundedJson(
       chunks.push(value);
     }
   } catch {
+    for (const chunk of chunks) chunk.fill(0);
     return { ok: false, reason: "invalid_json" };
   } finally {
     reader.releaseLock();
   }
 
+  const bytes = new Uint8Array(totalBytes);
   try {
-    const bytes = new Uint8Array(totalBytes);
     let offset = 0;
     for (const chunk of chunks) {
       bytes.set(chunk, offset);
       offset += chunk.byteLength;
     }
     const source = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
-    bytes.fill(0);
     return { ok: true, value: JSON.parse(source) as unknown };
   } catch {
     return { ok: false, reason: "invalid_json" };
+  } finally {
+    bytes.fill(0);
+    for (const chunk of chunks) chunk.fill(0);
   }
 }
