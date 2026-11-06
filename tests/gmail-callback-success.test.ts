@@ -71,12 +71,6 @@ describe("Gmail OAuth callback success persistence", () => {
     mocks.upsertSingle.mockResolvedValue({ data: { id: "connection-1" }, error: null });
     mocks.auditInsert.mockResolvedValue({ error: null });
 
-    const query = {
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      maybeSingle: mocks.maybeSingle,
-      single: mocks.upsertSingle
-    };
     const table = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
@@ -89,7 +83,6 @@ describe("Gmail OAuth callback success persistence", () => {
     mocks.createSupabaseAdminClient.mockReturnValue({
       from: vi.fn((name: string) => name === "gmail_connections" ? table : { insert: mocks.auditInsert })
     });
-    void query;
   });
 
   afterEach(() => {
@@ -104,16 +97,17 @@ describe("Gmail OAuth callback success persistence", () => {
     else process.env.VAULT_ENCRYPTION_KEY = originalEnv.encryptionKey;
   });
 
-  it("exchanges the code, verifies Gmail scope, encrypts and persists the refresh token", async () => {
+  it("uses granted scopes from the token response without calling tokeninfo", async () => {
     const calls: Array<{ url: string; init?: RequestInit }> = [];
     globalThis.fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
       calls.push({ url, init });
       if (url === "https://oauth2.googleapis.com/token") {
-        return Response.json({ access_token: "synthetic-access-token", refresh_token: "synthetic-refresh-token" });
-      }
-      if (url.startsWith("https://oauth2.googleapis.com/tokeninfo")) {
-        return Response.json({ scope: "openid email https://www.googleapis.com/auth/gmail.readonly" });
+        return Response.json({
+          access_token: "synthetic-access-token",
+          refresh_token: "synthetic-refresh-token",
+          scope: "openid email https://www.googleapis.com/auth/gmail.readonly"
+        });
       }
       if (url === "https://www.googleapis.com/oauth2/v3/userinfo") {
         return Response.json({ sub: "google-subject-1", email: "Owner@Example.com", email_verified: true, name: "Vault Owner" });
@@ -125,7 +119,8 @@ describe("Gmail OAuth callback success persistence", () => {
     const response = await GET(makeRequest(`?state=${state.nonce}&code=synthetic-auth-code`, state.cookie));
 
     expect(response.headers.get("location")).toContain("/vault?gmail_connected=1");
-    expect(calls).toHaveLength(3);
+    expect(calls).toHaveLength(2);
+    expect(calls.map((call) => call.url)).not.toContain(expect.stringContaining("tokeninfo"));
     expect(calls[0].init?.method).toBe("POST");
     expect(String(calls[0].init?.body)).toContain("grant_type=authorization_code");
     expect(mocks.encryptRefreshToken).toHaveBeenCalledWith("synthetic-refresh-token", {
@@ -140,6 +135,7 @@ describe("Gmail OAuth callback success persistence", () => {
     }), { onConflict: "user_id,google_subject" });
     expect(mocks.upsertSingle).toHaveBeenCalledWith();
   });
+
   it("preserves the existing encrypted envelope and both versions when Google omits a refresh token", async () => {
     const oldEnvelope = {
       refresh_token_ciphertext: "old-ciphertext",
@@ -154,10 +150,10 @@ describe("Gmail OAuth callback success persistence", () => {
       const url = String(input);
       calls.push({ url, init });
       if (url === "https://oauth2.googleapis.com/token") {
-        return Response.json({ access_token: "synthetic-access-token" });
-      }
-      if (url.startsWith("https://oauth2.googleapis.com/tokeninfo")) {
-        return Response.json({ scope: "openid email https://www.googleapis.com/auth/gmail.readonly" });
+        return Response.json({
+          access_token: "synthetic-access-token",
+          scope: "openid email https://www.googleapis.com/auth/gmail.readonly"
+        });
       }
       if (url === "https://www.googleapis.com/oauth2/v3/userinfo") {
         return Response.json({ sub: "google-subject-1", email: "owner@example.com", email_verified: true });
@@ -178,5 +174,4 @@ describe("Gmail OAuth callback success persistence", () => {
       encryption_format_version: 2
     }), { onConflict: "user_id,google_subject" });
   });
-
 });
