@@ -11,7 +11,8 @@ const base = {
   transactionHash: "0x" + "a".repeat(64),
   transactionSucceeded: true,
   blockNumber: 100n,
-  latestBlockNumber: 102n,
+  // 2 confirmations; the policy requires 3.
+  latestBlockNumber: 101n,
   recipient: "0x1111111111111111111111111111111111111111",
   expectedRecipient: "0x1111111111111111111111111111111111111111",
   asset: "ETH" as const,
@@ -31,8 +32,8 @@ describe("Sepolia research-fund transfer policy", () => {
   });
 
   it("keeps transfers pending until the confirmation threshold", () => {
-    expect(evaluateSepoliaTransfer(base)).toMatchObject({ status: "PENDING", confirmations: 3n });
-    expect(evaluateSepoliaTransfer({ ...base, latestBlockNumber: 101n })).toMatchObject({ status: "PENDING", confirmations: 2n });
+    expect(evaluateSepoliaTransfer(base)).toMatchObject({ status: "PENDING", confirmations: 2n });
+    expect(evaluateSepoliaTransfer({ ...base, latestBlockNumber: 100n })).toMatchObject({ status: "PENDING", confirmations: 1n });
   });
 
   it("confirms only matching successful Sepolia transfers after threshold", () => {
