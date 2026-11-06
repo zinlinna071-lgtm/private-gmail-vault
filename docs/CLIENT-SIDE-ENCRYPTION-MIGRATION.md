@@ -61,7 +61,7 @@ The replacement protocol must:
 - Define rotation, revocation, interrupted recovery, lost-device, and lost-recovery behavior.
 - Never create a hidden server master key or plaintext recovery-code escrow.
 
-The exact recovery encoding, entropy, KDF parameters, envelope format, and state machine require a separate review and tests before implementation.
+The exact recovery encoding, entropy, KDF parameters, envelope format, and state machine require a separate review and tests before implementation. See [Argon2id Browser Library Review](ARGON2ID-LIBRARY-REVIEW.md); no KDF package has been selected or installed.
 
 ## 6. Cryptographic envelope requirements
 
