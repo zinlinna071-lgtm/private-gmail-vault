@@ -139,6 +139,23 @@ describe("authoritative GitHub run/job verification", () => {
     ).rejects.toThrow("GitHub canonical run metadata does not match the signed event.");
   });
 
+  it("accepts a queued run whose job list has not been created yet", async () => {
+    const queuedEvent: VerifiedWorkflowRunEvent = {
+      ...event,
+      action: "requested",
+      status: "queued",
+      conclusion: null,
+      runStartedAt: null
+    };
+    mockGitHubApi({
+      run: { ...run, status: "queued", conclusion: null },
+      workflow,
+      jobs: { total_count: 0, jobs: [] }
+    });
+    const result = await verifyWorkflowRunWithGitHubApi(queuedEvent, "ghp_" + "x".repeat(36));
+    expect(result.jobCount).toBe(0);
+  });
+
   it("requires a server-only GitHub API token", async () => {
     await expect(verifyWorkflowRunWithGitHubApi(event, undefined)).rejects.toThrow(
       "GitHub API verification is not configured."
