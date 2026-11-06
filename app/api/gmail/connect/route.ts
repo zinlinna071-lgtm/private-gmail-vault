@@ -40,7 +40,7 @@ export async function GET(request: Request) {
   authorizationUrl.searchParams.set("response_type", "code");
   authorizationUrl.searchParams.set("scope", "openid email profile https://www.googleapis.com/auth/gmail.readonly");
   authorizationUrl.searchParams.set("access_type", "offline");
-  authorizationUrl.searchParams.set("prompt", "consent");
+  authorizationUrl.searchParams.set("prompt", "select_account consent");
   authorizationUrl.searchParams.set("include_granted_scopes", "true");
   authorizationUrl.searchParams.set("state", state);
 
