@@ -7,7 +7,7 @@ import { encryptRefreshToken } from "@/lib/gmail/token-encryption";
 export const dynamic = "force-dynamic";
 
 function validStateSignature(state: string, signature: string, userId: string) {
-  const key = process.env.GMAIL_OAUTH_STATE_HMAC_KEY ?? process.env.VAULT_ENCRYPTION_KEY ?? "";
+  const key = process.env.GMAIL_OAUTH_STATE_HMAC_KEY || process.env.VAULT_ENCRYPTION_KEY || "";
   if (!/^[a-fA-F0-9]{64}$/.test(key) || !/^[a-f0-9]{64}$/.test(signature)) return false;
   const expected = createHmac("sha256", Buffer.from(key, "hex"))
     .update(`gmail-oauth:${state}:${userId}`)
