@@ -114,12 +114,12 @@ export async function encryptVaultRecord(
   const encrypted = new Uint8Array(await globalThis.crypto.subtle.encrypt(
     {
       name: "AES-GCM",
-      iv,
-      additionalData: additionalData(vaultId, recordId),
+      iv: toArrayBuffer(iv),
+      additionalData: toArrayBuffer(additionalData(vaultId, recordId)),
       tagLength: 128
     },
     key,
-    plaintextBytes
+    toArrayBuffer(plaintextBytes)
   ));
 
   const splitAt = encrypted.length - AUTH_TAG_BYTES;
