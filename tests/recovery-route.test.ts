@@ -113,6 +113,22 @@ describe("POST /api/auth/recovery", () => {
     mocks.signInWithPassword.mockResolvedValue({ error: null });
   });
 
+  it("returns a client validation error for an invalid Master Password", async () => {
+    mocks.validatePassword.mockImplementation(() => { throw new Error("private password policy detail"); });
+
+    const response = await POST(makeRequest({
+      loginId: "myvault",
+      recoveryCode: "old-code",
+      newPassword: "short"
+    }));
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body.error).toBe("Master Password must be 12–128 characters.");
+    expect(JSON.stringify(body)).not.toContain("private password policy detail");
+    expect(mocks.createSupabaseAdminClient).not.toHaveBeenCalled();
+  });
+
   it("does not expose unexpected recovery exception details", async () => {
     mocks.createSupabaseAdminClient.mockImplementation(() => { throw new Error("private recovery provider detail"); });
     const response = await POST(makeRequest({
