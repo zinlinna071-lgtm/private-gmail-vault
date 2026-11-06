@@ -51,14 +51,23 @@ export async function POST(request: Request) {
       return noStoreJson({ error: "Invalid JSON request." }, { status: 400 });
     }
     const body = parsedBody.value as Record<string, unknown>;
-    const loginId = normalizeLoginId(String(body.loginId ?? ""));
+    let loginId: string;
+    try {
+      loginId = normalizeLoginId(String(body.loginId ?? ""));
+    } catch {
+      return noStoreJson({ error: "Invalid Login ID or Recovery Code." }, { status: 400 });
+    }
     if (!await allowAuthAttempt(request, "recovery", loginId, 5)) {
       return noStoreJson({ error: "Too many recovery attempts. Try again in 15 minutes." }, { status: 429 });
     }
 
     const recoveryCode = String(body.recoveryCode ?? "");
     const newPassword = String(body.newPassword ?? "");
-    validatePassword(newPassword);
+    try {
+      validatePassword(newPassword);
+    } catch {
+      return noStoreJson({ error: "Master Password must be 12–128 characters." }, { status: 400 });
+    }
 
     const admin = createSupabaseAdminClient();
     const { data: profile, error: profileError } = await admin.from("vault_profiles")
