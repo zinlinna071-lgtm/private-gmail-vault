@@ -209,3 +209,51 @@ footer { margin-top: 42px; color: #71809a; font-size: 11px; line-height: 1.7; le
 
 .security-footer-links { display:flex; flex-wrap:wrap; gap:18px; }
 .security-footer-links a { color:#a7c9bd; font-size:10px; font-weight:800; text-decoration:none; white-space:nowrap; }
+
+
+/* Security operations center — attack surface and research workflow */
+.security-nav-links { display:flex; align-items:center; gap:22px; margin-left:auto; margin-right:24px; }
+.security-nav-links a { color:#8fa8b4; font-size:10px; font-weight:800; letter-spacing:.08em; text-decoration:none; }
+.security-nav-links a:hover,.security-hero-actions a:hover { color:#b8f5df; }
+.security-hero-copy { min-width:0; }
+.security-hero-actions { display:flex; flex-wrap:wrap; gap:22px; margin-top:30px; }
+.security-hero-actions a,.security-operations a,.security-method a { color:#9fe0c9; font-size:11px; font-weight:800; letter-spacing:.06em; text-decoration:none; }
+.security-hero-actions a span { margin-left:5px; }
+.security-section[id] { scroll-margin-top:28px; }
+.surface-flow { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-top:28px; }
+.surface-step { position:relative; min-height:150px; padding:18px; border:1px solid #294453; border-radius:13px; background:linear-gradient(145deg,#102432dd,#0b1521); }
+.surface-step-top { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.surface-step-top span { color:#70d5b3; font-size:10px; font-weight:900; letter-spacing:.14em; }
+.surface-step-top small { color:#6f8d99; font-size:8px; font-weight:800; letter-spacing:.1em; text-align:right; }
+.surface-step h3 { margin:22px 0 7px; font-size:14px; }
+.surface-step p { margin:0; color:#91a8b5; font-size:11px; line-height:1.7; }
+.surface-connector { display:none; }
+.evidence-detail { color:#8fa8b5 !important; }
+.status-untested { color:#e0b77a !important; }
+.security-operations { display:grid; grid-template-columns:.85fr 1.15fr; gap:42px; padding-bottom:76px; }
+.operation-list { display:grid; }
+.operation-list>div { display:grid; grid-template-columns:28px 1fr auto; align-items:start; gap:13px; padding:16px 0; border-bottom:1px solid #293a48; }
+.operation-list b { color:#6bc7a9; font-size:11px; }
+.operation-list span { display:grid; gap:5px; }
+.operation-list strong { font-size:12px; }
+.operation-list small { color:#91a5b2; font-size:11px; line-height:1.65; }
+.operation-list em { padding:5px 7px; border:1px solid #365c59; border-radius:4px; color:#9dcbbd; font-size:8px; font-style:normal; font-weight:800; letter-spacing:.08em; white-space:nowrap; }
+.security-method { padding-bottom:76px; }
+@media(max-width:900px) {
+  .security-nav-links { gap:12px; margin-right:14px; }
+  .security-nav-links a { font-size:9px; }
+  .surface-flow { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .security-operations { grid-template-columns:1fr; gap:22px; }
+}
+@media(max-width:600px) {
+  .security-nav { min-height:68px; flex-wrap:wrap; padding:12px 0; gap:10px; }
+  .security-nav-links { order:3; width:100%; margin:0; padding:7px 0 2px; justify-content:space-between; border-top:1px solid #203442; }
+  .security-nav-status { margin-left:auto; }
+  .security-hero-actions { gap:14px; }
+  .surface-flow { grid-template-columns:1fr; gap:9px; }
+  .surface-step { min-height:0; padding:15px; }
+  .surface-step h3 { margin-top:12px; }
+  .surface-connector { display:block; position:absolute; z-index:2; left:50%; bottom:-15px; color:#67c5a5; font-size:12px; }
+  .operation-list>div { grid-template-columns:24px 1fr; }
+  .operation-list em { grid-column:2; justify-self:start; }
+}
