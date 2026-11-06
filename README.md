@@ -1,67 +1,53 @@
-# Private Gmail Vault
+# Private Account Vault
 
-A private web application designed to let its owner sign in from a new device and manage multiple Gmail connections through Google's official OAuth 2.0 authorization and Gmail API.
+A simple private vault for storing account passwords and backup codes.
 
-> **Product direction:** This project combines Gmail Management and an Authentication & Recovery Vault. See [docs/PROJECT_DIRECTION.md](docs/PROJECT_DIRECTION.md) for the agreed product vision, user workflows, security boundaries, roadmap, and working rules.
+## What it does
 
-## Current implementation
-The `feature/vault-authentication` branch adds an independent Vault account:
-- A unique Vault Login ID and Master Password; no Gmail address, phone number, or SIM is used as the Vault sign-in identity.
-- A one-time Recovery Code generated at account creation and rotated after successful recovery.
-- Server-side hashed Recovery Code storage and database-backed rate limits.
-- Supabase Auth sessions stored through secure server-managed cookies.
-- A private Vault page with Google OAuth 2.0 Gmail account connection. The initial connection requests read-only Gmail scope and stores the Google refresh token encrypted with AES-256-GCM.
-- Gmail mailbox browsing and message reading/search features are being developed on the feature branch. Check the project direction document for the planned scope and current permission boundaries.
+- Create a private Vault Login ID and Master Password.
+- Save an account name, email or username, password, backup codes, and notes.
+- Search saved accounts.
+- Show or hide passwords and backup codes.
+- Copy credentials when needed.
+- Edit or delete saved accounts.
 
-## Security principles
-- Never collect or store Gmail passwords.
-- Use Google's official OAuth 2.0 flow and request only the minimum Gmail API scopes needed.
-- Keep Google OAuth client secrets, refresh tokens, Supabase secret keys, and encryption keys on the server only.
-- Encrypt stored refresh tokens with AES-256-GCM and keep encryption keys outside the database.
-- Apply Supabase Row Level Security and scope every privileged query to the authenticated Vault user's UUID.
-- Never promise access if Google revokes a token or requires identity verification. Only Google can satisfy Google's account recovery and verification checks.
-- A lost Master Password can be reset with the Recovery Code. If both are lost, there is intentionally no hidden bypass.
+There is no Gmail connection, mailbox access, AI, analytics, or extra dashboard.
 
-## Supabase setup
-Apply these migrations in order in the Supabase SQL Editor:
+## Security
 
-1. `supabase/migrations/202611060001_initial_vault_schema.sql`
-2. `supabase/migrations/202611060002_vault_auth_credentials.sql`
-3. `supabase/migrations/202611060003_recovery_claims.sql`
+- Account entries are encrypted with AES-256-GCM before they are stored in the database.
+- Each entry uses a unique random IV and authenticated data bound to its Vault user and record ID.
+- The account-data encryption key is server-only and separate from the Vault Recovery Code key.
+- Database access is restricted to server-side routes that verify the signed-in Vault user and filter every record by that user's ID.
+- API responses containing credentials are marked no-store.
+- Never log or expose passwords, backup codes, recovery codes, or encryption keys.
 
-Migration 003 adds the recovery-claim lock and encrypted pending Recovery Code handoff. The current recovery code remains active until the newly issued code is explicitly acknowledged.
+**Important:** This first version uses server-side encryption at rest. The hosting server must access the encryption key to display saved credentials, so this is not a zero-knowledge vault. A zero-knowledge design would require a more complex client-side key and recovery system.
 
-The application uses server-side Supabase admin access for private tables. Do not add browser-facing table grants or policies for these tables unless the architecture is deliberately changed and reviewed.
+## Setup
 
-## Environment
-Copy `.env.example` to `.env.local` and configure:
+1. Configure a Supabase project.
+2. Apply migrations in order:
+   - `supabase/migrations/202611060001_initial_vault_schema.sql`
+   - `supabase/migrations/202611060002_vault_auth_credentials.sql`
+   - `supabase/migrations/202611060003_recovery_claims.sql`
+   - `supabase/migrations/202611060005_vault_items.sql`
+3. Set these server/deployment environment variables:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+   - `SUPABASE_SECRET_KEY`
+   - `VAULT_ENCRYPTION_KEY`
+   - `VAULT_DATA_ENCRYPTION_KEY`
+4. Both encryption keys must be 64 hexadecimal characters (32 cryptographically random bytes). Keep them separate, server-only, and backed up securely.
+5. Install dependencies and run:
+   - `npm install`
+   - `npm run typecheck`
+   - `npm test`
+   - `npm run build`
+   - `npm run dev`
 
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-- `SUPABASE_SECRET_KEY` (server only; never expose to the browser)
-- `VAULT_ENCRYPTION_KEY` (server only; exactly 64 hexadecimal characters representing 32 cryptographically random bytes)
-- `GOOGLE_CLIENT_ID` (Google Cloud OAuth 2.0 Web application client ID)
-- `GOOGLE_CLIENT_SECRET` (server-only OAuth client secret)
-- `GOOGLE_REDIRECT_URI` (exact HTTPS callback URL: `https://YOUR_PREVIEW_HOST/api/gmail/callback`)
+Do not deploy until all migrations are applied to the intended database, both keys are configured, and authentication, authorization, encryption, and recovery tests pass.
 
-Generate `VAULT_ENCRYPTION_KEY` securely and store it only in your local secret file or deployment secret manager. Do not paste it into chat, commit it, or change it without a planned re-encryption procedure for any encrypted pending data.
+## Project boundaries
 
-The Supabase Auth user uses an internal synthetic `.invalid` email identifier derived from the Login ID. It is not a real email inbox and is never used for email recovery. Do not enable email-confirmation workflows for this internal username flow; account creation is performed server-side with confirmed Supabase Auth users.
-
-## Google OAuth setup
-1. Create or select a Google Cloud project and configure the OAuth consent screen.
-2. Create an OAuth 2.0 Client ID with application type **Web application**.
-3. Add the exact deployed callback URL to **Authorized redirect URIs**. It must match `GOOGLE_REDIRECT_URI` exactly, including scheme, hostname, and path.
-4. Add the client ID, client secret, and redirect URI to the Vercel **Preview** environment for the feature branch. Keep the client secret server-only.
-5. The current connection flow requests `openid`, `email`, `profile`, and `https://www.googleapis.com/auth/gmail.readonly`. It does not request send, modify, or delete permissions.
-6. Verify the Google OAuth consent screen and any required test-user configuration before attempting the connection.
-
-The callback validates a short-lived, user-bound OAuth state value, exchanges the authorization code server-side, verifies the Google account email, encrypts the refresh token with AES-256-GCM, and stores only the encrypted token. Access tokens are not persisted. If Google does not return a refresh token on a repeat authorization, an existing encrypted refresh token for that same Google subject is retained; otherwise the connection is not saved.
-
-## Local development
-1. Install Node.js 20.9 or later.
-2. Copy `.env.example` to `.env.local`.
-3. Configure the Supabase variables directly in your local secret file or deployment secret manager.
-4. Run `npm install`, `npm run typecheck`, `npm run build`, then `npm run dev`.
-
-Never paste secret values into chat or commit them to GitHub. Do not deploy with placeholder environment values. This branch is not production-ready until the migrations are applied, deployment secrets are configured, and end-to-end security tests are completed.
+This project is for personal account-secret storage only. It does not connect to Gmail or other account providers, sign in to external services, or bypass any provider's security checks.
