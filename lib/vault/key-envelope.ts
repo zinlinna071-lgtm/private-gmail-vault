@@ -89,7 +89,7 @@ export async function importVaultKeyEncryptionKey(derivedKey: Uint8Array): Promi
   try {
     return await globalThis.crypto.subtle.importKey(
       "raw",
-      derivedKey,
+      toArrayBuffer(derivedKey),
       { name: "AES-GCM" },
       false,
       ["encrypt", "decrypt"]
@@ -116,9 +116,9 @@ export async function createVaultKeyEnvelope(
 
   try {
     const wrappedKey = new Uint8Array(await globalThis.crypto.subtle.encrypt(
-      { name: "AES-GCM", iv, additionalData: keyEnvelopeAad(vaultId), tagLength: 128 },
+      { name: "AES-GCM", iv: toArrayBuffer(iv), additionalData: toArrayBuffer(keyEnvelopeAad(vaultId)), tagLength: 128 },
       kek,
-      rawDataKey
+      toArrayBuffer(rawDataKey)
     ));
     const dataKey = await globalThis.crypto.subtle.importKey(
       "raw",
@@ -163,7 +163,7 @@ export async function unwrapVaultDataKey(
   const iv = decodeBase64(candidate.iv, IV_BYTES);
   const wrappedKey = decodeBase64(candidate.wrappedKey, KEY_BYTES + 16);
   const rawDataKey = new Uint8Array(await globalThis.crypto.subtle.decrypt(
-    { name: "AES-GCM", iv, additionalData: keyEnvelopeAad(vaultId), tagLength: 128 },
+    { name: "AES-GCM", iv: toArrayBuffer(iv), additionalData: toArrayBuffer(keyEnvelopeAad(vaultId)), tagLength: 128 },
     kek,
     wrappedKey
   ));
