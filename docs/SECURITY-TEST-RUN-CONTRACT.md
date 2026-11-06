@@ -1,6 +1,6 @@
 # Security Test Run Record Contract
 
-**Status:** Metadata contract and GitHub webhook verification primitives implemented; durable ingestion and dashboard integration are not implemented.  
+**Status:** Signed webhook receiver, durable ingestion adapter, PostgreSQL migration harness, and CI verification are implemented. Authoritative GitHub API re-fetch and public dashboard integration remain outstanding.  
 **Branch:** `feature/vault-authentication`  
 **Public exposure:** None added by this contract.  
 **Production impact:** None.
@@ -50,7 +50,7 @@ A proposed Supabase migration is committed at `supabase/migrations/202611070001_
 
 A server-only adapter is also committed at `lib/security-research/github-webhook-store.ts`. It computes a SHA-256 fingerprint of the exact raw body, sends only the fingerprint and allowlisted event metadata to the RPC, validates the RPC result, and replaces provider/database errors with a generic server-side error. Its unit tests are in `tests/github-webhook-store.test.ts`.
 
-The adapter is not called by any route. The migration has received source-level review only. It has **not** been applied to any Supabase project or tested against a live/isolated PostgreSQL instance. Therefore, durable replay protection is designed in the migration but is not active yet. A valid HMAC proves that the payload was signed by a party holding the webhook secret; it does not prove that a security test was adequate or that a passing CI workflow constitutes a penetration test.
+The adapter is called by the disabled-by-default route `POST /api/webhooks/github`. The migration and its transactional behavior have been tested by the GitHub Actions harness against a disposable PostgreSQL 16 service, including duplicate delivery, conflicting delivery IDs, stale event ordering, concurrent duplicate delivery, and role grants. This is not a hosted Supabase test: the migration has **not** been applied to any hosted Supabase project. The route has not received a real GitHub webhook because no secret or repository webhook is configured. A valid HMAC proves that the payload was signed by a party holding the webhook secret; it does not independently establish current canonical GitHub run state, prove that a security test was adequate, or make a passing CI workflow a penetration test.
 
 Required before endpoint activation:
 1. Review and test the proposed migration in an isolated PostgreSQL/Supabase project; do not apply it to production.
@@ -60,7 +60,7 @@ Required before endpoint activation:
 5. Keep the publication state private/pending until the owner completes technical, privacy, and security review.
 6. Never expose a GitHub private-repository token or webhook secret to the client.
 
-No webhook endpoint, webhook secret, private-repository token, live database table, or GitHub webhook configuration has been created. The migration file is only a proposed schema change in the feature branch; it must not be applied until owner approval and isolated PostgreSQL migration/transaction tests are complete. Do not enable or publish the feed until these dependencies are explicitly configured and tested.
+The webhook endpoint exists but is disabled by default. No webhook secret, private-repository token, hosted database table, or GitHub repository webhook is configured. The migration remains unapplied to hosted Supabase. Do not enable ingestion or publish a feed until the remaining configuration, authoritative verification, sanitization, and approval gates are complete.
 
 ## Lifecycle and publication
 
@@ -106,8 +106,8 @@ When the ingestion layer is added, dashboard motion may be driven only by verifi
 1. Review and test the proposed migration in an isolated PostgreSQL/Supabase project; do not apply it to production.
 2. Configure and validate a server-only GitHub webhook secret.
 3. Implement a server-only endpoint that verifies the event header, bounded raw body, HMAC, and delivery metadata before calling the atomic ingestion RPC.
-4. Add database-backed replay protection, idempotency, and out-of-order transition tests.
-4. Verify CI run/job metadata against GitHub's authoritative API.
+5. Add database-backed replay protection, idempotency, and out-of-order transition tests (implemented and passing in disposable PostgreSQL 16 CI).
+4. Implement authoritative GitHub run/job API re-fetch and metadata comparison before persisting a run as canonical.
 5. Design a signed or otherwise authenticated event source for private-lab runs.
 6. Implement a read-only public projection that exposes approved sanitized records only.
 7. Add tests for provider mismatch, forged events, duplicate events, out-of-order transitions, revoked publication, and secret-redaction review.
@@ -131,7 +131,7 @@ The database assertions cover:
 
 The harness uses a disposable GitHub Actions PostgreSQL service only. It does not connect to Supabase, use production credentials, configure a webhook, or publish run data. These checks establish behavior for the tested PostgreSQL migration in CI; they do not establish that a hosted Supabase project has been configured or that production deployment is approved.
 
-**Verification status:** the harness and CI workflow have been committed, but their first CI execution must pass before these database behaviors are described as verified.
+**Verification status:** PostgreSQL 16 migration harness passed in GitHub Actions on commit `a1dbc57e6df0debde871f41ac893312605259fd5` (run `42302994860` and PR run `42303001122`). This is CI-only evidence, not hosted Supabase verification.
 
 
 ## Disabled-by-default GitHub webhook endpoint
