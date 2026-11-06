@@ -23,7 +23,10 @@ export const researchPublicationSchema = z.object({
   slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
   publicationId: z.string().regex(/^PAV-SEC-\d{4}-\d{3}$/),
   version: z.string().regex(/^\d+\.\d+\.\d+$/),
-  publishedAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((value) => {\n    const parsed = new Date(`${value}T00:00:00.000Z`);\n    return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;\n  }, "Publication date must be a real calendar date"),
+  publishedAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((value) => {
+    const parsed = new Date(`${value}T00:00:00.000Z`);
+    return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+  }, "Publication date must be a real calendar date"),
   category: z.string().trim().min(1),
   title: localizedText,
   summary: localizedText,
