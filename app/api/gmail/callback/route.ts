@@ -7,7 +7,7 @@ import { encryptRefreshToken } from "@/lib/gmail/token-encryption";
 export const dynamic = "force-dynamic";
 
 function validStateSignature(state: string, signature: string, userId: string) {
-  const key = process.env.VAULT_ENCRYPTION_KEY ?? "";
+  const key = process.env.GMAIL_OAUTH_STATE_HMAC_KEY ?? process.env.VAULT_ENCRYPTION_KEY ?? "";
   if (!/^[a-fA-F0-9]{64}$/.test(key) || !/^[a-f0-9]{64}$/.test(signature)) return false;
   const expected = createHmac("sha256", Buffer.from(key, "hex"))
     .update(`gmail-oauth:${state}:${userId}`)
@@ -67,11 +67,12 @@ export async function GET(request: NextRequest) {
     const accessToken = typeof tokenData.access_token === "string" ? tokenData.access_token : "";
     if (!accessToken) return vaultRedirect(request, "error=missing_access_token");
 
-    // Verify the scopes Google actually granted; never infer consent from our requested scopes.
-    const tokenInfoResponse = await fetch(
-      `https://oauth2.googleapis.com/tokeninfo?access_token=${encodeURIComponent(accessToken)}`,
-      { cache: "no-store" }
-    );
+    const tokenInfoResponse = await fetch("https://oauth2.googleapis.com/tokeninfo", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ access_token: accessToken }),
+      cache: "no-store"
+    });
     if (!tokenInfoResponse.ok) return vaultRedirect(request, "error=scope_verification_failed");
     const tokenInfo: unknown = await tokenInfoResponse.json();
     if (!tokenInfo || typeof tokenInfo !== "object") {
@@ -101,7 +102,7 @@ export async function GET(request: NextRequest) {
     const admin = createSupabaseAdminClient();
     const { data: existing, error: lookupError } = await admin
       .from("gmail_connections")
-      .select("refresh_token_ciphertext, refresh_token_iv, refresh_token_auth_tag")
+      .select("refresh_token_ciphertext, refresh_token_iv, refresh_token_auth_tag, encryption_key_version, encryption_format_version")
       .eq("user_id", user.id)
       .eq("google_subject", googleSubject)
       .maybeSingle();
@@ -109,13 +110,20 @@ export async function GET(request: NextRequest) {
 
     const newRefreshToken = typeof tokenData.refresh_token === "string" ? tokenData.refresh_token : "";
     const encrypted = newRefreshToken
-      ? encryptRefreshToken(newRefreshToken)
-      : existing?.refresh_token_ciphertext
+      ? encryptRefreshToken(newRefreshToken, { userId: user.id, googleSubject })
+      : existing?.refresh_token_ciphertext &&
+          existing?.refresh_token_iv &&
+          existing?.refresh_token_auth_tag &&
+          Number.isSafeInteger(existing?.encryption_key_version) &&
+          existing.encryption_key_version > 0 &&
+          Number.isSafeInteger(existing?.encryption_format_version) &&
+          (existing.encryption_format_version === 1 || existing.encryption_format_version === 2)
         ? {
             ciphertext: existing.refresh_token_ciphertext,
             iv: existing.refresh_token_iv,
             authTag: existing.refresh_token_auth_tag,
-            keyVersion: 1
+            keyVersion: existing.encryption_key_version,
+            formatVersion: existing.encryption_format_version
           }
         : null;
     if (!encrypted) return vaultRedirect(request, "error=refresh_token_missing");
@@ -132,6 +140,7 @@ export async function GET(request: NextRequest) {
         refresh_token_iv: encrypted.iv,
         refresh_token_auth_tag: encrypted.authTag,
         encryption_key_version: encrypted.keyVersion,
+        encryption_format_version: encrypted.formatVersion,
         connection_status: "active",
         last_used_at: new Date().toISOString()
       }, { onConflict: "user_id,google_subject" })
