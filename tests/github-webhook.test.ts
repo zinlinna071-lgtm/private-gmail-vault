@@ -100,6 +100,10 @@ describe("GitHub workflow webhook verification", () => {
       ...payload,
       workflow_run: { ...payload.workflow_run, created_at: "2026-99-99T99:99:99Z" }
     }, delivery, repository)).toBeNull();
+    expect(parseVerifiedWorkflowRunEvent({
+      ...payload,
+      workflow_run: { ...payload.workflow_run, created_at: "2026-02-30T01:00:00Z" }
+    }, delivery, repository)).toBeNull();
   });
 
   it("rejects wrong repository, workflow, branch, commit, and forged run URLs", () => {
