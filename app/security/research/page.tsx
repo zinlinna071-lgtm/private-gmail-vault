@@ -4,7 +4,13 @@ import { publishedResearch } from "@/lib/security-research/publications";
 
 export const metadata: Metadata = {
   title: "Security Research Library | Private Account Vault",
-  description: "Read approved bilingual English and Burmese cybersecurity research papers based on verified, authorized security testing."
+  description: "Read evidence-backed cybersecurity research papers in English and Burmese, documenting authorized testing, methodology, findings, fixes, and limitations.",
+  alternates: { canonical: "/security/research" },
+  openGraph: {
+    type: "website",
+    title: "Bilingual Cybersecurity Research Library | Private Account Vault",
+    description: "Evidence-backed cybersecurity research papers in English and Burmese."
+  }
 };
 
 export default function SecurityResearchPage() {
