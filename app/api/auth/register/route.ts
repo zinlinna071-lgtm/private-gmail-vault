@@ -99,7 +99,6 @@ export async function POST(request: Request) {
     if (createdUserId) {
       try { await createSupabaseAdminClient().auth.admin.deleteUser(createdUserId); } catch {}
     }
-    const message = error instanceof Error ? error.message : "Unable to create account.";
-    return noStoreJson({ error: message }, { status: 400 });
+    return noStoreJson({ error: "Unable to create the Vault account. Please try again." }, { status: 500 });
   }
 }
