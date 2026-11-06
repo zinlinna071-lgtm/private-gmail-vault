@@ -36,3 +36,9 @@ New mocked route tests inject synthetic internal exception strings into Login, R
 A subsequent source review found that the Recovery route called `validatePassword()` inside the broad exception handler. A normal user input error was therefore being returned as HTTP 500 instead of a client validation response. The route now catches Login ID and Master Password validation failures locally and returns safe HTTP 400 messages without exposing exception text or contacting the account database for an invalid password. A mocked regression test covers the invalid Master Password path.
 
 This remains source-level and mocked coverage. The equivalent Login and Registration validation paths should be checked for consistent client-error handling in a separate follow-up.
+
+## Validation consistency — Login and Registration
+
+The Login route now converts malformed Login ID input to a safe HTTP 400 response instead of allowing the shared normalizer exception to fall through to the generic HTTP 500 handler. Registration now does the same for invalid Login IDs and invalid Master Password length. Both routes avoid returning exception details. Mocked regression tests assert the 400 response and confirm the authentication/account-creation provider is not called for invalid input.
+
+The Recovery route received the equivalent Login ID and Master Password validation handling in the preceding commits. These changes establish consistent client-error handling across the three browser authentication endpoints. They do not validate real Supabase session behavior.
