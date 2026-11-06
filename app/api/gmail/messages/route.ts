@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { decryptRefreshToken } from "@/lib/gmail/token-encryption";
+import { allowAuthAttempt } from "@/lib/auth/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,18 @@ export async function GET(request: NextRequest) {
   const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "authentication_required" }, { status: 401 });
+
+  try {
+    const allowed = await allowAuthAttempt(request, "gmail_inbox", user.id, 30);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "rate_limit_exceeded" },
+        { status: 429, headers: { "Retry-After": "900", "Cache-Control": "no-store" } }
+      );
+    }
+  } catch {
+    return NextResponse.json({ error: "rate_limit_unavailable" }, { status: 503 });
+  }
 
   try {
     const admin = createSupabaseAdminClient();
