@@ -77,3 +77,45 @@ Maintenance caveat: npm lists 4.12.0 as the latest release, published in Novembe
 ### Current implementation boundary
 
 No Argon2 package has been installed. The current `importVaultKeyEncryptionKey` function only accepts a 32-byte derived output and imports it as a non-extractable AES-GCM key; it does not derive that output or validate a password. This separation is intentional until the KDF is selected and tested.
+
+
+## 2026-11-07 evidence addendum
+
+The candidate comparison was refreshed against current package and upstream project information.
+
+### `@noble/hashes` 2.4.0 — active, but Argon2 remains a caveat
+
+- The upstream changelog records releases in April, August, and August 27, 2026, including Argon2 correctness/performance changes and improved cleanup behavior.
+- Its README says the historic Cure53 audit excluded Argon2. The newer project self-audit process is useful evidence, but does not convert that excluded code into an independently audited Argon2 implementation.
+- The project explicitly warns that JavaScript Argon2 is slow and that JIT/GC make strict constant-time behavior difficult.
+- Version 2.4.0 is ESM-only; verify compatibility with this repository's Next.js client bundling and existing TypeScript version before adoption.
+
+**Updated assessment:** Best maintenance signal among the reviewed browser candidates, but not automatically the safest or fastest KDF. It is a candidate for an isolated RFC 9106 compatibility/benchmark spike only.
+
+### `hash-wasm` 4.12.0 — browser WASM, maintenance gap remains
+
+- npm still lists 4.12.0 as the latest published release, from November 2024.
+- Its Argon2id v1.3 WebAssembly support is attractive, but recent download volume does not compensate for the prolonged release gap.
+- No independent Argon2-specific audit was established by this review.
+
+**Updated assessment:** Keep as a comparator for performance testing only. Do not select as production dependency until source/WASM provenance and maintenance risk are resolved.
+
+### `argon2id` 1.0.1 — not selected
+
+- npm still lists 1.0.1 as latest, published approximately three years ago.
+- The repository is a small project with limited activity evidence.
+
+**Updated assessment:** Not selected.
+
+### Decision after refreshed review
+
+No package is approved for production at this point. The next safe engineering step is a throwaway, isolated compatibility spike that does not modify the production dependency graph:
+
+1. Evaluate `@noble/hashes` 2.4.0 and `hash-wasm` 4.12.0 separately in a disposable test harness.
+2. Verify Argon2id v1.3 outputs against official RFC 9106 known-answer vectors using identical password bytes, salt, memory, passes, lanes, and output length.
+3. Measure cold-start and steady-state memory/latency on representative Android devices, including the lowest-memory device in the support target.
+4. Exercise cancellation/backgrounding and confirm the app remains responsive; do not assume JavaScript zeroization or WASM memory release is guaranteed.
+5. Review exact npm tarballs, lockfile integrity, build output, license, provenance, and transitive dependency footprint.
+6. Make a documented choice only after those results exist. Do not freeze KDF parameters or a persistent envelope format before then.
+
+The 64 MiB / 3-pass / 4-lane RFC profile remains a test vector profile, not an approved production setting. Device measurements and a security review are still required.
