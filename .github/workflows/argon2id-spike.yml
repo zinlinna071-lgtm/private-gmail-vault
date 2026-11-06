@@ -1,0 +1,33 @@
+name: Argon2id compatibility spike
+
+on:
+  push:
+    branches:
+      - feature/vault-authentication
+    paths:
+      - "tools/argon2id-spike/**"
+      - ".github/workflows/argon2id-spike.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rfc9106-vector:
+    name: RFC 9106 §5.3 known-answer test
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: tools/argon2id-spike
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install pinned isolated test dependency
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Run RFC 9106 vector
+        run: npm test
