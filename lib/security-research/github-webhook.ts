@@ -118,6 +118,7 @@ export type VerifiedWorkflowRunEvent = {
   action: "requested" | "in_progress" | "completed";
   repository: string;
   workflowPath: string;
+  workflowId: number;
   runId: number;
   runAttempt: number;
   headBranch: string;
@@ -147,10 +148,12 @@ export function parseVerifiedWorkflowRunEvent(
 
   const repository = payload.repository.full_name;
   const workflowPath = payload.workflow.path;
+  const workflowId = payload.workflow.id;
   const run = payload.workflow_run;
 
   if (repository !== expectedRepository) return null;
   if (workflowPath !== ".github/workflows/ci.yml") return null;
+  if (typeof workflowId !== "number" || !Number.isSafeInteger(workflowId) || workflowId <= 0) return null;
   if (run.repository !== undefined &&
       (!isRecord(run.repository) || run.repository.full_name !== expectedRepository)) return null;
   if (typeof run.id !== "number" || !Number.isSafeInteger(run.id) || run.id <= 0) return null;
@@ -197,6 +200,7 @@ export function parseVerifiedWorkflowRunEvent(
     action,
     repository,
     workflowPath,
+    workflowId,
     runId: run.id,
     runAttempt: run.run_attempt,
     headBranch: run.head_branch,
