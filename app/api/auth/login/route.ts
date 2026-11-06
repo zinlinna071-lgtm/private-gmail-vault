@@ -8,13 +8,20 @@ import { authEmailForLoginId, isSameOriginRequest, normalizeLoginId } from "@/li
 
 export const runtime = "nodejs";
 
+function noStoreJson(body: unknown, init?: ResponseInit) {
+  const headers = new Headers(init?.headers);
+  headers.set("Cache-Control", "no-store, max-age=0");
+  headers.set("Pragma", "no-cache");
+  return NextResponse.json(body, { ...init, headers });
+}
+
 export async function POST(request: Request) {
-  if (!isSameOriginRequest(request)) return NextResponse.json({ error: "Invalid request origin." }, { status: 403 });
+  if (!isSameOriginRequest(request)) return noStoreJson({ error: "Invalid request origin." }, { status: 403 });
   try {
     const body = await request.json();
     const loginId = normalizeLoginId(String(body.loginId ?? ""));
     if (!await allowAuthAttempt(request, "login", loginId, 10)) {
-      return NextResponse.json({ error: "Too many sign-in attempts. Try again in 15 minutes." }, { status: 429 });
+      return noStoreJson({ error: "Too many sign-in attempts. Try again in 15 minutes." }, { status: 429 });
     }
     const password = String(body.password ?? "");
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -29,7 +36,7 @@ export async function POST(request: Request) {
       }
     });
     const { error } = await supabase.auth.signInWithPassword({ email: authEmailForLoginId(loginId), password });
-    if (error) return NextResponse.json({ error: "Login ID or Master Password is incorrect." }, { status: 401 });
+    if (error) return noStoreJson({ error: "Login ID or Master Password is incorrect." }, { status: 401 });
 
     // Registration may have succeeded even if its original response was lost.
     // Return the same code after password authentication, never generate a
@@ -39,7 +46,7 @@ export async function POST(request: Request) {
       .select("pending_recovery_code_hash,pending_recovery_code_salt,pending_recovery_code_ciphertext,pending_recovery_code_iv,pending_recovery_code_auth_tag,pending_recovery_code_expires_at")
       .eq("login_id", loginId).maybeSingle();
     if (profileError) {
-      return NextResponse.json({ error: "Signed in, but Vault recovery status could not be checked. Keep this session open and retry." }, { status: 503 });
+      return noStoreJson({ error: "Signed in, but Vault recovery status could not be checked. Keep this session open and retry." }, { status: 503 });
     }
 
     const pendingIsValid = Boolean(
@@ -57,12 +64,12 @@ export async function POST(request: Request) {
         iv: profile!.pending_recovery_code_iv!,
         authTag: profile!.pending_recovery_code_auth_tag!
       });
-      return NextResponse.json({ success: true, recoveryCode, requiresAcknowledgement: true });
+      return noStoreJson({ success: true, recoveryCode, requiresAcknowledgement: true });
     }
 
-    return NextResponse.json({ success: true });
+    return noStoreJson({ success: true });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to sign in.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return noStoreJson({ error: message }, { status: 400 });
   }
 }
