@@ -1,0 +1,11 @@
+{
+  "name": "private-account-vault-argon2id-spike",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node test-rfc9106.mjs"
+  },
+  "dependencies": {
+    "@noble/hashes": "2.4.0"
+  }
+}
