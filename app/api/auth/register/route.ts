@@ -48,12 +48,21 @@ export async function POST(request: Request) {
       return noStoreJson({ error: "Invalid JSON request." }, { status: 400 });
     }
     const body = parsedBody.value as Record<string, unknown>;
-    const loginId = normalizeLoginId(String(body.loginId ?? ""));
+    let loginId: string;
+    try {
+      loginId = normalizeLoginId(String(body.loginId ?? ""));
+    } catch {
+      return noStoreJson({ error: "Invalid Login ID." }, { status: 400 });
+    }
     if (!await allowAuthAttempt(request, "register", loginId, 5)) {
       return noStoreJson({ error: "Too many account creation attempts. Try again later." }, { status: 429 });
     }
     const password = String(body.password ?? "");
-    validatePassword(password);
+    try {
+      validatePassword(password);
+    } catch {
+      return noStoreJson({ error: "Master Password must be 12–128 characters." }, { status: 400 });
+    }
 
     const recoveryCode = createRecoveryCode();
     const { hash, salt } = hashRecoveryCode(recoveryCode);
