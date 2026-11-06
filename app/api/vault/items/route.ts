@@ -12,8 +12,7 @@ const entrySchema = z.object({
   accountName: z.string().trim().min(1).max(100),
   username: z.string().max(254).default(""),
   password: z.string().max(4096).default(""),
-  backupCodes: z.string().max(12000).default(""),
-  notes: z.string().max(4000).default("")
+  backupCodes: z.string().max(12000).default("")
 }).strict();
 
 function response(body: unknown, status = 200) {
