@@ -1,6 +1,6 @@
 # Argon2id Compatibility Spike
 
-**Status:** RFC 9106 §5.3 KAT and input-mutation checks passed in the isolated Node.js harness; browser/device validation remains pending  
+**Status:** RFC 9106 §5.3 KAT and input-mutation checks passed in isolated Node.js and Chromium browser harnesses; physical-device validation remains pending  
 **Branch:** `feature/vault-authentication`  
 **Production impact:** None. No production dependency, KDF parameter, or key format is approved by this document.
 
@@ -108,9 +108,9 @@ Do not choose production parameters from desktop results. A 64 MiB / 3-pass / 4-
 | Check | noble 2.4.0 | hash-wasm 4.12.0 |
 |---|---|---|
 | API supports RFC K and X inputs | Source mapping confirmed | Public API X support unconfirmed |
-| Exact RFC §5.3 vector | Not run | Unsupported until X support is confirmed |
+| Exact RFC §5.3 vector | Node.js and Chromium passed | Unsupported until X support is confirmed |
 | Additional independent vector | Not run | Not run |
-| Browser build | Not run | Not run |
+| Browser build | Chromium headless passed | Not run |
 | Android low-memory benchmark | Not run | Not run |
 | iOS Safari benchmark | Not run | Not run |
 | Package provenance review | Pending | Pending |
@@ -128,16 +128,21 @@ A candidate may be proposed (not automatically approved) only after:
 
 Until then, the current Vault remains a development prototype and must not store real high-value credentials.
 
+## 8. Isolated Node.js harness (2026-11-07)
 
-## 8. Isolated harness implementation (2026-11-07)
-
-A standalone test harness has been added under `tools/argon2id-spike/`:
+A standalone test harness exists under `tools/argon2id-spike/`:
 - `package.json` pins the test-only `@noble/hashes` dependency to 2.4.0; it is not part of the root application dependency graph.
 - `test-rfc9106.mjs` executes the complete §5.3 vector, checks the 32-byte result, and checks that changing the password, salt, secret K, or associated data X changes the output.
 - `.github/workflows/argon2id-spike.yml` defines a branch-scoped GitHub Actions job for the isolated test.
 
 **Execution status (verified):** GitHub Actions run [42272387331](https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42272387331) completed successfully for commit `889ee746033675175dfb5496e6e57eb6ed7c3821`. The exact RFC 9106 §5.3 output matched byte-for-byte, and all four mutation checks passed (password, salt, secret K, and associated data X).
 
-**Scope limitation:** This confirms the isolated Node.js API mapping for `@noble/hashes@2.4.0`; it does not confirm a browser bundle, mobile performance, memory behavior, cancellation, package provenance review, or independent Argon2 audit coverage. No production dependency, KDF parameters, or persistent format is approved.
+## 9. Isolated Chromium browser harness (2026-11-07)
 
-The test uses only public RFC test-vector bytes. It does not import application code, touch the root dependency graph, access user secrets, or change production configuration.
+A separate browser-only harness has been added under `tools/argon2id-browser-spike/`. It bundles the pinned candidate into a browser script with esbuild and runs it in a real headless Chromium page through Playwright. Dependencies remain isolated from the root application.
+
+The first CI attempt used the Ubuntu 26.04 runner and failed before executing tests because the pinned Playwright release did not support that runner image. This was an environment compatibility failure, not a cryptographic test failure. The workflow was changed to the supported `ubuntu-24.04` runner.
+
+**Execution status (verified):** GitHub Actions run [42281120467](https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42281120467) completed successfully for commit `70cbd9eadd3970896fc49852a07f7a28ec2dfab3`. In Chromium, the exact RFC 9106 §5.3 output matched byte-for-byte and all four mutation checks passed: password, salt, secret K, and associated data X.
+
+**Scope limitation:** This is a headless Chromium compatibility result on a hosted Linux runner. It is not a measurement on Android or iOS devices, does not establish real-device memory pressure or cancellation behavior, and does not approve production KDF parameters or the production dependency. The harness uses only public test-vector bytes and does not import application code or handle real user secrets.
