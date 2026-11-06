@@ -18,7 +18,16 @@ describe("bounded streaming JSON reader", () => {
   });
 
   it("rejects a body above the limit using Content-Length", async () => {
-    await expect(readBoundedJson(request('{"ok":true}', { "Content-Length": "100" }), 32))
+    const req = {
+      headers: new Headers({ "Content-Length": "100" }),
+      body: new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode("{}"));
+          controller.close();
+        }
+      })
+    } as Request;
+    await expect(readBoundedJson(req, 32))
       .resolves.toEqual({ ok: false, reason: "too_large" });
   });
 
