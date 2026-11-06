@@ -25,13 +25,14 @@ export function createSepoliaRpcClient(
   let requestId = 0;
   return {
     async request<T>(method: string, params: readonly unknown[]): Promise<T> {
+      const id = ++requestId;
       const response = await fetcher(parsed.toString(), {
         method: "POST",
         headers: { "content-type": "application/json", accept: "application/json" },
         cache: "no-store",
         body: JSON.stringify({
           jsonrpc: "2.0",
-          id: ++requestId,
+          id,
           method,
           params
         })
@@ -42,7 +43,7 @@ export function createSepoliaRpcClient(
         throw new Error("Malformed JSON-RPC response");
       }
       const body = payload as Record<string, unknown>;
-      if (body.jsonrpc !== "2.0" || body.id !== requestId) {
+      if (body.jsonrpc !== "2.0" || body.id !== id) {
         throw new Error("JSON-RPC response identifier mismatch");
       }
       if (body.error !== undefined) throw new Error("Sepolia RPC returned an error");
