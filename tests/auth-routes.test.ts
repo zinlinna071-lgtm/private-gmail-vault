@@ -185,4 +185,24 @@ describe("Vault registration and login API", () => {
     expect(response.status).toBe(503);
     expect(body.error).toContain("Keep this session open and retry");
   });
+
+  it("keeps the initial Recovery Code recoverable when automatic sign-in fails", async () => {
+    mocks.signInWithPassword.mockResolvedValue({ error: new Error("temporary sign-in failure") });
+    const response = await register(request("/api/auth/register", {
+      loginId: "myvault",
+      password: "a-strong-master-password"
+    }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.signedIn).toBe(false);
+    expect(body.recoveryCode).toBe(recoveryCode);
+    expect(body.requiresAcknowledgement).toBe(false);
+    expect(mocks.insert).toHaveBeenCalledWith(expect.objectContaining({
+      pending_recovery_code_hash: "code-hash",
+      pending_recovery_code_ciphertext: "encrypted-code",
+      pending_recovery_code_expires_at: null
+    }));
+  });
 });
