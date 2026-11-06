@@ -5,6 +5,7 @@ vi.mock("server-only", () => ({}));
 
 import {
   parseVerifiedWorkflowRunEvent,
+  readBoundedWebhookBody,
   verifyGitHubWebhookSignature
 } from "../lib/security-research/github-webhook";
 
@@ -37,6 +38,25 @@ const payload = {
 };
 
 describe("GitHub workflow webhook verification", () => {
+  it("reads bounded request bodies and rejects oversized or invalid UTF-8 streams", async () => {
+    const valid = new Request("https://example.test/webhook", {
+      method: "POST",
+      body: rawBody
+    });
+    expect(await readBoundedWebhookBody(valid)).toBe(rawBody);
+
+    const oversized = new Request("https://example.test/webhook", {
+      method: "POST",
+      body: "x".repeat(256 * 1024 + 1)
+    });
+    expect(await readBoundedWebhookBody(oversized)).toBeNull();
+
+    const invalidUtf8 = new Request("https://example.test/webhook", {
+      method: "POST",
+      body: new Uint8Array([0xc3, 0x28])
+    });
+    expect(await readBoundedWebhookBody(invalidUtf8)).toBeNull();
+  });
   it("accepts a valid HMAC over the exact raw body", async () => {
     expect(await verifyGitHubWebhookSignature({
       rawBody,
