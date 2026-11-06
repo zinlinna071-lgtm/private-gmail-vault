@@ -19,6 +19,7 @@ describe("browser-side Vault record encryption", () => {
 
   it("generates an AES-256-GCM data key", () => {
     expect(key.type).toBe("secret");
+    expect(key.extractable).toBe(false);
     expect(key.algorithm.name).toBe("AES-GCM");
     expect((key.algorithm as AesKeyAlgorithm).length).toBe(256);
     expect(key.usages).toContain("encrypt");
