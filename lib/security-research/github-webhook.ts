@@ -184,7 +184,12 @@ export function parseVerifiedWorkflowRunEvent(
   if (action === "completed" && status !== "completed") return null;
 
   const conclusion = run.conclusion;
-  if (status === "completed" && (typeof conclusion !== "string" || conclusion.length === 0)) return null;
+  const allowedConclusions = [
+    "success", "failure", "neutral", "cancelled", "skipped",
+    "timed_out", "action_required", "stale", "startup_failure"
+  ];
+  if (status === "completed" &&
+      (typeof conclusion !== "string" || !allowedConclusions.includes(conclusion))) return null;
   if (status !== "completed" && conclusion !== null) return null;
 
   return {
