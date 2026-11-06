@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
@@ -8,13 +9,17 @@ import { authEmailForLoginId, createRecoveryCode, hashRecoveryCode, isSameOrigin
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  if (!isSameOriginRequest(request)) return NextResponse.json({ error: "Invalid request origin." }, { status: 403 });
+  if (!isSameOriginRequest(request)) {
+    return NextResponse.json({ error: "Invalid request origin." }, { status: 403 });
+  }
+
   try {
     const body = await request.json();
     const loginId = normalizeLoginId(String(body.loginId ?? ""));
     if (!await allowAuthAttempt(request, "recovery", loginId, 5)) {
       return NextResponse.json({ error: "Too many recovery attempts. Try again in 15 minutes." }, { status: 429 });
     }
+
     const recoveryCode = String(body.recoveryCode ?? "");
     const newPassword = String(body.newPassword ?? "");
     validatePassword(newPassword);
@@ -28,37 +33,67 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Login ID or Recovery Code is incorrect." }, { status: 401 });
     }
 
-    const { error: passwordError } = await admin.auth.admin.updateUserById(profile.user_id, { password: newPassword });
-    if (passwordError) return NextResponse.json({ error: "Password reset failed. Your existing Recovery Code remains valid." }, { status: 500 });
+    const claimToken = randomUUID();
+    const { data: claimed, error: claimError } = await admin.rpc("claim_vault_recovery", {
+      p_user_id: profile.user_id,
+      p_expected_hash: profile.recovery_code_hash,
+      p_expected_salt: profile.recovery_code_salt,
+      p_claim_token: claimToken,
+      p_lease_seconds: 600
+    });
 
-    const nextRecoveryCode = createRecoveryCode();
-    const { hash, salt } = hashRecoveryCode(nextRecoveryCode);
-    // Compare-and-swap prevents two requests using the same old Recovery Code
-    // from both successfully rotating it.
-    const { data: rotatedProfile, error: rotateError } = await admin.from("vault_profiles").update({
-      recovery_code_hash: hash, recovery_code_salt: salt
-    }).eq("user_id", profile.user_id)
-      .eq("recovery_code_hash", profile.recovery_code_hash)
-      .eq("recovery_code_salt", profile.recovery_code_salt)
-      .select("user_id")
-      .maybeSingle();
-    if (rotateError || !rotatedProfile) {
-      return NextResponse.json({ error: "Password reset may have succeeded, but this Recovery Code was already used or could not be renewed. Try signing in with your new password. If that fails, contact support before retrying recovery." }, { status: 409 });
+    if (claimError) {
+      return NextResponse.json({ error: "Recovery protection is not ready. Contact support before retrying." }, { status: 503 });
+    }
+    if (claimed !== true) {
+      return NextResponse.json({ error: "A recovery attempt is already in progress, or this Recovery Code has already been used. Please wait and try again." }, { status: 409 });
     }
 
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-    const cookieStore = await cookies();
-    const supabase = createServerClient(url, key, {
-      cookies: {
-        getAll: () => cookieStore.getAll(),
-        setAll: (items) => items.forEach(({ name, value, options }) => cookieStore.set(name, value, options))
+    let recoveryFinished = false;
+    try {
+      const { error: passwordError } = await admin.auth.admin.updateUserById(profile.user_id, { password: newPassword });
+      if (passwordError) {
+        return NextResponse.json({ error: "Password reset failed. Your existing Recovery Code remains valid." }, { status: 500 });
       }
-    });
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: authEmailForLoginId(loginId), password: newPassword
-    });
-    return NextResponse.json({ success: true, signedIn: !signInError, recoveryCode: nextRecoveryCode });
+
+      const nextRecoveryCode = createRecoveryCode();
+      const { hash, salt } = hashRecoveryCode(nextRecoveryCode);
+      const { data: finished, error: finishError } = await admin.rpc("finish_vault_recovery", {
+        p_user_id: profile.user_id,
+        p_claim_token: claimToken,
+        p_new_hash: hash,
+        p_new_salt: salt
+      });
+
+      if (finishError || finished !== true) {
+        return NextResponse.json({
+          error: "Your password may have been reset, but the Recovery Code was not rotated. Sign in with your new password if possible; otherwise retry recovery with the existing code."
+        }, { status: 503 });
+      }
+      recoveryFinished = true;
+
+      const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+      const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+      const cookieStore = await cookies();
+      const supabase = createServerClient(url, key, {
+        cookies: {
+          getAll: () => cookieStore.getAll(),
+          setAll: (items) => items.forEach(({ name, value, options }) => cookieStore.set(name, value, options))
+        }
+      });
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: authEmailForLoginId(loginId), password: newPassword
+      });
+
+      return NextResponse.json({ success: true, signedIn: !signInError, recoveryCode: nextRecoveryCode });
+    } finally {
+      if (!recoveryFinished) {
+        await admin.rpc("release_vault_recovery", {
+          p_user_id: profile.user_id,
+          p_claim_token: claimToken
+        });
+      }
+    }
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to recover account.";
     return NextResponse.json({ error: message }, { status: 400 });
