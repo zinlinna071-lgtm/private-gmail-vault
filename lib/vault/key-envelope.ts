@@ -1,0 +1,177 @@
+/**
+ * Client-side Vault DEK envelope operations.
+ *
+ * Argon2id is intentionally not embedded here. A separately reviewed KDF
+ * adapter must derive 32 bytes and pass them to importVaultKeyEncryptionKey.
+ * The returned KEK is non-extractable and remains usable only in this client.
+ */
+
+export const VAULT_KEY_ENVELOPE_VERSION = 1 as const;
+export const VAULT_KEY_ENVELOPE_ALGORITHM = "AES-256-GCM" as const;
+
+const IV_BYTES = 12;
+const KEY_BYTES = 32;
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+export type WrappedVaultDataKey = {
+  version: typeof VAULT_KEY_ENVELOPE_VERSION;
+  algorithm: typeof VAULT_KEY_ENVELOPE_ALGORITHM;
+  iv: string;
+  wrappedKey: string;
+};
+
+function encodeBase64(bytes: Uint8Array): string {
+  let binary = "";
+  for (let offset = 0; offset < bytes.length; offset += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
+  }
+  return btoa(binary);
+}
+
+function decodeBase64(value: unknown, expectedBytes: number): Uint8Array {
+  if (
+    typeof value !== "string" ||
+    value.length !== Math.ceil(expectedBytes / 3) * 4 ||
+    !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(value)
+  ) {
+    throw new Error("Invalid Vault key envelope.");
+  }
+  const binary = atob(value);
+  const bytes = Uint8Array.from(binary, character => character.charCodeAt(0));
+  if (bytes.length !== expectedBytes || encodeBase64(bytes) !== value) {
+    throw new Error("Invalid Vault key envelope.");
+  }
+  return bytes;
+}
+
+function assertVaultId(vaultId: string) {
+  if (!UUID_PATTERN.test(vaultId)) throw new Error("Invalid Vault key context.");
+}
+
+function keyEnvelopeAad(vaultId: string): Uint8Array {
+  return new TextEncoder().encode(JSON.stringify([
+    "private-account-vault",
+    VAULT_KEY_ENVELOPE_VERSION,
+    vaultId,
+    "vault-data-encryption-key"
+  ]));
+}
+
+function assertKek(kek: CryptoKey) {
+  const algorithm = kek.algorithm as AesKeyAlgorithm;
+  if (
+    kek.type !== "secret" ||
+    algorithm.name !== "AES-GCM" ||
+    algorithm.length !== 256 ||
+    kek.extractable ||
+    !kek.usages.includes("encrypt") ||
+    !kek.usages.includes("decrypt")
+  ) {
+    throw new Error("Invalid Vault key-encryption key.");
+  }
+}
+
+/**
+ * Imports the 32-byte Argon2id output as a non-extractable AES-256-GCM KEK.
+ * This function consumes and zeroes the caller-provided byte array.
+ */
+export async function importVaultKeyEncryptionKey(derivedKey: Uint8Array): Promise<CryptoKey> {
+  if (!(derivedKey instanceof Uint8Array) || derivedKey.length !== KEY_BYTES) {
+    throw new Error("Vault key derivation must produce exactly 32 bytes.");
+  }
+
+  try {
+    return await globalThis.crypto.subtle.importKey(
+      "raw",
+      derivedKey,
+      { name: "AES-GCM" },
+      false,
+      ["encrypt", "decrypt"]
+    );
+  } finally {
+    derivedKey.fill(0);
+  }
+}
+
+export async function createVaultKeyEnvelope(
+  kek: CryptoKey,
+  vaultId: string
+): Promise<{ dataKey: CryptoKey; envelope: WrappedVaultDataKey }> {
+  assertKek(kek);
+  assertVaultId(vaultId);
+
+  const extractableDataKey = await globalThis.crypto.subtle.generateKey(
+    { name: "AES-GCM", length: 256 },
+    true,
+    ["encrypt", "decrypt"]
+  );
+  const rawDataKey = new Uint8Array(await globalThis.crypto.subtle.exportKey("raw", extractableDataKey));
+  const iv = globalThis.crypto.getRandomValues(new Uint8Array(IV_BYTES));
+
+  try {
+    const wrappedKey = new Uint8Array(await globalThis.crypto.subtle.encrypt(
+      { name: "AES-GCM", iv, additionalData: keyEnvelopeAad(vaultId), tagLength: 128 },
+      kek,
+      rawDataKey
+    ));
+    const dataKey = await globalThis.crypto.subtle.importKey(
+      "raw",
+      rawDataKey,
+      { name: "AES-GCM" },
+      false,
+      ["encrypt", "decrypt"]
+    );
+
+    return {
+      dataKey,
+      envelope: {
+        version: VAULT_KEY_ENVELOPE_VERSION,
+        algorithm: VAULT_KEY_ENVELOPE_ALGORITHM,
+        iv: encodeBase64(iv),
+        wrappedKey: encodeBase64(wrappedKey)
+      }
+    };
+  } finally {
+    rawDataKey.fill(0);
+  }
+}
+
+export async function unwrapVaultDataKey(
+  envelope: unknown,
+  kek: CryptoKey,
+  vaultId: string
+): Promise<CryptoKey> {
+  assertKek(kek);
+  assertVaultId(vaultId);
+
+  if (
+    !envelope ||
+    typeof envelope !== "object" ||
+    (envelope as Record<string, unknown>).version !== VAULT_KEY_ENVELOPE_VERSION ||
+    (envelope as Record<string, unknown>).algorithm !== VAULT_KEY_ENVELOPE_ALGORITHM
+  ) {
+    throw new Error("Unsupported Vault key envelope.");
+  }
+
+  const candidate = envelope as Record<string, unknown>;
+  const iv = decodeBase64(candidate.iv, IV_BYTES);
+  const wrappedKey = decodeBase64(candidate.wrappedKey, KEY_BYTES + 16);
+  const rawDataKey = new Uint8Array(await globalThis.crypto.subtle.decrypt(
+    { name: "AES-GCM", iv, additionalData: keyEnvelopeAad(vaultId), tagLength: 128 },
+    kek,
+    wrappedKey
+  ));
+
+  try {
+    if (rawDataKey.length !== KEY_BYTES) throw new Error("Invalid Vault data key.");
+    return await globalThis.crypto.subtle.importKey(
+      "raw",
+      rawDataKey,
+      { name: "AES-GCM" },
+      false,
+      ["encrypt", "decrypt"]
+    );
+  } finally {
+    rawDataKey.fill(0);
+  }
+}
