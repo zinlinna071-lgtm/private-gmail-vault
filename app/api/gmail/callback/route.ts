@@ -67,6 +67,23 @@ export async function GET(request: NextRequest) {
     const accessToken = typeof tokenData.access_token === "string" ? tokenData.access_token : "";
     if (!accessToken) return vaultRedirect(request, "error=missing_access_token");
 
+    // Verify the scopes Google actually granted; never infer consent from our requested scopes.
+    const tokenInfoResponse = await fetch(
+      `https://oauth2.googleapis.com/tokeninfo?access_token=${encodeURIComponent(accessToken)}`,
+      { cache: "no-store" }
+    );
+    if (!tokenInfoResponse.ok) return vaultRedirect(request, "error=scope_verification_failed");
+    const tokenInfo: unknown = await tokenInfoResponse.json();
+    if (!tokenInfo || typeof tokenInfo !== "object") {
+      return vaultRedirect(request, "error=scope_verification_failed");
+    }
+    const tokenInfoData = tokenInfo as Record<string, unknown>;
+    const verifiedScopeString = typeof tokenInfoData.scope === "string" ? tokenInfoData.scope : "";
+    const grantedScopes = verifiedScopeString.split(" ").filter(Boolean);
+    if (!grantedScopes.includes("https://www.googleapis.com/auth/gmail.readonly")) {
+      return vaultRedirect(request, "error=gmail_readonly_scope_missing");
+    }
+
     const profileResponse = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
       headers: { Authorization: `Bearer ${accessToken}` },
       cache: "no-store"
@@ -103,13 +120,6 @@ export async function GET(request: NextRequest) {
         : null;
     if (!encrypted) return vaultRedirect(request, "error=refresh_token_missing");
 
-    const scopeString = typeof tokenData.scope === "string" ? tokenData.scope : "";
-    const grantedScopes = scopeString
-      ? scopeString.split(" ").filter(Boolean)
-      : ["openid", "email", "profile", "https://www.googleapis.com/auth/gmail.readonly"];
-    if (!grantedScopes.includes("https://www.googleapis.com/auth/gmail.readonly")) {
-      return vaultRedirect(request, "error=gmail_readonly_scope_missing");
-    }
     const { data: connection, error: saveError } = await admin
       .from("gmail_connections")
       .upsert({
