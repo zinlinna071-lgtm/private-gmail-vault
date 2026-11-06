@@ -23,7 +23,7 @@ describe("Gmail refresh token encryption", () => {
   it("uses a fresh IV for each encryption", () => {
     process.env.VAULT_ENCRYPTION_KEY = "d".repeat(64);
     const first = encryptRefreshToken("same-token", context);
-    const second = encryptRefreshToken("same-token");
+    const second = encryptRefreshToken("same-token", context);
 
     expect(first.iv).not.toBe(second.iv);
     expect(first.ciphertext).not.toBe(second.ciphertext);
