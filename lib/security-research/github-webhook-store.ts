@@ -15,8 +15,8 @@ export type WebhookIngestionResult =
  * Call only after raw-body HMAC verification and strict payload parsing.
  *
  * The database RPC is defined by migration
- * 202611070001_github_webhook_ingestion.sql. Until that migration is applied
- * to an isolated database, this adapter must remain unused by request routes.
+ * 202611070001_github_webhook_ingestion.sql. The webhook route remains disabled
+ * until an approved hosted migration and server-only secrets are configured.
  */
 export async function persistVerifiedWorkflowRunEvent(input: {
   event: VerifiedWorkflowRunEvent;
