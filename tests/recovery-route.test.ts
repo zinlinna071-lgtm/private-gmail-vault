@@ -71,7 +71,7 @@ function makeRequest(body: Record<string, unknown>, origin = "https://vault.exam
 }
 
 describe("POST /api/auth/recovery", () => {
-  let profile: typeof activeProfile & Record<string, unknown>;
+  let profile: Record<string, any>;
   let rpc: ReturnType<typeof vi.fn>;
   let updateUserById: ReturnType<typeof vi.fn>;
   let maybeSingle: ReturnType<typeof vi.fn>;
