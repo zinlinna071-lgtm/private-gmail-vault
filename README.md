@@ -5,7 +5,7 @@ A simple private vault for storing account passwords and backup codes.
 ## What it does
 
 - Create a private Vault Login ID and Master Password.
-- Save an account name, email or username, password, backup codes, and notes.
+- Save an account name, email or username, password, and backup codes.
 - Search saved accounts.
 - Show or hide passwords and backup codes.
 - Copy credentials when needed.
@@ -31,6 +31,7 @@ There is no Gmail connection, mailbox access, AI, analytics, or extra dashboard.
    - `supabase/migrations/202611060001_initial_vault_schema.sql`
    - `supabase/migrations/202611060002_vault_auth_credentials.sql`
    - `supabase/migrations/202611060003_recovery_claims.sql`
+   - `supabase/migrations/202611060004_gmail_token_encryption_format_version.sql` (legacy schema compatibility)
    - `supabase/migrations/202611060005_vault_items.sql`
 3. Set these server/deployment environment variables:
    - `NEXT_PUBLIC_SUPABASE_URL`
