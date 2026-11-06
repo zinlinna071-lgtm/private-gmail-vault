@@ -36,7 +36,9 @@ export async function POST(request: Request) {
     const recoveryCode = createRecoveryCode();
     const { hash, salt } = hashRecoveryCode(recoveryCode);
     const encrypted = encryptPendingRecoveryCode(recoveryCode);
-    const pendingExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    // Initial Recovery Code remains pending until the user confirms it was saved.
+    // No expiry avoids permanently losing recovery if the first response is missed.
+    const pendingExpiresAt = null;
     const admin = createSupabaseAdminClient();
     const { data, error } = await admin.auth.admin.createUser({
       email: authEmailForLoginId(loginId), password, email_confirm: true,
