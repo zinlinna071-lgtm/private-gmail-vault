@@ -21,14 +21,21 @@ async function signIn(loginId: string, password: string) {
   return supabase.auth.signInWithPassword({ email: authEmailForLoginId(loginId), password });
 }
 
+function noStoreJson(body: unknown, init?: ResponseInit) {
+  const headers = new Headers(init?.headers);
+  headers.set("Cache-Control", "no-store, max-age=0");
+  headers.set("Pragma", "no-cache");
+  return NextResponse.json(body, { ...init, headers });
+}
+
 export async function POST(request: Request) {
-  if (!isSameOriginRequest(request)) return NextResponse.json({ error: "Invalid request origin." }, { status: 403 });
+  if (!isSameOriginRequest(request)) return noStoreJson({ error: "Invalid request origin." }, { status: 403 });
   let createdUserId: string | undefined;
   try {
     const body = await request.json();
     const loginId = normalizeLoginId(String(body.loginId ?? ""));
     if (!await allowAuthAttempt(request, "register", loginId, 5)) {
-      return NextResponse.json({ error: "Too many account creation attempts. Try again later." }, { status: 429 });
+      return noStoreJson({ error: "Too many account creation attempts. Try again later." }, { status: 429 });
     }
     const password = String(body.password ?? "");
     validatePassword(password);
@@ -45,7 +52,7 @@ export async function POST(request: Request) {
       user_metadata: { vault_login_id: loginId }
     });
     if (error || !data.user) {
-      return NextResponse.json({ error: "That Login ID may already be in use, or the account could not be created." }, { status: 400 });
+      return noStoreJson({ error: "That Login ID may already be in use, or the account could not be created." }, { status: 400 });
     }
     createdUserId = data.user.id;
 
@@ -61,13 +68,13 @@ export async function POST(request: Request) {
     if (profileError) {
       await admin.auth.admin.deleteUser(data.user.id);
       createdUserId = undefined;
-      return NextResponse.json({ error: "Vault profile setup failed. Please try again." }, { status: 500 });
+      return noStoreJson({ error: "Vault profile setup failed. Please try again." }, { status: 500 });
     }
 
     // If this response is lost, a later successful sign-in can retrieve the
     // same encrypted pending code until it is explicitly acknowledged.
     const { error: signInError } = await signIn(loginId, password);
-    return NextResponse.json({
+    return noStoreJson({
       success: true,
       signedIn: !signInError,
       recoveryCode,
@@ -78,6 +85,6 @@ export async function POST(request: Request) {
       try { await createSupabaseAdminClient().auth.admin.deleteUser(createdUserId); } catch {}
     }
     const message = error instanceof Error ? error.message : "Unable to create account.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return noStoreJson({ error: message }, { status: 400 });
   }
 }
