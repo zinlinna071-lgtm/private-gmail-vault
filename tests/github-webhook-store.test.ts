@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-const rpc = vi.fn();
+const { rpc } = vi.hoisted(() => ({ rpc: vi.fn() }));
 vi.mock("../lib/supabase/admin", () => ({
   createSupabaseAdminClient: () => ({ rpc })
 }));
