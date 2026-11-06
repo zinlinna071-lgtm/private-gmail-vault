@@ -82,7 +82,7 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ id
     const admin = createSupabaseAdminClient();
     let connectionQuery = admin
       .from("gmail_connections")
-      .select("id,email_address,refresh_token_ciphertext,refresh_token_iv,refresh_token_auth_tag,connection_status,granted_scopes")
+      .select("id,email_address,google_subject,refresh_token_ciphertext,refresh_token_iv,refresh_token_auth_tag,encryption_key_version,encryption_format_version,connection_status,granted_scopes")
       .eq("user_id", user.id)
       .eq("connection_status", "active");
     if (accountId) connectionQuery = connectionQuery.eq("id", accountId);
@@ -101,8 +101,10 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ id
     const refreshToken = decryptRefreshToken({
       ciphertext: connection.refresh_token_ciphertext,
       iv: connection.refresh_token_iv,
-      authTag: connection.refresh_token_auth_tag
-    });
+      authTag: connection.refresh_token_auth_tag,
+      keyVersion: connection.encryption_key_version,
+      formatVersion: connection.encryption_format_version
+    }, { userId: user.id, googleSubject: connection.google_subject });
     const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
