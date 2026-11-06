@@ -14,6 +14,7 @@ BEGIN
     'completed',
     'zinlinna071-lgtm/private-gmail-vault',
     '.github/workflows/ci.yml',
+    408741606,
     990000002,
     1,
     'feature/postgres-test',
@@ -23,7 +24,10 @@ BEGIN
     '2026-11-07T00:00:00Z',
     '2026-11-07T00:01:00Z',
     '2026-11-07T00:02:00Z',
-    'https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/990000002'
+    'https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/990000002',
+    '2026-11-07T00:02:01Z',
+    2,
+    repeat('e', 64)
   );
   IF result <> 'APPLIED' THEN
     RAISE EXCEPTION 'Expected APPLIED, got %', result;
@@ -35,6 +39,7 @@ BEGIN
     'completed',
     'zinlinna071-lgtm/private-gmail-vault',
     '.github/workflows/ci.yml',
+    408741606,
     990000002,
     1,
     'feature/postgres-test',
@@ -44,7 +49,10 @@ BEGIN
     '2026-11-07T00:00:00Z',
     '2026-11-07T00:01:00Z',
     '2026-11-07T00:02:00Z',
-    'https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/990000002'
+    'https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/990000002',
+    '2026-11-07T00:02:01Z',
+    2,
+    repeat('e', 64)
   );
   IF result <> 'DUPLICATE' THEN
     RAISE EXCEPTION 'Expected DUPLICATE, got %', result;
@@ -56,6 +64,7 @@ BEGIN
     'completed',
     'zinlinna071-lgtm/private-gmail-vault',
     '.github/workflows/ci.yml',
+    408741606,
     990000002,
     1,
     'feature/postgres-test',
@@ -65,7 +74,10 @@ BEGIN
     '2026-11-07T00:00:00Z',
     '2026-11-07T00:01:00Z',
     '2026-11-07T00:02:00Z',
-    'https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/990000002'
+    'https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/990000002',
+    '2026-11-07T00:02:01Z',
+    2,
+    repeat('e', 64)
   );
   IF result <> 'DELIVERY_ID_CONFLICT' THEN
     RAISE EXCEPTION 'Expected DELIVERY_ID_CONFLICT, got %', result;
@@ -77,6 +89,7 @@ BEGIN
     'in_progress',
     'zinlinna071-lgtm/private-gmail-vault',
     '.github/workflows/ci.yml',
+    408741606,
     990000002,
     1,
     'feature/postgres-test',
@@ -86,7 +99,10 @@ BEGIN
     '2026-11-07T00:00:00Z',
     '2026-11-07T00:01:00Z',
     '2026-11-07T00:01:30Z',
-    'https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/990000002'
+    'https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/990000002',
+    '2026-11-07T00:02:01Z',
+    2,
+    repeat('e', 64)
   );
   IF result <> 'STALE' THEN
     RAISE EXCEPTION 'Expected STALE for an older event, got %', result;
@@ -97,6 +113,9 @@ BEGIN
   WHERE run_id = 990000002 AND run_attempt = 1;
   IF run_row.status <> 'completed'
      OR run_row.conclusion <> 'success'
+     OR run_row.workflow_id <> 408741606
+     OR run_row.verified_job_count <> 2
+     OR run_row.verified_jobs_sha256 <> repeat('e', 64)
      OR run_row.updated_at <> '2026-11-07T00:02:00Z'::timestamptz THEN
     RAISE EXCEPTION 'Stale event rolled back the latest run state';
   END IF;
@@ -145,7 +164,7 @@ BEGIN
   END IF;
 
   function_oid := to_regprocedure(
-    'public.ingest_github_workflow_event(uuid,text,text,text,text,bigint,integer,text,text,text,text,timestamptz,timestamptz,timestamptz,text)'
+    'public.ingest_github_workflow_event(uuid,text,text,text,text,bigint,bigint,integer,text,text,text,text,timestamptz,timestamptz,timestamptz,text,timestamptz,integer,text)'
   );
   IF function_oid IS NULL
      OR has_function_privilege('anon', function_oid, 'EXECUTE')
