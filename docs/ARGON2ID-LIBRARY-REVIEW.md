@@ -51,3 +51,29 @@ Argon2id is the target KDF. RFC 9106 defines Argon2id and gives a 64 MiB, 3-pass
 ## Security rule
 
 Do not substitute PBKDF2 or a custom password hash merely to avoid choosing a dependency. Any KDF change requires a versioned format and migration plan. The package choice and calibrated parameters remain release blockers until the above checks pass.
+
+## Updated evidence review
+
+### Browser implementation candidate: `hash-wasm` 4.12.0
+
+The current package documentation confirms:
+- Argon2id v1.3 is included and exposed through a Promise-based browser API.
+- The project uses hand-tuned WebAssembly binaries, supports modern browsers and Web Workers, and bundles its WASM modules in the package.
+- The documented Argon2 API accepts explicit `memorySize` in KiB, `iterations`, `parallelism`, `salt`, and output length.
+- The project's published benchmark compares Argon2id on desktop Chrome 131 / Ryzen 9 7900X. That benchmark is not evidence of acceptable latency or memory use on Android phones.
+
+Maintenance caveat: npm lists 4.12.0 as the latest release, published in November 2024. The long gap since that release is a material maintenance and supply-chain risk for a security-critical dependency. High download volume and no reported known vulnerability do not establish that the Argon2 implementation is independently audited or free of defects.
+
+### Updated assessment
+
+`hash-wasm` is the strongest browser/WASM candidate in this review for a compatibility spike, not an approved production dependency. Do not add it to the application until:
+1. The exact 4.12.0 source and bundled WASM build are matched to the published package and reviewed.
+2. The package's Argon2id output is checked against RFC 9106 known-answer vectors in the browser test environment.
+3. Android memory pressure, background-tab behavior, cancellation, and unlock latency are measured on real devices.
+4. The project accepts the maintenance gap or selects a better-maintained independently reviewed implementation.
+
+`@noble/hashes` remains a readable, minimal alternative, but its own current documentation warns that pure-JavaScript Argon2 is slow; the project's Cure53 audit scope explicitly excluded Argon2. Therefore the general audit claim must not be interpreted as an Argon2 audit.
+
+### Current implementation boundary
+
+No Argon2 package has been installed. The current `importVaultKeyEncryptionKey` function only accepts a 32-byte derived output and imports it as a non-extractable AES-GCM key; it does not derive that output or validate a password. This separation is intentional until the KDF is selected and tested.
