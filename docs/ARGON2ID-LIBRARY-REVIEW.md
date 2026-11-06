@@ -119,3 +119,19 @@ No package is approved for production at this point. The next safe engineering s
 6. Make a documented choice only after those results exist. Do not freeze KDF parameters or a persistent envelope format before then.
 
 The 64 MiB / 3-pass / 4-lane RFC profile remains a test vector profile, not an approved production setting. Device measurements and a security review are still required.
+
+
+## 2026-11-07 source-level API verification
+
+The isolated compatibility spike review inspected the `@noble/hashes@2.4.0` published API documentation and the upstream `src/argon2.ts` source at the signed 2.4.0 release commit.
+
+Confirmed:
+- `argon2idAsync` is exported from `@noble/hashes/argon2.js`.
+- The Argon2 options include `key` and `personalization`; source-level initial-hash construction serializes them as the RFC optional secret K and associated-data X fields, respectively.
+- `m` is expressed in KiB, while `maxmem` is expressed in bytes and is checked against the actual memory allocation.
+- The asynchronous API yields to the scheduler but has no public `AbortSignal` argument. Cancellation must not be claimed without a separately designed and tested wrapper.
+- The package's documentation warns that its pure-JavaScript Argon2 implementation is materially slower than native implementations. The historic Cure53 audit scope explicitly excluded Argon2.
+
+This improves confidence that Noble can represent the full RFC §5.3 input tuple. It does **not** establish that the vector has been executed successfully in this repository, nor does it establish acceptable mobile performance or independent Argon2 audit coverage.
+
+**Decision unchanged:** `@noble/hashes@2.4.0` remains an isolated test candidate only. No KDF dependency, parameters, or persistent format is approved.
