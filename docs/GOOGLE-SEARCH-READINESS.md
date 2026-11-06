@@ -15,7 +15,7 @@ The Vault entry page is an authentication gateway and must remain `noindex`. API
 
 - Unique page titles and descriptions on public pages.
 - Canonical metadata base sourced only from `NEXT_PUBLIC_SITE_URL` or Vercel's `VERCEL_PROJECT_PRODUCTION_URL`; preview deployment URLs are not used.
-- `robots.txt` allows only public security and support sections and disallows the root entry route and API path.
+- `robots.txt` allows crawling of the root entry page so Google can read its `noindex` directive, and disallows API routes. The root page itself is marked noindex.
 - XML sitemap contains only the public security, research, support, and validated published-paper URLs.
 - The root Vault entry page is marked `noindex, nofollow`.
 - Sitemap generation returns an empty list rather than guessing a canonical domain when no production origin is configured.
