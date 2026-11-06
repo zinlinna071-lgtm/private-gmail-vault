@@ -48,6 +48,22 @@ This creates two distinct security responsibilities:
 
 A successful login must not by itself decrypt the vault. A successful vault unlock must not create or elevate a server session.
 
+
+## 4A. Authentication transition decision
+
+The repository currently uses the Vault Master Password as the Supabase Auth password. This must not remain the final design.
+
+Supabase's current JavaScript Passkey API is documented as **experimental** and requires `@supabase/supabase-js` v2.105.0 or later. The repository currently pins the 2.57.x line. Passkey registration also requires an existing signed-in, confirmed, non-anonymous user. The Supabase project must explicitly enable passkeys and configure a stable WebAuthn RP ID and allowed origins. Changing the RP ID later invalidates previously registered passkeys.
+
+Implementation decision:
+- Evaluate Supabase Passkeys as the preferred phishing-resistant server-authentication mechanism, but do not enable it or upgrade the production project as part of this branch-only change.
+- First build a compatibility spike on the feature branch using an isolated test project or mocked Auth boundary. Confirm the exact installed SDK API, browser support, and mobile UX.
+- Keep authentication and vault unlocking separate: a passkey session must not automatically unwrap the DEK; the client-only Master Password-derived KEK remains a separate unlock step.
+- Design account bootstrap and lost-passkey recovery before removing the current password login. Do not silently fall back to sending the Master Password to Supabase.
+- Keep the existing authentication path explicitly marked legacy until the replacement passes account creation, sign-in, session refresh, passkey enrollment, multi-device, revocation, and recovery tests.
+
+If experimental Supabase Passkeys are not acceptable for a production release, select a separately maintained WebAuthn server integration or a different supported authentication factor. Do not write custom WebAuthn signature verification.
+
 ## 5. Recovery protocol requirements
 
 The current server-encrypted pending Recovery Code flow cannot be reused as a zero-knowledge recovery mechanism.
