@@ -30,3 +30,9 @@ New mocked route tests inject synthetic internal exception strings into Login, R
 - No production credentials, live database, or real user records were used.
 - No production configuration, migration, deployment, merge, or Search Console action was performed.
 - CI must pass on the exact commit before this remediation is called verified.
+
+## Follow-up correction — Recovery input validation status
+
+A subsequent source review found that the Recovery route called `validatePassword()` inside the broad exception handler. A normal user input error was therefore being returned as HTTP 500 instead of a client validation response. The route now catches Login ID and Master Password validation failures locally and returns safe HTTP 400 messages without exposing exception text or contacting the account database for an invalid password. A mocked regression test covers the invalid Master Password path.
+
+This remains source-level and mocked coverage. The equivalent Login and Registration validation paths should be checked for consistent client-error handling in a separate follow-up.
