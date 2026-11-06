@@ -1,61 +1,48 @@
 # Private Account Vault — Project Direction
 
-**Status:** Current agreed scope  
+**Status:** Current agreed product scope and security direction  
 **Branch:** `feature/vault-authentication`
 
 ## Purpose
 
-A simple private vault for storing login details for any kind of account. It does not connect to Gmail or other providers.
+A simple personal vault for manually storing credentials belonging to any account. It does not connect to Gmail or other providers.
 
 ## Only the essential features
 
-1. Create a Vault using a private Login ID and Master Password.
-2. Add an account with:
+1. Create and sign in to a private Vault account.
+2. Unlock the encrypted vault independently of server authentication.
+3. Add an account with:
    - Account name
    - Email or username
    - Password
    - Backup codes
-3. Search saved accounts.
-4. Show, hide, and copy passwords or backup codes.
-5. Edit or delete an account.
-6. Sign out.
+4. Search saved accounts.
+5. Show, hide, and copy passwords or backup codes.
+6. Edit or delete an account.
+7. Sign out and lock the vault.
 
-No categories, notes, website integrations, Gmail API, AI, analytics, inbox, automation, or extra dashboard.
+No categories, notes, website integrations, Gmail API, AI, analytics, inbox, automation, ads, or extra dashboard.
 
-## Security
+## Security direction
 
-- Use the existing independent Vault sign-in and Recovery Code.
-- Encrypt each complete account record with AES-256-GCM before database storage.
-- Use a unique random IV for each encryption.
-- Bind authenticated encryption to the Vault user ID and account record ID.
-- Keep the account-data encryption key server-only and separate from the Recovery Code encryption key.
-- Authenticate every request and scope every database operation to the signed-in Vault user's ID.
+The required target is a zero-knowledge design:
+- Encrypt and decrypt complete account records in the browser before data leaves the client.
+- Use Web Crypto AES-256-GCM with unique random nonces and authenticated additional data.
+- Use a vetted Argon2id implementation to derive a key-encryption key from a client-only Master Password.
+- Generate a random data-encryption key in the browser and wrap it under the derived key.
+- Store only ciphertext and strictly validated, versioned cryptographic metadata on the server.
+- Keep Supabase authentication separate from vault unlocking. The Master Password must never be sent to Supabase or any API.
+- Replace server-side Recovery Code escrow with an independently reviewed client-side recovery protocol.
+- Authenticate every API request and scope every database operation to the signed-in Vault user's ID.
 - Do not cache credential API responses or write secrets to logs.
-- Never request, store, or expose a user's third-party account password outside this Vault.
 
-The initial implementation uses server-side encryption at rest. The hosting server must access the encryption key to return credentials to the owner, so this is not zero-knowledge encryption. A future zero-knowledge design would require a separate approved project because it changes key recovery and password-reset behavior.
+**Current implementation warning:** The existing code still uses server-side encryption and currently sends the account fields to the API as plaintext JSON before the server encrypts them. The existing login flow also sends the Vault password to Supabase Auth. The zero-knowledge design is not implemented yet. Do not store real high-value credentials in the current Preview.
+
+See [Security Foundation](SECURITY-FOUNDATION.md) and [Client-Side Encryption Migration Plan](CLIENT-SIDE-ENCRYPTION-MIGRATION.md) for implementation requirements and release gates.
 
 ## Database
 
-The new `vault_items` table stores only:
-- Record ID
-- Vault user ID
-- Encrypted ciphertext
-- IV
-- Authentication tag
-- Created and updated timestamps
-
-Plaintext account fields must never be stored in database columns.
-
-## Required environment
-
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-- `SUPABASE_SECRET_KEY` (server only)
-- `VAULT_ENCRYPTION_KEY` (Recovery Code protection; server only)
-- `VAULT_DATA_ENCRYPTION_KEY` (account record encryption; server only)
-
-Both encryption keys must be generated from 32 cryptographically random bytes, represented as 64 hexadecimal characters, stored securely, and kept separate.
+The target database stores encrypted account payloads only, plus the minimum metadata needed for ownership, versioning, and synchronization. Plaintext account fields must never be stored in database columns.
 
 ## Working rules
 
@@ -64,4 +51,4 @@ Both encryption keys must be generated from 32 cryptographically random bytes, r
 - Do not deploy production.
 - Do not apply migrations to production or change live secrets without separate explicit approval.
 - Keep the user interface minimal and do not add features outside the list above.
-- Test authentication, record ownership isolation, encryption, CRUD behavior, type checking, and production build before any release.
+- Test authentication, record ownership isolation, client-side encryption, recovery, CRUD behavior, type checking, and production build before any release.
