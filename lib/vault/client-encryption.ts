@@ -111,16 +111,24 @@ export async function encryptVaultRecord(
   }
 
   const iv = globalThis.crypto.getRandomValues(new Uint8Array(IV_BYTES));
-  const encrypted = new Uint8Array(await globalThis.crypto.subtle.encrypt(
-    {
-      name: "AES-GCM",
-      iv: toArrayBuffer(iv),
-      additionalData: toArrayBuffer(additionalData(vaultId, recordId)),
-      tagLength: 128
-    },
-    key,
-    toArrayBuffer(plaintextBytes)
-  ));
+  const plaintextBuffer = toArrayBuffer(plaintextBytes);
+  let encryptedBytes: ArrayBuffer;
+  try {
+    encryptedBytes = await globalThis.crypto.subtle.encrypt(
+      {
+        name: "AES-GCM",
+        iv: toArrayBuffer(iv),
+        additionalData: toArrayBuffer(additionalData(vaultId, recordId)),
+        tagLength: 128
+      },
+      key,
+      plaintextBuffer
+    );
+  } finally {
+    plaintextBytes.fill(0);
+    new Uint8Array(plaintextBuffer).fill(0);
+  }
+  const encrypted = new Uint8Array(encryptedBytes);
 
   const splitAt = encrypted.length - AUTH_TAG_BYTES;
   if (splitAt <= 0) throw new Error("Vault encryption failed.");
@@ -176,5 +184,10 @@ export async function decryptVaultRecord(
     combined
   );
 
-  return new TextDecoder("utf-8", { fatal: true }).decode(plaintext);
+  const plaintextBytes = new Uint8Array(plaintext);
+  try {
+    return new TextDecoder("utf-8", { fatal: true }).decode(plaintextBytes);
+  } finally {
+    plaintextBytes.fill(0);
+  }
 }
