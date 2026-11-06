@@ -53,7 +53,7 @@ const jobs = {
   }]
 };
 
-function mockGitHubApi(input = { run, workflow, jobs }) {
+function mockGitHubApi(input: { run: unknown; workflow: unknown; jobs: unknown } = { run, workflow, jobs }) {
   const responses = [input.run, input.workflow, input.jobs];
   const fetchMock = vi.fn(async (url: string | URL | Request) => {
     const value = responses.shift();
@@ -112,7 +112,7 @@ describe("authoritative GitHub run/job verification", () => {
     mockGitHubApi({
       run,
       workflow,
-      jobs: { jobs: [{ ...jobs.jobs[0], run_attempt: 2 }] }
+      jobs: { total_count: 1, jobs: [{ ...jobs.jobs[0], run_attempt: 2 }] }
     });
     await expect(
       verifyWorkflowRunWithGitHubApi(event, "ghp_" + "x".repeat(36))
@@ -123,7 +123,7 @@ describe("authoritative GitHub run/job verification", () => {
     mockGitHubApi({
       run,
       workflow,
-      jobs: { jobs: [{ ...jobs.jobs[0], status: "in_progress" }] }
+      jobs: { total_count: 1, jobs: [{ ...jobs.jobs[0], status: "in_progress" }] }
     });
     await expect(
       verifyWorkflowRunWithGitHubApi(event, "ghp_" + "x".repeat(36))
@@ -132,7 +132,7 @@ describe("authoritative GitHub run/job verification", () => {
     mockGitHubApi({
       run,
       workflow,
-      jobs: { jobs: Array.from({ length: 101 }, (_, i) => ({ ...jobs.jobs[0], id: i + 1 })) }
+      jobs: { total_count: 101, jobs: Array.from({ length: 101 }, (_, i) => ({ ...jobs.jobs[0], id: i + 1 })) }
     });
     await expect(
       verifyWorkflowRunWithGitHubApi(event, "ghp_" + "x".repeat(36))
