@@ -34,9 +34,11 @@ The repository is private. A public page cannot safely fetch its workflow histor
 
 Implemented primitives:
 - Verify `X-Hub-Signature-256` against the exact raw request body using HMAC-SHA256 before JSON parsing.
+- Read request bodies incrementally with a 256 KiB byte cap; reject oversized or malformed UTF-8 bodies before JSON parsing.
 - Reject missing/malformed signatures, weak secrets, and bodies larger than 256 KiB.
 - Extract only a small metadata projection from the signed `workflow_run` event.
-- Require the exact repository, the allowlisted `.github/workflows/ci.yml` workflow, a feature branch, a 40-character commit SHA, a canonical GitHub run URL, and consistent action/status fields.
+- Require a UUID-shaped delivery ID, the exact repository, the allowlisted `.github/workflows/ci.yml` workflow, a feature branch, a 40-character commit SHA, valid UTC timestamps, a canonical GitHub run URL without credentials/query/fragment, and action/status consistency.
+- Validate the nested run repository when supplied; reject malformed nested repository values.
 - Exclude raw payloads, logs, environment variables, and secret material from the projection.
 
 The verifier does not itself provide delivery replay protection, persistence, event ordering, owner approval, or public publication. A valid HMAC proves that the payload was signed by a party holding the webhook secret; it does not prove that a security test was adequate or that a passing CI workflow constitutes a penetration test.
