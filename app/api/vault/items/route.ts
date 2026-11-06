@@ -4,6 +4,7 @@ import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { decryptVaultItem, encryptVaultItem } from "@/lib/vault/item-encryption";
+import { isSameOriginRequest } from "@/lib/auth/vault";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -56,6 +57,12 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  if (!isSameOriginRequest(request)) return response({ error: "Invalid request origin." }, 403);
+  if (!request.headers.get("content-type")?.toLowerCase().includes("application/json")) {
+    return response({ error: "Unsupported content type." }, 415);
+  }
+  const contentLength = Number(request.headers.get("content-length") ?? "0");
+  if (contentLength > 20_000) return response({ error: "Request is too large." }, 413);
   try {
     const user = await getUser();
     if (!user) return response({ error: "Please sign in again." }, 401);
