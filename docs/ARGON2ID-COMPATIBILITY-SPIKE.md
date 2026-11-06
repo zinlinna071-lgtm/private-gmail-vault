@@ -1,6 +1,6 @@
 # Argon2id Compatibility Spike
 
-**Status:** Test plan prepared; not run yet  
+**Status:** Test plan prepared; API/source mapping reviewed; vectors not run yet  
 **Branch:** `feature/vault-authentication`  
 **Production impact:** None. No production dependency, KDF parameter, or key format is approved by this document.
 
@@ -45,13 +45,15 @@ Source: RFC 9106 §5.3, https://www.rfc-editor.org/rfc/rfc9106.html
 For `@noble/hashes@2.4.0`:
 - Import `argon2idAsync` from `@noble/hashes/argon2.js`.
 - Map RFC K to the API's `key` option.
-- Map RFC X to the API's `personalization` option.
+- Map RFC X to the API's `personalization` option. In this Argon2 API, this option is encoded as the RFC optional X input; it is not a claim that the Argon2 RFC field is a BLAKE2 personalization field.
 - Set `t=3`, `m=32`, `p=4`, `dkLen=32`, `version=0x13`.
-- Set `maxmem` explicitly to a small bounded test allowance; do not rely on the 1 GiB default.
+- `m` is in KiB; `maxmem` is in bytes. Set `maxmem` explicitly to a bounded value that is at least the actual test allocation (32 KiB for this vector); do not rely on the 1 GiB default.
+- Upstream source inspection at the 2.4.0 release commit confirms that `argon2InitialHash` serializes `key` and `personalization` as the RFC's `LE32(length(K)) || K` and `LE32(length(X)) || X` inputs. This confirms the API mapping, but is not a test result.
+- The API also exposes an async variant. It yields to the scheduler, but does not expose an AbortSignal parameter; do not describe it as user-cancellable until a tested cancellation design exists.
 
 For `hash-wasm@4.12.0`:
 - Import `argon2id` from `hash-wasm`.
-- The documented options expose `secret`, but do not document a distinct associated-data/personalization input.
+- The documented options expose `secret`, but do not document a distinct associated-data/X input.
 - Therefore do not claim that its API can execute the exact RFC vector above unless source inspection confirms an equivalent, supported X input.
 - If it cannot represent X, mark the exact-vector test **unsupported by the public API**. Do not silently omit X and compare against the RFC expected output.
 - A separate K/X-empty vector may be used only when its expected output is obtained from a trusted independent reference implementation and checked into the harness with provenance.
@@ -101,17 +103,18 @@ Do not choose production parameters from desktop results. A 64 MiB / 3-pass / 4-
 - Do not change `lib/vault/key-envelope.ts` or wire KDF into the Vault UI until a candidate and parameters are approved.
 - Do not freeze the on-disk KDF metadata format yet.
 
-## 6. Decision record template
+## 6. Decision record
 
 | Check | noble 2.4.0 | hash-wasm 4.12.0 |
 |---|---|---|
-| Exact RFC §5.3 vector | Not run | Public API X support unconfirmed |
+| API supports RFC K and X inputs | Source mapping confirmed | Public API X support unconfirmed |
+| Exact RFC §5.3 vector | Not run | Unsupported until X support is confirmed |
 | Additional independent vector | Not run | Not run |
 | Browser build | Not run | Not run |
 | Android low-memory benchmark | Not run | Not run |
 | iOS Safari benchmark | Not run | Not run |
 | Package provenance review | Pending | Pending |
-| Independent Argon2 audit evidence | Not established for Argon2 | Not established |
+| Independent Argon2 audit evidence | Argon2 excluded from the historic Cure53 audit | Not established |
 | Decision | Not approved | Not approved |
 
 ## 7. Exit criteria
