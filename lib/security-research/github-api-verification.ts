@@ -87,8 +87,6 @@ export async function verifyWorkflowRunWithGitHubApi(
     run.workflow_id !== event.workflowId ||
     !isRecord(run.repository) ||
     !equalString(run.repository.full_name, REPOSITORY) ||
-    !equalString(run.path, `.github/workflows/ci.yml@refs/heads/${event.headBranch}`) &&
-      !equalString(run.path, ".github/workflows/ci.yml") ||
     !equalString(run.head_branch, event.headBranch) ||
     !equalString(run.head_sha, event.headSha) ||
     !equalString(run.status, event.status) ||
