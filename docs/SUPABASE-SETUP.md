@@ -8,13 +8,14 @@ The initial schema migration has already been applied and the three base tables 
 - gmail_connections
 - vault_audit_events
 
-For independent Vault Login, apply the next migration:
-1. Open the Supabase SQL Editor.
-2. Open supabase/migrations/202611060002_vault_auth_credentials.sql on branch feature/vault-authentication.
-3. Copy the complete SQL into a new SQL Editor query and run it.
-4. Confirm vault_profiles has login_id, recovery_code_hash, and recovery_code_salt.
-5. Confirm vault_auth_rate_limits exists.
-6. Confirm consume_vault_auth_attempt exists.
+The initial schema migration (001) and independent Vault credentials migration (002) have been applied to the current Supabase project and their resulting tables/columns were checked.
+
+Migration 003 (recovery claims and encrypted pending Recovery Codes) is present in the feature branch but has **not** been applied. Do not run it until the Recovery Flow review and automated checks are complete and the migration is explicitly approved.
+
+The expected result after migration 002 is:
+- vault_profiles includes login_id, recovery_code_hash, and recovery_code_salt.
+- vault_auth_rate_limits exists.
+- consume_vault_auth_attempt exists.
 
 Do not create broad authenticated-user policies for Gmail token or rate-limit tables.
 
