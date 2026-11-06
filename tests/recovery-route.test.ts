@@ -195,4 +195,62 @@ describe("POST /api/auth/recovery", () => {
       p_claim_token: expect.any(String)
     });
   });
+
+  it("cleans up an expired pending code and starts a fresh recovery", async () => {
+    profile.pending_recovery_code_hash = "expired-hash";
+    profile.pending_recovery_code_salt = "expired-salt";
+    profile.pending_recovery_code_ciphertext = "expired-ciphertext";
+    profile.pending_recovery_code_iv = "expired-iv";
+    profile.pending_recovery_code_auth_tag = "expired-tag";
+    profile.pending_recovery_code_expires_at = new Date(Date.now() - 60_000).toISOString();
+
+    const response = await POST(makeRequest({
+      loginId: "myvault",
+      recoveryCode: "old-code",
+      newPassword: "a-strong-new-password"
+    }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.requiresAcknowledgement).toBe(true);
+    expect(updateUserById).toHaveBeenCalledTimes(1);
+    expect(rpc).toHaveBeenCalledWith("claim_vault_recovery", expect.any(Object));
+    expect(mocks.decryptPendingRecoveryCode).not.toHaveBeenCalled();
+  });
+
+  it("does not change the password when another recovery claim is active", async () => {
+    rpc.mockImplementation(async (name: string) => {
+      if (name === "claim_vault_recovery") return { data: false, error: null };
+      return { data: true, error: null };
+    });
+
+    const response = await POST(makeRequest({
+      loginId: "myvault",
+      recoveryCode: "old-code",
+      newPassword: "a-strong-new-password"
+    }));
+
+    expect(response.status).toBe(409);
+    expect(updateUserById).not.toHaveBeenCalled();
+    expect(rpc).toHaveBeenCalledTimes(1);
+  });
+
+  it("releases its claim when the Supabase password update fails", async () => {
+    updateUserById.mockResolvedValue({ error: new Error("password update failed") });
+
+    const response = await POST(makeRequest({
+      loginId: "myvault",
+      recoveryCode: "old-code",
+      newPassword: "a-strong-new-password"
+    }));
+    const body = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(body.error).toContain("existing Recovery Code remains valid");
+    expect(rpc).toHaveBeenCalledWith("release_vault_recovery", {
+      p_user_id: "user-123",
+      p_claim_token: expect.any(String)
+    });
+  });
+
 });
