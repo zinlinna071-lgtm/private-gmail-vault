@@ -35,7 +35,7 @@ create table if not exists public.github_workflow_runs (
   updated_at timestamptz not null,
   html_url text not null,
   authoritative_verified_at timestamptz not null,
-  verified_job_count integer not null check (verified_job_count between 1 and 100),
+  verified_job_count integer not null check (verified_job_count between 0 and 100),
   verified_jobs_sha256 text not null check (verified_jobs_sha256 ~ '^[a-f0-9]{64}$'),
   last_delivery_id uuid not null references public.github_webhook_deliveries(delivery_id),
   publication_state text not null default 'PRIVATE'
@@ -104,7 +104,7 @@ begin
          (p_run_started_at < p_created_at or p_run_started_at > p_updated_at))
      or p_html_url is distinct from ('https://github.com/' || p_repository || '/actions/runs/' || p_run_id::text)
      or p_authoritative_verified_at is null
-     or p_verified_job_count is null or p_verified_job_count < 1 or p_verified_job_count > 100
+     or p_verified_job_count is null or p_verified_job_count < 0 or p_verified_job_count > 100
      or p_verified_jobs_sha256 is null or p_verified_jobs_sha256 !~ '^[a-f0-9]{64}$'
      or (p_action = 'requested' and p_status <> 'queued')
      or (p_action = 'in_progress' and p_status <> 'in_progress')
