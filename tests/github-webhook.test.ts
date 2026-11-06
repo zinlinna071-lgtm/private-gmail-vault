@@ -21,7 +21,7 @@ function sign(body: string, key = secret) {
 const payload = {
   action: "completed",
   repository: { full_name: repository },
-  workflow: { path: ".github/workflows/ci.yml" },
+  workflow: { id: 408741606, path: ".github/workflows/ci.yml" },
   workflow_run: {
     id: 42298920558,
     run_attempt: 1,
