@@ -1,6 +1,6 @@
 # Argon2id Compatibility Spike
 
-**Status:** Test plan prepared; API/source mapping reviewed; vectors not run yet  
+**Status:** RFC 9106 §5.3 KAT and input-mutation checks passed in the isolated Node.js harness; browser/device validation remains pending  
 **Branch:** `feature/vault-authentication`  
 **Production impact:** None. No production dependency, KDF parameter, or key format is approved by this document.
 
@@ -136,6 +136,8 @@ A standalone test harness has been added under `tools/argon2id-spike/`:
 - `test-rfc9106.mjs` executes the complete §5.3 vector, checks the 32-byte result, and checks that changing the password, salt, secret K, or associated data X changes the output.
 - `.github/workflows/argon2id-spike.yml` defines a branch-scoped GitHub Actions job for the isolated test.
 
-**Execution status:** The harness files are committed, but the RFC vector has not yet been executed in a confirmed Actions run. No passing KAT result is claimed. The repository's connected GitHub workflow interface has not returned a run for these harness commits, so the test must remain marked pending until a real run result is available.
+**Execution status (verified):** GitHub Actions run [42272387331](https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42272387331) completed successfully for commit `889ee746033675175dfb5496e6e57eb6ed7c3821`. The exact RFC 9106 §5.3 output matched byte-for-byte, and all four mutation checks passed (password, salt, secret K, and associated data X).
+
+**Scope limitation:** This confirms the isolated Node.js API mapping for `@noble/hashes@2.4.0`; it does not confirm a browser bundle, mobile performance, memory behavior, cancellation, package provenance review, or independent Argon2 audit coverage. No production dependency, KDF parameters, or persistent format is approved.
 
 The test uses only public RFC test-vector bytes. It does not import application code, touch the root dependency graph, access user secrets, or change production configuration.
