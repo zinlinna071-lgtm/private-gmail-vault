@@ -34,7 +34,12 @@ export async function POST(request: Request) {
       return noStoreJson({ error: "Invalid JSON request." }, { status: 400 });
     }
     const body = parsedBody.value as Record<string, unknown>;
-    const loginId = normalizeLoginId(String(body.loginId ?? ""));
+    let loginId: string;
+    try {
+      loginId = normalizeLoginId(String(body.loginId ?? ""));
+    } catch {
+      return noStoreJson({ error: "Invalid Login ID." }, { status: 400 });
+    }
     if (!await allowAuthAttempt(request, "login", loginId, 10)) {
       return noStoreJson({ error: "Too many sign-in attempts. Try again in 15 minutes." }, { status: 429 });
     }
