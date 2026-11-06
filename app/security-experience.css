@@ -1,0 +1,204 @@
+/* Shared Cyber Shield visual system for every public and private app surface */
+:root {
+  --vault-bg: #070f19;
+  --vault-panel: #0b1b29;
+  --vault-panel-raised: #102635;
+  --vault-line: #28505b;
+  --vault-text: #eafff9;
+  --vault-muted: #9ab6bf;
+  --vault-teal: #76e3c3;
+  --vault-mint: #b8ffeb;
+  --vault-blue: #65c9dc;
+}
+body { background:var(--vault-bg); color:var(--vault-text); }
+a { transition:color .2s ease,text-shadow .2s ease; }
+.shell {
+  background:radial-gradient(ellipse at 72% 8%,#103c4b 0%,#0b1b2b 34%,#070d18 76%);
+}
+.shell::before {
+  content:""; position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:.12;
+  background-image:linear-gradient(#69d9c01a 1px,transparent 1px),linear-gradient(90deg,#69d9c01a 1px,transparent 1px);
+  background-size:46px 46px;
+}
+.shell .hero {
+  border-color:var(--vault-line);
+  background:linear-gradient(145deg,#0d2533f2,#091724f5);
+  box-shadow:0 30px 100px #0008,0 0 45px #3dd8b510;
+}
+.shell .brand { color:#dffcf4; }
+.shell .brand-mark {
+  border:1px solid #5fe1c0; border-radius:12px; background:linear-gradient(145deg,#174b52,#0c2031);
+  color:#b8ffeb; box-shadow:0 0 22px #3de0b52c,inset 0 0 14px #3de0b51a;
+}
+.shell .eyebrow { color:var(--vault-teal); }
+.shell h1 span { color:#8ce8d0; }
+.shell .intro { color:#a9bfca; }
+.shell .auth-card,.shell .entry-form,.shell .entry-card {
+  border-color:var(--vault-line); background:linear-gradient(145deg,#0c2030f2,#0a1725f5);
+}
+.shell .tabs { background:#091723; border:1px solid #203e4a; }
+.shell .tab.active { color:#eafff8; background:linear-gradient(110deg,#155b59,#214d69); box-shadow:0 0 20px #42e0b52a,inset 0 0 0 1px #6ce6c344; }
+.shell .auth-form input,.shell .entry-form input,.shell .entry-form textarea,.shell .search-input {
+  border-color:#31515b; background:#071522; color:#eafff9;
+}
+.shell .auth-form input:focus,.shell .entry-form input:focus,.shell .entry-form textarea:focus,.shell .search-input:focus {
+  border-color:#6de6c5; box-shadow:0 0 0 3px #5de2bd20,0 0 20px #5de2bd12;
+}
+.shell .primary-button {
+  border:1px solid #a1ffe4; color:#06251f; background:linear-gradient(100deg,#62e9c0,#a2f5e0 48%,#62d9e9);
+  box-shadow:0 0 22px #50e6bc38,0 8px 22px #0004;
+}
+.shell .secondary-button { border:1px solid #4c928a; color:#d6fff3; background:#123b43; }
+.shell .text-button { color:#8ce8d0; }
+.shell .entry-card h2,.shell .entry-form h2 { color:#eafff9; }
+.shell .entry-username,.shell .field-name,.shell .empty-state { color:#9ab6bf; }
+.shell .secret-row code,.shell .secret-block pre { color:#e6fff6; }
+.shell footer { color:#688b91; }
+.shell footer a { color:#93d9c6 !important; }
+
+/* Public dashboard: same teal/midnight system as the entry gateway */
+.security-shell {
+  position:relative; isolation:isolate;
+  background:radial-gradient(ellipse at 78% 5%,#103c4b 0%,#0a1826 36%,#070d17 78%);
+}
+.security-shell::before {
+  content:""; position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:.12;
+  background-image:linear-gradient(#69d9c01a 1px,transparent 1px),linear-gradient(90deg,#69d9c01a 1px,transparent 1px);
+  background-size:46px 46px; mask-image:linear-gradient(transparent,#000 18%,#000 82%,transparent);
+}
+.security-brand-mark {
+  border-color:#5fe1c0; color:#b8ffeb; background:linear-gradient(145deg,#174b52,#0c2031);
+  box-shadow:0 0 20px #3de0b51c,inset 0 0 12px #3de0b51a;
+}
+.security-nav { border-color:#28505b; }
+.security-nav-links a,.security-nav>a:not(.security-brand) { color:#9dbbb9; }
+.security-nav-links a:hover,.security-nav>a:hover { color:#baffed; text-shadow:0 0 14px #69f3cd55; }
+.security-nav-status { color:#9be7d0; }
+.security-nav-status i,.pulse-dot { background:#62c7b0; box-shadow:0 0 12px #62c7b055; }
+.security-kicker,.section-index { color:#76e3c3; }
+.security-hero h1 em { color:#8ce8d0; text-shadow:0 0 30px #3dd8b51c; }
+.security-lead { color:#a9bfca; }
+.security-hero-meta { color:#a6c9c2; }
+.security-hero-meta b,.section-aside { color:#729a9d; }
+.security-hero-actions a,.security-operations a,.security-method a { color:#8ce8d0; }
+.security-signal {
+  border-color:#28505b;
+  background:linear-gradient(145deg,#0d2533e8,#081522f2);
+  box-shadow:0 24px 75px #0005,inset 0 1px #b6fff21a;
+}
+.signal-grid {
+  opacity:.22;
+  background-image:linear-gradient(#69d9c01a 1px,transparent 1px),linear-gradient(90deg,#69d9c01a 1px,transparent 1px);
+}
+.signal-ring { border-color:#53d8ba38; }
+.signal-ring-one { border-color:#66e4c65c; }
+.signal-ring-two { border-color:#61b7e02b; }
+.signal-core {
+  border-color:#6ed5b2; background:linear-gradient(145deg,#174b52,#0c2031);
+  box-shadow:0 0 42px #45c99b2b,inset 0 0 24px #45c99b12;
+}
+.signal-core span { color:#b6f6dc; }
+.signal-core small { color:#82bba9; }
+.signal-node {
+  border-color:#345b60; background:#0a1c2b; color:#b9d1d7;
+  box-shadow:0 8px 24px #0005;
+}
+.signal-node i { background:#5b9d99; box-shadow:0 0 8px #5b9d9944; }
+.signal-scan { background:linear-gradient(90deg,transparent,#67d8b4,transparent); box-shadow:0 0 16px #67d8b4; }
+.signal-caption { color:#7ca6a2; }
+.security-notice { border-color:#705b35; background:#29231666; }
+.security-section { position:relative; }
+.security-section-heading h2,.security-method h2 { color:#eafff9; }
+.security-evidence-list { border-color:#28505b; }
+.security-evidence {
+  position:relative; overflow:hidden; padding:22px 12px;
+  border-color:#28505b; border-radius:12px;
+  background:linear-gradient(100deg,#0c2030a8,#0a1725a8);
+  transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease;
+}
+.security-evidence + .security-evidence { margin-top:8px; }
+.security-evidence:hover {
+  transform:translateY(-2px); border-color:#4c9c8b;
+  box-shadow:0 14px 36px #0004,0 0 24px #3dd8b510;
+}
+.evidence-icon { border-color:#347f6b; color:#8de1c2; box-shadow:0 0 14px #45c99b18; }
+.evidence-pass { border-color:#286e5a; color:#8de1c2; background:#12372f66; }
+.security-evidence a { color:#8ce8d0; }
+.security-evidence a:hover { color:#c2ffed; text-shadow:0 0 12px #69f3cd66; }
+.evidence-boundary {
+  display:inline-flex; margin-bottom:8px; padding:4px 7px; border:1px solid #315b61;
+  border-radius:4px; color:#83cdb8; font-size:8px; font-weight:900; letter-spacing:.14em;
+}
+.evidence-job {
+  display:inline-block; max-width:100%; overflow-wrap:anywhere; margin-top:4px; padding:5px 7px;
+  border:1px solid #294a53; border-radius:5px; color:#90b9b3; background:#081723;
+  font-size:9px;
+}
+.security-footnote { color:#8ba8b0; }
+.security-module-grid { gap:14px; }
+.security-module {
+  position:relative; overflow:hidden; border-color:#294d56;
+  border-radius:15px; background:linear-gradient(145deg,#102432dd,#0a1725);
+  box-shadow:inset 0 1px #b6fff20a;
+  transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease;
+}
+.security-module::after {
+  content:""; position:absolute; top:0; left:-120%; width:70%; height:1px;
+  background:linear-gradient(90deg,transparent,#79efd0,transparent);
+  opacity:0; transition:left .65s ease,opacity .2s ease;
+}
+.security-module:hover { transform:translateY(-3px); border-color:#4a9186; box-shadow:0 16px 36px #0004,0 0 24px #3dd8b50d; }
+.security-module:hover::after { left:130%; opacity:1; }
+.module-number,.operation-list b,.method-steps b { color:#76e3c3; }
+.module-status { color:#8eb5b1; }
+.status-untested { color:#e0b77a !important; }
+.surface-step {
+  border-color:#294d56; border-radius:14px;
+  background:linear-gradient(145deg,#102432dd,#0a1725);
+  transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;
+}
+.surface-step:hover { transform:translateY(-3px); border-color:#4a9186; box-shadow:0 14px 32px #0004; }
+.surface-step-top span { color:#76e3c3; }
+.surface-step-top small { color:#7ca6a2; }
+.surface-step p,.security-module p,.operation-list small,.method-steps small { color:#9ab6bf; }
+.surface-connector { color:#76e3c3; }
+.operation-list>div,.method-steps>div { border-color:#28505b; }
+.operation-list em { border-color:#365c59; color:#9dcbbd; }
+.security-footer { border-color:#28505b; }
+.security-footer p { color:#819da5; }
+.security-footer-links a,.security-footer>a { color:#8ce8d0; }
+.security-footer-links a:hover,.security-footer>a:hover { color:#c2ffed; text-shadow:0 0 12px #69f3cd55; }
+
+/* Research publications and fund disclosure share the same surfaces */
+.research-publication-card,.research-empty-state,.research-article {
+  border-color:#294d56; border-radius:16px;
+  background:linear-gradient(145deg,#102432e8,#0a1725f5);
+  box-shadow:0 20px 60px #0003;
+}
+.research-publication-meta,.research-abstract-label { color:#76e3c3; }
+.research-publication-card p,.research-empty-state p { color:#a9bfca; }
+.research-publication-footer { border-color:#28505b; color:#8da9b4; }
+.research-publication-footer a,.research-paper-section a,.research-article-toolbar a { color:#8ce8d0; }
+.research-empty-mark { color:#76e3c3; }
+.research-language-switch { background:#091723; border:1px solid #203e4a; }
+.research-language-switch button[aria-pressed="true"] { background:linear-gradient(110deg,#155b59,#214d69); color:#eafff8; }
+.research-abstract { color:#d4fff0; }
+.research-provenance { border-color:#28505b; color:#9ab6bf; }
+.research-provenance b { color:#76b6a8; }
+.research-provenance code { color:#dffcf4; }
+.research-paper-section > .section-index { color:#76e3c3; }
+.research-paper-section p,.research-paper-section li { color:#b3c9ca; }
+.research-disclaimer { border-left-color:#68daba; background:#102a35; color:#a9bfca; }
+.fund-disclosure,.fund-empty-total,.fund-ledger-empty,.fund-asset-card,.fund-account-grid article {
+  border-color:#294d56 !important; background:linear-gradient(145deg,#102432e8,#0a1725f5) !important;
+  color:#a9bfca;
+}
+.fund-empty-mark,.fund-asset-card>span,.fund-account-grid article>span { color:#76e3c3 !important; }
+.fund-asset-card strong,.fund-account-grid strong { color:#eafff9 !important; }
+.fund-asset-card small,.fund-account-grid small { color:#91aeb5 !important; }
+
+@keyframes vault-signal-glide { 0% { transform:translateX(-120%); } 100% { transform:translateX(240%); } }
+@media(prefers-reduced-motion:reduce) {
+  .security-shell *, .security-shell *::before, .security-shell *::after,
+  .shell *, .shell *::before, .shell *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
+}
