@@ -127,3 +127,15 @@ A candidate may be proposed (not automatically approved) only after:
 - the crypto protocol receives independent review.
 
 Until then, the current Vault remains a development prototype and must not store real high-value credentials.
+
+
+## 8. Isolated harness implementation (2026-11-07)
+
+A standalone test harness has been added under `tools/argon2id-spike/`:
+- `package.json` pins the test-only `@noble/hashes` dependency to 2.4.0; it is not part of the root application dependency graph.
+- `test-rfc9106.mjs` executes the complete §5.3 vector, checks the 32-byte result, and checks that changing the password, salt, secret K, or associated data X changes the output.
+- `.github/workflows/argon2id-spike.yml` defines a branch-scoped GitHub Actions job for the isolated test.
+
+**Execution status:** The harness files are committed, but the RFC vector has not yet been executed in a confirmed Actions run. No passing KAT result is claimed. The repository's connected GitHub workflow interface has not returned a run for these harness commits, so the test must remain marked pending until a real run result is available.
+
+The test uses only public RFC test-vector bytes. It does not import application code, touch the root dependency graph, access user secrets, or change production configuration.
