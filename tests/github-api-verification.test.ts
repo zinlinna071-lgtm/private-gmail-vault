@@ -35,6 +35,7 @@ const run = {
   status: event.status,
   conclusion: event.conclusion,
   created_at: event.createdAt,
+  run_started_at: event.runStartedAt,
   updated_at: event.updatedAt,
   html_url: event.htmlUrl
 };
@@ -148,7 +149,7 @@ describe("authoritative GitHub run/job verification", () => {
       runStartedAt: null
     };
     mockGitHubApi({
-      run: { ...run, status: "queued", conclusion: null },
+      run: { ...run, status: "queued", conclusion: null, run_started_at: null },
       workflow,
       jobs: { total_count: 0, jobs: [] }
     });
