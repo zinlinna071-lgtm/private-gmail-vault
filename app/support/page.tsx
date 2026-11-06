@@ -92,6 +92,8 @@ export default function ResearchFundPage() {
         <div className="fund-disclosure">
           <p>Only contribute if you understand that the funds are received and managed personally by the project owner. Please consider applicable tax and legal requirements in your jurisdiction. No tax-deductible status or regulatory approval is claimed.</p>
           <p lang="my">အလှူငွေကို Project ပိုင်ရှင်ကိုယ်တိုင် လက်ခံပြီး စီမံခန့်ခွဲမည်ဆိုတာကို နားလည်သဘောပေါက်မှသာ လှူဒါန်းပါ။ သင့်နိုင်ငံနှင့် သက်ဆိုင်သော အခွန်နှင့် ဥပဒေဆိုင်ရာ သတ်မှတ်ချက်များကိုလည်း ထည့်သွင်းစဉ်းစားပါ။ အခွန်ကင်းလွတ်ခွင့် သို့မဟုတ် စည်းမျဉ်းဆိုင်ရာ ခွင့်ပြုချက်ရှိကြောင်း မကြေညာထားပါ။</p>
+          <p>Cryptocurrency transfers are generally irreversible. Sending an unsupported asset or using the wrong network may result in permanent loss. Public blockchain transactions can reveal wallet activity; displaying a transaction hash does not make a donor anonymous.</p>
+          <p lang="my">Cryptocurrency လွှဲပြောင်းမှုများကို ပုံမှန်အားဖြင့် ပြန်လည်ပယ်ဖျက်၍ မရပါ။ မထောက်ပံ့ထားသော Coin သို့မဟုတ် Network မှားယွင်းစွာ ပို့ပါက ငွေဆုံးရှုံးနိုင်သည်။ Blockchain ပေါ်ရှိ အများမြင်နိုင်သော Transaction များမှ Wallet လှုပ်ရှားမှုကို ခြေရာခံနိုင်သောကြောင့် Transaction Hash ကို ပြသခြင်းသည် အလှူရှင်၏ အမည်ဝှက်လုံခြုံမှုကို အာမမခံပါ။</p>
           <strong>Donation addresses are not published yet.</strong>
           <p>Wallet details will be displayed only after legal/tax review, dedicated-wallet custody planning, and transaction-verification testing are complete.</p>
         </div>
