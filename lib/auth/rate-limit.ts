@@ -3,8 +3,10 @@ import { createHash } from "node:crypto";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export async function allowAuthAttempt(request: Request, action: string, loginId: string, limit: number) {
-  // Trust only platform-provided client-IP headers. Do not use x-forwarded-for:\n  // clients can prepend spoofed values unless the hosting proxy sanitizes it.\n  const ip = request.headers.get("x-real-ip") ?? request.headers.get("x-vercel-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  const ip = request.headers.get("x-real-ip") ?? request.headers.get("x-vercel-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  // Only trust headers set by the hosting proxy. x-forwarded-for can be spoofed.
+  const ip = request.headers.get("x-real-ip")
+    ?? request.headers.get("x-vercel-forwarded-for")?.split(",")[0]?.trim()
+    ?? "unknown";
   const admin = createSupabaseAdminClient();
   const buckets = [
     { key: `${action}|ip|${ip}`, max: 50 },
