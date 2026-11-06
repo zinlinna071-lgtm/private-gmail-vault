@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
-export default async function VaultPage() {
+export default async function VaultPage({ searchParams }: { searchParams: Promise<{ gmail_connected?: string; gmail_error?: string }> }) {\n  const params = await searchParams;
   const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/");
@@ -27,7 +27,7 @@ export default async function VaultPage() {
         <h1>Welcome back<span>.</span></h1>
         <p className="intro">Signed in as <strong>{profile?.login_id ?? "Vault account"}</strong>. Your independent Vault authentication is active.</p>
 
-        <section className="notice" aria-labelledby="gmail-heading">
+        {params.gmail_connected === "1" && <p className="feedback success" role="status">Gmail account connected successfully.</p>}\n        {params.gmail_error && <p className="feedback error" role="alert">Gmail connection could not be completed ({params.gmail_error.replaceAll("_", " ")}). Please try again or check the Google OAuth setup.</p>}\n        <section className="notice" aria-labelledby="gmail-heading">
           <strong id="gmail-heading">Your Gmail connections</strong>
           {connections?.length ? (
             <ul>
