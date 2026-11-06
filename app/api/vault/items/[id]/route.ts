@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { encryptVaultItem } from "@/lib/vault/item-encryption";
+import { isSameOriginRequest } from "@/lib/auth/vault";
 
 export const runtime = "nodejs";
 
@@ -27,6 +28,13 @@ async function getUser() {
 }
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  if (!isSameOriginRequest(request)) return response({ error: "Invalid request origin." }, 403);
+  if (!request.headers.get("content-type")?.toLowerCase().includes("application/json")) {
+    return response({ error: "Unsupported content type." }, 415);
+  }
+  const contentLength = Number(request.headers.get("content-length") ?? "0");
+  if (contentLength > 20_000) return response({ error: "Request is too large." }, 413);
+
   try {
     const user = await getUser();
     if (!user) return response({ error: "Please sign in again." }, 401);
@@ -34,8 +42,16 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
       return response({ error: "Account not found." }, 404);
     }
-    const parsed = entrySchema.safeParse(await request.json());
+
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return response({ error: "Invalid JSON request." }, 400);
+    }
+    const parsed = entrySchema.safeParse(body);
     if (!parsed.success) return response({ error: "Please check the account details and try again." }, 400);
+
     const encrypted = encryptVaultItem(JSON.stringify(parsed.data), user.id, id);
     const admin = createSupabaseAdminClient();
     const { data, error } = await admin.from("vault_items").update({
@@ -51,7 +67,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   }
 }
 
-export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  if (!isSameOriginRequest(request)) return response({ error: "Invalid request origin." }, 403);
+
   try {
     const user = await getUser();
     if (!user) return response({ error: "Please sign in again." }, 401);
