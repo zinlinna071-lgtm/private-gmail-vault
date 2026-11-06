@@ -2,6 +2,19 @@ import "server-only";
 
 const MAX_WEBHOOK_BODY_BYTES = 256 * 1024;
 const SIGNATURE_PATTERN = /^sha256=[a-f0-9]{64}$/i;
+const DELIVERY_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const SHA = /^[a-f0-9]{40}$/i;
+const ISO_UTC_TIMESTAMP = /^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,9})?Z$/;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isIsoUtcTimestamp(value: unknown): value is string {
+  return typeof value === "string" &&
+    ISO_UTC_TIMESTAMP.test(value) &&
+    Number.isFinite(Date.parse(value));
+}
 
 /**
  * Verifies GitHub's X-Hub-Signature-256 against the exact raw request body.
@@ -19,9 +32,10 @@ export async function verifyGitHubWebhookSignature(input: {
   if (new TextEncoder().encode(rawBody).byteLength > MAX_WEBHOOK_BODY_BYTES) return false;
 
   try {
+    const encoder = new TextEncoder();
     const key = await crypto.subtle.importKey(
       "raw",
-      new TextEncoder().encode(secret),
+      encoder.encode(secret),
       { name: "HMAC", hash: "SHA-256" },
       false,
       ["verify"]
@@ -36,7 +50,7 @@ export async function verifyGitHubWebhookSignature(input: {
       "HMAC",
       key,
       signatureBytes,
-      new TextEncoder().encode(rawBody)
+      encoder.encode(rawBody)
     );
   } catch {
     return false;
@@ -60,13 +74,6 @@ export type VerifiedWorkflowRunEvent = {
   htmlUrl: string;
 };
 
-const ISO_DATE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
-const SHA = /^[a-f0-9]{40}$/i;
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
 /**
  * Extracts a minimal, non-secret workflow_run projection from an already
  * signature-verified webhook payload. Persistence and replay protection are
@@ -77,7 +84,7 @@ export function parseVerifiedWorkflowRunEvent(
   deliveryId: string,
   expectedRepository: string
 ): VerifiedWorkflowRunEvent | null {
-  if (!/^[a-f0-9-]{16,80}$/i.test(deliveryId)) return null;
+  if (!DELIVERY_ID_PATTERN.test(deliveryId)) return null;
   if (!isRecord(payload) || payload.action === undefined) return null;
   if (!["requested", "in_progress", "completed"].includes(String(payload.action))) return null;
   if (!isRecord(payload.repository) || !isRecord(payload.workflow) || !isRecord(payload.workflow_run)) return null;
@@ -88,15 +95,15 @@ export function parseVerifiedWorkflowRunEvent(
 
   if (repository !== expectedRepository) return null;
   if (workflowPath !== ".github/workflows/ci.yml") return null;
-  if (run.repository && isRecord(run.repository) && run.repository.full_name !== expectedRepository) return null;
+  if (run.repository !== undefined &&
+      (!isRecord(run.repository) || run.repository.full_name !== expectedRepository)) return null;
   if (typeof run.id !== "number" || !Number.isSafeInteger(run.id) || run.id <= 0) return null;
   if (typeof run.run_attempt !== "number" || !Number.isSafeInteger(run.run_attempt) || run.run_attempt < 1) return null;
-  if (typeof run.head_branch !== "string" || !/^feature\/[a-z0-9._/-]{1,80}$/i.test(run.head_branch)) return null;
+  if (typeof run.head_branch !== "string" || !/^feature\\/[a-z0-9._/-]{1,80}$/i.test(run.head_branch)) return null;
   if (typeof run.head_sha !== "string" || !SHA.test(run.head_sha)) return null;
   if (!["queued", "in_progress", "completed"].includes(String(run.status))) return null;
-  if (typeof run.created_at !== "string" || !ISO_DATE.test(run.created_at)) return null;
-  if (typeof run.updated_at !== "string" || !ISO_DATE.test(run.updated_at)) return null;
-  if (run.run_started_at !== null && (typeof run.run_started_at !== "string" || !ISO_DATE.test(run.run_started_at))) return null;
+  if (!isIsoUtcTimestamp(run.created_at) || !isIsoUtcTimestamp(run.updated_at)) return null;
+  if (run.run_started_at !== null && !isIsoUtcTimestamp(run.run_started_at)) return null;
   if (typeof run.html_url !== "string") return null;
 
   let url: URL;
@@ -105,16 +112,23 @@ export function parseVerifiedWorkflowRunEvent(
   } catch {
     return null;
   }
-  if (url.protocol !== "https:" || url.hostname !== "github.com" ||
+  if (url.protocol !== "https:" ||
+      url.hostname !== "github.com" ||
+      url.port !== "" ||
+      url.username !== "" ||
+      url.password !== "" ||
+      url.search !== "" ||
+      url.hash !== "" ||
       url.pathname !== `/${expectedRepository}/actions/runs/${run.id}`) return null;
 
   const action = payload.action as VerifiedWorkflowRunEvent["action"];
   const status = run.status as VerifiedWorkflowRunEvent["status"];
+  if (action === "requested" && status !== "queued") return null;
+  if (action === "in_progress" && status !== "in_progress") return null;
   if (action === "completed" && status !== "completed") return null;
-  if (action !== "completed" && status === "completed") return null;
 
   const conclusion = run.conclusion;
-  if (status === "completed" && typeof conclusion !== "string") return null;
+  if (status === "completed" && (typeof conclusion !== "string" || conclusion.length === 0)) return null;
   if (status !== "completed" && conclusion !== null) return null;
 
   return {
