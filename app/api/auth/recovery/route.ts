@@ -122,7 +122,9 @@ export async function POST(request: Request) {
         success: true,
         signedIn: !signInError,
         recoveryCode: nextRecoveryCode,
-        requiresAcknowledgement: true
+        // Acknowledgement requires an authenticated session. If automatic
+        // sign-in fails, let the user sign in and retrieve the pending code.
+        requiresAcknowledgement: !signInError
       });
     } finally {
       if (!recoveryFinished) {
