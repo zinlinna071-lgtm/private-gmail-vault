@@ -1,6 +1,6 @@
 # Argon2id Browser Library Review
 
-**Status:** Evaluation only — no dependency selected or installed  
+**Status:** Evaluation only — isolated Node.js RFC 9106 test passed; no production dependency selected or installed  
 **Date:** 2026-11-06  
 **Branch:** `feature/vault-authentication`
 
@@ -132,7 +132,7 @@ Confirmed:
 - The asynchronous API yields to the scheduler but has no public `AbortSignal` argument. Cancellation must not be claimed without a separately designed and tested wrapper.
 - The package's documentation warns that its pure-JavaScript Argon2 implementation is materially slower than native implementations. The historic Cure53 audit scope explicitly excluded Argon2.
 
-This improves confidence that Noble can represent the full RFC §5.3 input tuple. It does **not** establish that the vector has been executed successfully in this repository, nor does it establish acceptable mobile performance or independent Argon2 audit coverage.
+This improves confidence that Noble can represent the full RFC §5.3 input tuple. The subsequent isolated Node.js harness result below verifies the exact vector. Neither result establishes acceptable mobile performance or independent Argon2 audit coverage.
 
 **Decision unchanged:** `@noble/hashes@2.4.0` remains an isolated test candidate only. No KDF dependency, parameters, or persistent format is approved.
 
