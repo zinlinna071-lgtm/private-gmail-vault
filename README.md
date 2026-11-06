@@ -9,7 +9,7 @@ The `feature/vault-authentication` branch adds an independent Vault account:
 - A one-time Recovery Code generated at account creation and rotated after successful recovery.
 - Server-side hashed Recovery Code storage and database-backed rate limits.
 - Supabase Auth sessions stored through secure server-managed cookies.
-- A private Vault page. Gmail connection and mailbox access are a separate, not-yet-implemented milestone.
+- A private Vault page with Google OAuth 2.0 Gmail account connection. The initial connection requests read-only Gmail scope and stores the Google refresh token encrypted with AES-256-GCM. Mailbox browsing and message actions are separate future milestones.
 
 ## Security principles
 
@@ -41,13 +41,13 @@ Copy `.env.example` to `.env.local` and configure:
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 - `SUPABASE_SECRET_KEY` (server only; never expose to the browser)
 - `VAULT_ENCRYPTION_KEY` (server only; exactly 64 hexadecimal characters representing 32 cryptographically random bytes)
-- Google OAuth credentials later, when Gmail connection work begins.
+- `GOOGLE_CLIENT_ID` (Google Cloud OAuth 2.0 Web application client ID)\n- `GOOGLE_CLIENT_SECRET` (server-only OAuth client secret)\n- `GOOGLE_REDIRECT_URI` (exact HTTPS callback URL: `https://YOUR_PREVIEW_HOST/api/gmail/callback`)
 
 Generate `VAULT_ENCRYPTION_KEY` securely and store it only in your local secret file or deployment secret manager. Do not paste it into chat, commit it, or change it without a planned re-encryption procedure for any encrypted pending data.
 
 The Supabase Auth user uses an internal synthetic `.invalid` email identifier derived from the Login ID. It is not a real email inbox and is never used for email recovery. Do not enable email-confirmation workflows for this internal username flow; account creation is performed server-side with confirmed Supabase Auth users.
 
-## Local development
+## Google OAuth setup\n\n1. Create or select a Google Cloud project and configure the OAuth consent screen.\n2. Create an OAuth 2.0 Client ID with application type **Web application**.\n3. Add the exact deployed callback URL to **Authorized redirect URIs**. It must match `GOOGLE_REDIRECT_URI` exactly, including scheme, hostname, and path.\n4. Add the client ID, client secret, and redirect URI to the Vercel **Preview** environment for the feature branch. Keep the client secret server-only.\n5. The current connection flow requests `openid`, `email`, `profile`, and `https://www.googleapis.com/auth/gmail.readonly`. It does not request send, modify, or delete permissions.\n6. Verify the Google OAuth consent screen and any required test-user configuration before attempting the connection.\n\nThe callback validates a short-lived, user-bound OAuth state value, exchanges the authorization code server-side, verifies the Google account email, encrypts the refresh token with AES-256-GCM, and stores only the encrypted token. Access tokens are not persisted. If Google does not return a refresh token on a repeat authorization, an existing encrypted refresh token for that same Google subject is retained; otherwise the connection is not saved.\n\n## Local development
 
 1. Install Node.js 20.9 or later.
 2. Copy `.env.example` to `.env.local`.
