@@ -23,13 +23,13 @@ Configure these in Vercel or local .env.local:
 - NEXT_PUBLIC_SUPABASE_URL
 - NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 - SUPABASE_SECRET_KEY (server only)
-- VAULT_ENCRYPTION_KEY (server only; 32 random bytes encoded as base64)
+- VAULT_ENCRYPTION_KEY (server only; exactly 64 hexadecimal characters representing 32 random bytes)
 
 The code temporarily accepts the legacy NEXT_PUBLIC_SUPABASE_ANON_KEY and SUPABASE_SERVICE_ROLE_KEY variable names as fallbacks. New configuration should use publishable and secret key names.
 
-Generate the encryption key locally:
+Generate the encryption key locally (the application expects 64 hexadecimal characters, not Base64):
 ```sh
-openssl rand -base64 32
+openssl rand -hex 32
 ```
 
 Never send secrets through chat or GitHub issues.
