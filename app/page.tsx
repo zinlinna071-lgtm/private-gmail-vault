@@ -1,5 +1,12 @@
 import Link from "next/link";
 import AuthPanel from "./auth-panel";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Vault Login | Private Account Vault",
+  description: "Sign in to your private account vault.",
+  robots: { index: false, follow: false, noarchive: true }
+};
 
 export default function Home() {
   return (
