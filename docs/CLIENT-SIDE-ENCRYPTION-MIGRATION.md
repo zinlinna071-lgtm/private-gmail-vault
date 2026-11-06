@@ -134,7 +134,7 @@ The exact recovery encoding, entropy, KDF parameters, envelope format, and state
 Completed and committed:
 - Browser AES-256-GCM record encryption/decryption utility with versioned envelope and AAD binding.
 - Client-side DEK wrapping utility, separate from KDF selection.
-- Shared record protocol constants/types and strict API-boundary envelope validation.
+- Shared record protocol constants/types and strict API-boundary envelope validation (the validator is implemented but not yet wired into API routes).
 - Bounded streaming JSON reader for mutation endpoints; the streamed byte count is enforced even when Content-Length is absent or inaccurate.
 - Same-origin checks for create, update, and delete operations.
 - Unit tests for encryption, key envelopes, bounded request parsing, and encrypted record envelope validation.
@@ -143,7 +143,7 @@ Not yet implemented or verified:
 - The UI still sends plaintext account fields to the existing legacy API.
 - The existing GET API still decrypts records on the server.
 - The new envelope validator is not yet wired into API routes.
-- No client-only KDF is selected; the Argon2id spike has not yet produced a verified RFC test result.
+- No client-only KDF is selected. The isolated `@noble/hashes@2.4.0` Node.js harness passed RFC 9106 §5.3 and four input-mutation checks, but browser bundling and Android/iOS device validation remain pending.
 - No client-only unlock flow, wrapped-DEK persistence, or reviewed recovery protocol exists.
 - No legacy-data migration or database scheme marker has been applied.
 - The application is not zero-knowledge and must not be used for high-value real credentials.
