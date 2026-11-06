@@ -3,6 +3,12 @@ import "server-only";
 import type { JsonRpcClient } from "./sepolia-rpc";
 
 const SEPOLIA_CHAIN_ID = 11155111;
+const READ_ONLY_METHODS = new Set([
+  "eth_chainId",
+  "eth_getTransactionByHash",
+  "eth_getTransactionReceipt",
+  "eth_getBlockByNumber"
+]);
 
 export function createSepoliaRpcClient(
   endpoint: string,
@@ -25,11 +31,14 @@ export function createSepoliaRpcClient(
   let requestId = 0;
   return {
     async request<T>(method: string, params: readonly unknown[]): Promise<T> {
+      if (!READ_ONLY_METHODS.has(method)) throw new Error("RPC method is not allowed by the read-only client");
       const id = ++requestId;
       const response = await fetcher(parsed.toString(), {
         method: "POST",
         headers: { "content-type": "application/json", accept: "application/json" },
         cache: "no-store",
+        redirect: "error",
+        signal: AbortSignal.timeout(15000),
         body: JSON.stringify({
           jsonrpc: "2.0",
           id,
