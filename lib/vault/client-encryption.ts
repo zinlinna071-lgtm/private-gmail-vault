@@ -168,8 +168,8 @@ export async function decryptVaultRecord(
   const plaintext = await globalThis.crypto.subtle.decrypt(
     {
       name: "AES-GCM",
-      iv,
-      additionalData: additionalData(vaultId, recordId),
+      iv: toArrayBuffer(iv),
+      additionalData: toArrayBuffer(additionalData(vaultId, recordId)),
       tagLength: 128
     },
     key,
