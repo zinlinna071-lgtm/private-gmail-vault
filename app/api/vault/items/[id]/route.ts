@@ -4,6 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { encryptVaultItem } from "@/lib/vault/item-encryption";
 import { isSameOriginRequest } from "@/lib/auth/vault";
+import { readBoundedJson } from "@/lib/auth/bounded-json";
 
 export const runtime = "nodejs";
 
@@ -32,8 +33,6 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   if (!request.headers.get("content-type")?.toLowerCase().includes("application/json")) {
     return response({ error: "Unsupported content type." }, 415);
   }
-  const contentLength = Number(request.headers.get("content-length") ?? "0");
-  if (contentLength > 20_000) return response({ error: "Request is too large." }, 413);
 
   try {
     const user = await getUser();
@@ -43,13 +42,13 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       return response({ error: "Account not found." }, 404);
     }
 
-    let body: unknown;
-    try {
-      body = await request.json();
-    } catch {
-      return response({ error: "Invalid JSON request." }, 400);
+    const body = await readBoundedJson(request, 20_000);
+    if (!body.ok) {
+      return body.reason === "too_large"
+        ? response({ error: "Request is too large." }, 413)
+        : response({ error: "Invalid JSON request." }, 400);
     }
-    const parsed = entrySchema.safeParse(body);
+    const parsed = entrySchema.safeParse(body.value);
     if (!parsed.success) return response({ error: "Please check the account details and try again." }, 400);
 
     const encrypted = encryptVaultItem(JSON.stringify(parsed.data), user.id, id);
