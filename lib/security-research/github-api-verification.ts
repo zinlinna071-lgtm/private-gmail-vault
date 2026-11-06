@@ -5,6 +5,7 @@ import type { VerifiedWorkflowRunEvent } from "./github-webhook";
 const REPOSITORY = "zinlinna071-lgtm/private-gmail-vault";
 const API_ROOT = "https://api.github.com";
 const MAX_JOBS = 100;
+const MAX_RESPONSE_BYTES = 1024 * 1024;
 
 type JsonRecord = Record<string, unknown>;
 
@@ -50,8 +51,51 @@ async function githubGet(path: string, token: string): Promise<unknown> {
     signal: AbortSignal.timeout(10_000)
   });
   if (!response.ok) throw new Error("GitHub authoritative verification failed.");
-  const body: unknown = await response.json();
-  return body;
+  const contentType = response.headers.get("content-type") ?? "";
+  if (!/^application\\/json(?:\\s*;|$)/i.test(contentType)) {
+    throw new Error("GitHub API returned an unexpected content type.");
+  }
+
+  const declaredLength = response.headers.get("content-length");
+  if (declaredLength !== null && /^\\d+$/.test(declaredLength) &&
+      Number(declaredLength) > MAX_RESPONSE_BYTES) {
+    throw new Error("GitHub API response exceeded the size limit.");
+  }
+
+  if (!response.body) {
+    throw new Error("GitHub API response body is missing.");
+  }
+
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let totalBytes = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      totalBytes += value.byteLength;
+      if (totalBytes > MAX_RESPONSE_BYTES) {
+        await reader.cancel();
+        throw new Error("GitHub API response exceeded the size limit.");
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  const bytes = new Uint8Array(totalBytes);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+
+  try {
+    return JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
+  } catch {
+    throw new Error("GitHub API returned invalid JSON.");
+  }
 }
 
 /**
