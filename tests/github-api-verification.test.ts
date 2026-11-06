@@ -135,7 +135,7 @@ describe("authoritative GitHub run/job verification", () => {
     mockGitHubApi({
       run,
       workflow,
-      jobs: { total_count: 1, jobs: [{ ...jobs.jobs[0], status: "in_progress" }] }
+      jobs: { total_count: 1, jobs: [{ ...jobs.jobs[0], status: "in_progress", conclusion: null }] }
     });
     await expect(
       verifyWorkflowRunWithGitHubApi(event, "ghp_" + "x".repeat(36))
