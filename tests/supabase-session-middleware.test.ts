@@ -41,6 +41,8 @@ describe("Supabase session middleware", () => {
     expect(response.cookies.get("sb-project-auth-token")?.value).toBe("rotated-test-token");
     expect(response.cookies.get("sb-project-auth-token")?.httpOnly).toBe(true);
     expect(response.cookies.get("sb-project-auth-token")?.secure).toBe(true);
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store");
+    expect(response.headers.get("Pragma")).toBe("no-cache");
   });
 
   it("does not skip the session verification step when no refresh is needed", async () => {
@@ -50,6 +52,18 @@ describe("Supabase session middleware", () => {
     await middleware(request);
 
     expect(mocks.getClaims).toHaveBeenCalledOnce();
+  });
+
+  it("keeps Vault responses out of shared caches and limits the matcher to authenticated paths", async () => {
+    const request = new NextRequest("https://vault.example/vault");
+    const response = await middleware(request);
+
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store");
+    expect(response.headers.get("Pragma")).toBe("no-cache");
+    expect((await import("@/middleware")).config.matcher).toEqual([
+      "/vault/:path*",
+      "/api/vault/:path*"
+    ]);
   });
 
   it("fails closed when Supabase public configuration is missing", async () => {
