@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { decryptRefreshToken, encryptRefreshToken } from "@/lib/gmail/token-encryption";
 
 const originalEnv = {
@@ -14,6 +14,14 @@ function restore(name: keyof typeof originalEnv, envName: string) {
   if (value === undefined) delete process.env[envName];
   else process.env[envName] = value;
 }
+
+beforeEach(() => {
+  delete process.env.VAULT_ENCRYPTION_KEY;
+  delete process.env.GMAIL_TOKEN_ENCRYPTION_KEY_V1;
+  delete process.env.GMAIL_TOKEN_ENCRYPTION_KEY_V2;
+  delete process.env.GMAIL_TOKEN_ENCRYPTION_ACTIVE_KEY_VERSION;
+  delete process.env.GMAIL_TOKEN_ENCRYPTION_ACTIVE_FORMAT_VERSION;
+});
 
 afterEach(() => {
   restore("legacyKey", "VAULT_ENCRYPTION_KEY");
