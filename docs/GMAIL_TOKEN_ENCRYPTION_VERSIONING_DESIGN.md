@@ -54,7 +54,7 @@ Compatibility phase:
 - Do not silently fall back from an unknown version to the active key.
 - Do not remove the legacy key or repurpose it for OAuth state until all dependent data and signatures have expired or been migrated under an approved plan.
 
-This configuration proposal requires a deployment runbook and secret-manager changes before implementation. Secret values must never be copied into GitHub or chat.
+These settings require a deployment runbook and secret-manager changes before preview or live rollout. Secret values must never be copied into GitHub or chat.
 
 ## 5. Application contract
 
