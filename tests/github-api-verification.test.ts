@@ -120,6 +120,17 @@ describe("authoritative GitHub run/job verification", () => {
     ).rejects.toThrow("GitHub canonical job metadata is invalid.");
   });
 
+  it("rejects unknown canonical job conclusions", async () => {
+    mockGitHubApi({
+      run,
+      workflow,
+      jobs: { total_count: 1, jobs: [{ ...jobs.jobs[0], conclusion: "unknown_state" }] }
+    });
+    await expect(
+      verifyWorkflowRunWithGitHubApi(event, "ghp_" + "x".repeat(36))
+    ).rejects.toThrow("GitHub canonical job conclusion is invalid.");
+  });
+
   it("fails closed for completed runs with incomplete jobs or pagination overflow", async () => {
     mockGitHubApi({
       run,
