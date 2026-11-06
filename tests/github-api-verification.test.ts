@@ -168,6 +168,27 @@ describe("authoritative GitHub run/job verification", () => {
     expect(result.jobCount).toBe(0);
   });
 
+  it("rejects GitHub API responses whose streamed body exceeds the byte limit", async () => {
+    const oversizedJson = `{"padding":"${"x".repeat(1024 * 1024)}"}`;
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(oversizedJson, {
+      status: 200,
+      headers: { "content-type": "application/json" }
+    })));
+    await expect(
+      verifyWorkflowRunWithGitHubApi(event, "ghp_" + "x".repeat(36))
+    ).rejects.toThrow("GitHub API response exceeded the size limit.");
+  });
+
+  it("rejects GitHub API responses with a non-JSON content type", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response("<html>blocked</html>", {
+      status: 200,
+      headers: { "content-type": "text/html" }
+    })));
+    await expect(
+      verifyWorkflowRunWithGitHubApi(event, "ghp_" + "x".repeat(36))
+    ).rejects.toThrow("GitHub API returned an unexpected content type.");
+  });
+
   it("requires a server-only GitHub API token", async () => {
     await expect(verifyWorkflowRunWithGitHubApi(event, undefined)).rejects.toThrow(
       "GitHub API verification is not configured."
