@@ -6,7 +6,9 @@
  * separate protocol steps and are not implemented in this module yet.
  */
 
-export import { VAULT_RECORD_ALGORITHM, VAULT_RECORD_FORMAT_VERSION, type EncryptedVaultRecord } from "./record-protocol";
+import { VAULT_RECORD_ALGORITHM, VAULT_RECORD_FORMAT_VERSION, type EncryptedVaultRecord } from "./record-protocol";
+export { VAULT_RECORD_ALGORITHM, VAULT_RECORD_FORMAT_VERSION };
+export type { EncryptedVaultRecord };
 
 const IV_BYTES = 12;
 const AUTH_TAG_BYTES = 16;
