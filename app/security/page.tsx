@@ -3,7 +3,13 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Security Operations & Research | Private Account Vault",
-  description: "Evidence-led security research, attack-surface mapping, test scope, and public verification records."
+  description: "Explore evidence-led cybersecurity research, authorized vault security testing, attack-surface scope, verified results, and remediation records.",
+  alternates: { canonical: "/security" },
+  openGraph: {
+    type: "website",
+    title: "Cybersecurity Research & Security Testing | Private Account Vault",
+    description: "Evidence-led cybersecurity research, authorized vault security testing, verified results, and remediation records."
+  }
 };
 
 const checks = [
