@@ -94,6 +94,7 @@ describe("GitHub webhook route", () => {
       conclusion: "success"
     });
     expect(persist.mock.calls[0][0].rawBody).toBe(rawBody);
+    expect(persist.mock.calls[0][0].verification).toMatchObject({ workflowId: 408741606, jobCount: 1 });
   });
 
   it("rejects an invalid HMAC before parsing or persistence", async () => {
