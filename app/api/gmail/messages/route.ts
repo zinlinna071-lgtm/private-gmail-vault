@@ -20,6 +20,10 @@ export async function GET(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "authentication_required" }, { status: 401 });
 
+  const accountId = request.nextUrl.searchParams.get("accountId") ?? "";
+  if (accountId && !/^[0-9a-f-]{36}$/i.test(accountId)) {
+    return NextResponse.json({ error: "invalid_gmail_account" }, { status: 400 });
+  }
   const rawQuery = request.nextUrl.searchParams.get("q") ?? "";
   const query = rawQuery.trim();
   const mailbox = (request.nextUrl.searchParams.get("label") ?? "INBOX").toUpperCase();
@@ -44,11 +48,13 @@ export async function GET(request: NextRequest) {
 
   try {
     const admin = createSupabaseAdminClient();
-    const { data: connection, error: connectionError } = await admin
+    let connectionQuery = admin
       .from("gmail_connections")
       .select("id,email_address,refresh_token_ciphertext,refresh_token_iv,refresh_token_auth_tag,connection_status,granted_scopes")
       .eq("user_id", user.id)
-      .eq("connection_status", "active")
+      .eq("connection_status", "active");
+    if (accountId) connectionQuery = connectionQuery.eq("id", accountId);
+    const { data: connection, error: connectionError } = await connectionQuery
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
