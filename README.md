@@ -12,7 +12,7 @@ No Gmail connection, provider integration, AI, analytics, advertising, or unnece
 
 ## Security status
 
-The long-term security target is a **zero-knowledge, client-side encrypted vault**. The governing design and release requirements are documented in [Security Foundation](docs/SECURITY-FOUNDATION.md).
+The long-term security target is a **zero-knowledge, client-side encrypted vault**. The governing design and release requirements are documented in [Security Foundation](docs/SECURITY-FOUNDATION.md). The public-facing, read-only reporting concept is documented in [Security Transparency Dashboard](docs/SECURITY-TRANSPARENCY-DASHBOARD.md); the current branch also includes an initial `/security` page backed only by published test evidence.
 
 **Important implementation status:** Do not assume the zero-knowledge target is already implemented. The current codebase has used server-side encryption at rest, which means the server can access the encryption key when serving secrets. Until the client-side encryption phase is implemented, independently tested, and verified in the deployed build, this application must not be used to store high-value real credentials.
 
