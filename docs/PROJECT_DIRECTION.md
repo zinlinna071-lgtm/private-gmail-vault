@@ -38,7 +38,7 @@ The required target is a zero-knowledge design:
 
 **Current implementation warning:** The existing code still uses server-side encryption and currently sends the account fields to the API as plaintext JSON before the server encrypts them. The existing login flow also sends the Vault password to Supabase Auth. The zero-knowledge design is not implemented yet. Do not store real high-value credentials in the current Preview.
 
-See [Security Foundation](SECURITY-FOUNDATION.md) and [Client-Side Encryption Migration Plan](CLIENT-SIDE-ENCRYPTION-MIGRATION.md) for implementation requirements and release gates.
+See [Security Foundation](SECURITY-FOUNDATION.md), [Client-Side Encryption Migration Plan](CLIENT-SIDE-ENCRYPTION-MIGRATION.md), and [Argon2id Browser Library Review](ARGON2ID-LIBRARY-REVIEW.md) for implementation requirements and release gates.
 
 ## Database
 
