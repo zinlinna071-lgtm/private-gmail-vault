@@ -61,3 +61,15 @@ These observations are not public vulnerability findings. No research paper or d
 **Regression coverage added:** Mocked tests assert that claims verification is called, refreshed cookies are present on both the downstream request and browser response, cookie security attributes are retained, and missing configuration fails closed.
 
 **Limitations:** These are mocked middleware tests. They do not prove live Supabase refresh-token rotation, session revocation, cookie expiry, or concurrent refresh behavior. Those require an authorized disposable Supabase project and synthetic accounts. No production Supabase settings or secrets were changed.
+
+### AUTH-SESSION-03 — Session lifetime and revocation settings remain unverified
+
+**Source observations:**
+- The app does not define an explicit Supabase cookie `cookieOptions` override in its server client helper. Cookie serialization is delegated to `@supabase/ssr`.
+- No repository configuration establishes Supabase project-level access-token lifetime, inactivity timeout, maximum session lifetime, or single-session policy.
+- The logout handler calls `supabase.auth.signOut()` and now reports failure rather than redirecting as if logout succeeded.
+- The Vault page and each Vault item API handler verify the current user server-side. Item reads and mutations are scoped to that verified user ID.
+
+**Status:** These controls are present in source, but actual cookie flags, configured session timeouts, refresh-token reuse handling, and cross-device revocation behavior cannot be established from this repository alone.
+
+**Next authorized test:** Use a disposable Supabase project with synthetic users. Record cookie names and attributes without recording token values; inspect configured session timeouts; test expiry, logout, refresh-token rotation, parallel refresh, and post-logout access. Do not change production Auth settings as part of this review.
