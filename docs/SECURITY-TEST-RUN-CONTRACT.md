@@ -132,3 +132,22 @@ The database assertions cover:
 The harness uses a disposable GitHub Actions PostgreSQL service only. It does not connect to Supabase, use production credentials, configure a webhook, or publish run data. These checks establish behavior for the tested PostgreSQL migration in CI; they do not establish that a hosted Supabase project has been configured or that production deployment is approved.
 
 **Verification status:** the harness and CI workflow have been committed, but their first CI execution must pass before these database behaviors are described as verified.
+
+
+## Disabled-by-default GitHub webhook endpoint
+
+The server route `POST /api/webhooks/github` now exists, but it is deliberately inert unless `GITHUB_WEBHOOK_INGESTION_ENABLED=true` is set in a server environment. It also requires a server-only `GITHUB_WEBHOOK_SECRET` of at least 32 characters. Neither variable is configured in Vercel or any live environment.
+
+When enabled by a future explicit operator action, the route:
+1. Accepts only `X-GitHub-Event: workflow_run` and JSON content.
+2. Reads the request body with the 256 KiB streaming limit.
+3. Verifies `X-Hub-Signature-256` against the exact raw body before JSON parsing.
+4. Validates the delivery UUID and strict repository/workflow/feature-branch/run metadata.
+5. Persists only the SHA-256 body fingerprint and allowlisted metadata through the service-role RPC.
+6. Returns generic no-store responses; it does not expose a public feed or log raw payloads/provider errors.
+
+The route maps duplicate, stale, and delivery-ID conflict outcomes without publishing records. Unknown GitHub conclusions are rejected by the parser to match the database allowlist.
+
+Route tests use synthetic signed payloads and mocked persistence. They verify disabled-by-default behavior, missing/weak secret handling, invalid signature rejection, event/content-type restrictions, payload validation, generic error handling, and idempotency response mapping. These tests do not represent live GitHub deliveries.
+
+**Activation remains prohibited until separately approved:** no webhook secret has been generated or configured, no GitHub repository webhook has been registered, no Supabase migration has been applied to a hosted project, and no public event projection is implemented.
