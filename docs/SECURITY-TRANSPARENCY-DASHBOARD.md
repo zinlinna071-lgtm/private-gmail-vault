@@ -135,3 +135,21 @@ Do not publish the dashboard as a reliable security-status source until:
 - Failed, blocked, stale, and untested checks are visible rather than hidden.
 - Every animation is clearly tied to evidence or labeled illustrative.
 - Current architecture limitations are prominently disclosed.
+
+
+## 10. Attack-surface model and login boundary
+
+The login screen is the public front door, not the whole security perimeter. The private lab's planned test domains are:
+
+1. Public edge: HTTPS routing, headers, request limits, and deployment exposure.
+2. Identity/login gateway: credential verification behavior, rate limiting, account-enumeration resistance, and MFA boundaries.
+3. Session lifecycle: cookie scope and flags, rotation, expiry, logout invalidation, and replay resistance.
+4. Application API: schema validation, authorization checks, ownership enforcement, and abuse controls.
+5. Vault cryptography: client-side key handling, DEK wrapping, authenticated encryption, and integrity failures.
+6. Storage boundary: ciphertext exposure, backups, retention, and tenant/data isolation.
+7. Recovery and migration: recovery authority, key rotation, and migration correctness.
+8. Supply chain/runtime: dependency integrity, build provenance, deployment configuration, and runtime exposure.
+
+Testing must use synthetic identities and isolated fixtures. The public dashboard may describe the login gateway and show sanitized evidence from its tests, but it must never display real users' credentials, sessions, or account activity. Public visitors cannot attempt logins against the private lab, submit attack payloads, or launch tests.
+
+A test-domain status of PLANNED, NOT TESTED, PARTIAL, or TESTED · LIMITED must remain visible as such. Do not convert architecture diagrams or planned test cases into evidence claims. Only a linked, reviewed test artifact can support a PASS/FAIL result.
