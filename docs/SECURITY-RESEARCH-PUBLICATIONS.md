@@ -6,6 +6,25 @@ Publish evidence-backed cybersecurity research produced by authorized testing in
 
 This is a planned publication workflow. A test result is not a research paper until it has been reviewed and approved.
 
+
+
+## Bilingual publication requirement
+
+Every public research paper must have two substantive editions:
+
+- **English edition (en):** the technical reference edition, with precise terminology, methodology, evidence references, and standards citations.
+- **Burmese edition (my):** a complete Burmese-language edition for public accessibility. Keep essential English technical terms in parentheses on first use where this improves precision.
+
+The two editions must communicate the same scope, findings, severity, confidence, limitations, and remediation status. Do not allow a translated edition to make stronger claims than the reviewed technical source. A fluent Burmese technical reviewer must review terminology and meaning before release. If translation review is incomplete, label that language edition as a draft and do not present it as an approved translation.
+
+Each publication must have one publication ID and version shared by both language editions. Web and PDF versions must carry the same ID, version, and release status.
+
+A bilingual authoring template is available at [docs/research-templates/SECURITY-RESEARCH-PAPER-BILINGUAL-TEMPLATE.md](./research-templates/SECURITY-RESEARCH-PAPER-BILINGUAL-TEMPLATE.md).
+
+## Public research library route
+
+The planned public library route is `/security/research`. It may show the publication policy and an honest empty state while no papers have passed review. It must not display placeholder or fabricated findings as real research. PDF generation and downloads remain planned until implemented and verified.
+
 ## Publication lifecycle
 
 1. **Draft** — Create a paper from a completed, identifiable test run.
