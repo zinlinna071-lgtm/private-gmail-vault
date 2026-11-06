@@ -132,7 +132,7 @@ Confirmed:
 - The asynchronous API yields to the scheduler but has no public `AbortSignal` argument. Cancellation must not be claimed without a separately designed and tested wrapper.
 - The package's documentation warns that its pure-JavaScript Argon2 implementation is materially slower than native implementations. The historic Cure53 audit scope explicitly excluded Argon2.
 
-This improves confidence that Noble can represent the full RFC §5.3 input tuple. The subsequent isolated Node.js harness result below verifies the exact vector. Neither result establishes acceptable mobile performance or independent Argon2 audit coverage.
+This improves confidence that Noble can represent the full RFC §5.3 input tuple. The isolated Node.js harness result below verifies the exact vector. Neither result establishes acceptable mobile performance or independent Argon2 audit coverage.
 
 **Decision unchanged:** `@noble/hashes@2.4.0` remains an isolated test candidate only. No KDF dependency, parameters, or persistent format is approved.
 
