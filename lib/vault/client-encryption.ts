@@ -6,21 +6,12 @@
  * separate protocol steps and are not implemented in this module yet.
  */
 
-export const VAULT_RECORD_FORMAT_VERSION = 1 as const;
-export const VAULT_RECORD_ALGORITHM = "AES-256-GCM" as const;
+export import { VAULT_RECORD_ALGORITHM, VAULT_RECORD_FORMAT_VERSION, type EncryptedVaultRecord } from "./record-protocol";
 
 const IV_BYTES = 12;
 const AUTH_TAG_BYTES = 16;
 const MAX_RECORD_BYTES = 20_000;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-export type EncryptedVaultRecord = {
-  version: typeof VAULT_RECORD_FORMAT_VERSION;
-  algorithm: typeof VAULT_RECORD_ALGORITHM;
-  iv: string;
-  ciphertext: string;
-  authTag: string;
-};
 
 function assertContext(vaultId: string, recordId: string) {
   if (!UUID_PATTERN.test(vaultId) || !UUID_PATTERN.test(recordId)) {
