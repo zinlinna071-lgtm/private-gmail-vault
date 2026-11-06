@@ -59,9 +59,9 @@ A valid HMAC proves that the payload was signed by a party holding the webhook s
 - The exact workflow by workflow ID.
 - The jobs for the exact run attempt.
 
-It compares repository identity, run ID, workflow ID/path, attempt, branch, commit SHA, status, conclusion, creation/update timestamps, and canonical HTML URL against the signed event. It validates each returned job's run ID/attempt/status and requires all jobs to be completed when the run is completed. The job response must be complete within the configured 100-job cap; incomplete/paginated results fail closed. A SHA-256 digest of the sorted, normalized job metadata and its count are retained with a verification timestamp.
+It compares repository identity, run ID, workflow ID/path, attempt, branch, commit SHA, status, conclusion, creation/update timestamps, and canonical HTML URL against the signed event. It validates each returned job's run ID/attempt/status and requires all jobs to be completed when the run is completed. The job response must be complete within the configured 100-job cap; incomplete/paginated results fail closed. A queued run may legitimately have zero jobs before GitHub schedules them; in-progress and completed runs must include at least one job. A SHA-256 digest of the sorted, normalized job metadata and its count are retained with a verification timestamp.
 
-The API token must be a fine-grained, server-only token with the minimum repository read permissions required to read Actions workflow runs, workflows, and jobs. It must never use a `NEXT_PUBLIC_` variable, enter browser code, or be written to logs or the database. Missing credentials, API errors, redirects, mismatched metadata, or incomplete jobs prevent ingestion.
+The API token must be a fine-grained, server-only token with `Actions: read` and repository metadata read access, limited to this repository. It must never use a `NEXT_PUBLIC_` variable, enter browser code, or be written to logs or the database. Missing credentials, API errors, redirects, mismatched metadata, or incomplete jobs prevent ingestion.
 
 This is an authoritative snapshot at webhook processing time. It does not prove the correctness or security quality of the CI tests themselves.
 
@@ -71,7 +71,7 @@ The proposed migration defines:
 - A unique `delivery_id` ledger with a SHA-256 fingerprint of the exact raw body.
 - Same-ID/same-hash duplicate handling (`DUPLICATE`) and same-ID/different-hash conflict handling (`DELIVERY_ID_CONFLICT`).
 - A private workflow-run table keyed by `run_id + run_attempt`.
-- Workflow ID/path and canonical verification timestamp, job count, and job metadata digest.
+- Workflow ID/path and canonical verification timestamp, job count (0–100; queued runs may have no jobs yet), and job metadata digest.
 - A transactional RPC that advances run metadata only when the incoming timestamp/status rank is newer.
 - RLS enabled, no direct table privileges for `anon` or `authenticated`, and RPC execution granted only to `service_role`.
 - A default `PRIVATE` publication state; webhook ingestion cannot approve a public record.
@@ -122,7 +122,7 @@ Dashboard motion may be driven only by verified state transitions after the inge
 
 ## Outstanding work
 
-1. Run and pass CI for the latest implementation and SQL migration changes.
+1. Run and pass CI for the exact latest implementation and SQL migration commit.
 2. Obtain explicit owner approval before applying the migration to a hosted non-production Supabase project.
 3. Generate/configure the server-only webhook secret and least-privilege GitHub API token; register the repository webhook only after approval.
 4. Verify an actual signed GitHub webhook end-to-end in a controlled environment.
