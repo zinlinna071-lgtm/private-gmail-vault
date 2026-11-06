@@ -6,6 +6,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { decryptVaultItem, encryptVaultItem } from "@/lib/vault/item-encryption";
 import { isSameOriginRequest } from "@/lib/auth/vault";
 import { readBoundedJson } from "@/lib/auth/bounded-json";
+import { isJsonContentType } from "@/lib/auth/content-type";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -59,7 +60,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   if (!isSameOriginRequest(request)) return response({ error: "Invalid request origin." }, 403);
-  if (!request.headers.get("content-type")?.toLowerCase().includes("application/json")) {
+  if (!isJsonContentType(request.headers.get("content-type"))) {
     return response({ error: "Unsupported content type." }, 415);
   }
   try {
