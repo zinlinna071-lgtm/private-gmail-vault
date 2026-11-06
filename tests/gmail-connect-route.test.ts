@@ -14,7 +14,8 @@ import { GET } from "@/app/api/gmail/connect/route";
 const originalEnv = {
   clientId: process.env.GOOGLE_CLIENT_ID,
   redirectUri: process.env.GOOGLE_REDIRECT_URI,
-  encryptionKey: process.env.VAULT_ENCRYPTION_KEY
+  encryptionKey: process.env.VAULT_ENCRYPTION_KEY,
+  oauthStateHmacKey: process.env.GMAIL_OAUTH_STATE_HMAC_KEY
 };
 
 function makeRequest() {
@@ -31,6 +32,7 @@ describe("GET /api/gmail/connect", () => {
     process.env.GOOGLE_CLIENT_ID = "synthetic-google-client-id";
     process.env.GOOGLE_REDIRECT_URI = "https://vault.example/api/gmail/callback";
     process.env.VAULT_ENCRYPTION_KEY = "f".repeat(64);
+    process.env.GMAIL_OAUTH_STATE_HMAC_KEY = "a".repeat(64);
     vi.stubEnv("NODE_ENV", "test");
   });
 
@@ -41,6 +43,8 @@ describe("GET /api/gmail/connect", () => {
     else process.env.GOOGLE_REDIRECT_URI = originalEnv.redirectUri;
     if (originalEnv.encryptionKey === undefined) delete process.env.VAULT_ENCRYPTION_KEY;
     else process.env.VAULT_ENCRYPTION_KEY = originalEnv.encryptionKey;
+    if (originalEnv.oauthStateHmacKey === undefined) delete process.env.GMAIL_OAUTH_STATE_HMAC_KEY;
+    else process.env.GMAIL_OAUTH_STATE_HMAC_KEY = originalEnv.oauthStateHmacKey;
     vi.unstubAllEnvs();
   });
 
@@ -86,9 +90,9 @@ describe("GET /api/gmail/connect", () => {
     expect(stateCookie?.maxAge).toBe(600);
   });
 
-  it("fails closed when the Vault encryption key is invalid", async () => {
-    process.env.VAULT_ENCRYPTION_KEY = "invalid";
+  it("fails closed when the OAuth state signing key is invalid", async () => {
+    process.env.GMAIL_OAUTH_STATE_HMAC_KEY = "invalid";
 
-    await expect(GET(makeRequest())).rejects.toThrow("Vault encryption is not configured.");
+    await expect(GET(makeRequest())).rejects.toThrow("OAuth state signing is not configured.");
   });
 });
