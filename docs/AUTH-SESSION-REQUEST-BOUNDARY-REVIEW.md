@@ -51,3 +51,13 @@ The login, registration, and recovery handlers previously used `request.json()` 
 ## Publication rule
 
 These observations are not public vulnerability findings. No research paper or dashboard claim should be published until the relevant behavior is reproduced in an authorized isolated environment, reviewed, and retested after remediation.
+
+### AUTH-SESSION-02 — Supabase SSR refresh middleware was absent
+
+**Source observation:** The app uses Next.js 15.5.6 and `@supabase/ssr`, but the branch had no `middleware.ts` or session-refresh proxy. The server client writes refreshed cookies when possible, but Server Components cannot reliably persist cookie changes. The Vault page and item API handlers independently call `auth.getUser()`; that verifies the user but does not replace the framework-level cookie refresh path.
+
+**Remediation added:** A Next.js 15 `middleware.ts` now creates the Supabase SSR client, calls `auth.getClaims()` to verify/refresh the session, mirrors refreshed cookies into the downstream request, and writes them to the outgoing response. The matcher excludes Next static/image assets, favicon, and common image files. Missing public Supabase configuration fails closed rather than silently skipping session processing.
+
+**Regression coverage added:** Mocked tests assert that claims verification is called, refreshed cookies are present on both the downstream request and browser response, cookie security attributes are retained, and missing configuration fails closed.
+
+**Limitations:** These are mocked middleware tests. They do not prove live Supabase refresh-token rotation, session revocation, cookie expiry, or concurrent refresh behavior. Those require an authorized disposable Supabase project and synthetic accounts. No production Supabase settings or secrets were changed.
