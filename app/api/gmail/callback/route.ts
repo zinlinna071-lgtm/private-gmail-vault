@@ -67,12 +67,10 @@ export async function GET(request: NextRequest) {
     const accessToken = typeof tokenData.access_token === "string" ? tokenData.access_token : "";
     if (!accessToken) return vaultRedirect(request, "error=missing_access_token");
 
-    const tokenInfoResponse = await fetch("https://oauth2.googleapis.com/tokeninfo", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ access_token: accessToken }),
-      cache: "no-store"
-    });
+    const tokenInfoResponse = await fetch(
+      `https://oauth2.googleapis.com/tokeninfo?access_token=${encodeURIComponent(accessToken)}`,
+      { cache: "no-store" }
+    );
     if (!tokenInfoResponse.ok) return vaultRedirect(request, "error=scope_verification_failed");
     const tokenInfo: unknown = await tokenInfoResponse.json();
     if (!tokenInfo || typeof tokenInfo !== "object") {
