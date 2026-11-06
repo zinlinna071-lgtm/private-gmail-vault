@@ -69,6 +69,17 @@ describe("GitHub webhook event store adapter", () => {
     }
   );
 
+  it("rejects mismatched or malformed canonical verification evidence before RPC", async () => {
+    await expect(
+      persistVerifiedWorkflowRunEvent({
+        event,
+        verification: { ...verification, workflowId: 123 },
+        rawBody: "body"
+      })
+    ).rejects.toThrow("Canonical GitHub verification evidence is invalid.");
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
   it("does not disclose database error details", async () => {
     rpc.mockResolvedValue({
       data: null,
