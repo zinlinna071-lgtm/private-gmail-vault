@@ -135,3 +135,16 @@ Confirmed:
 This improves confidence that Noble can represent the full RFC §5.3 input tuple. It does **not** establish that the vector has been executed successfully in this repository, nor does it establish acceptable mobile performance or independent Argon2 audit coverage.
 
 **Decision unchanged:** `@noble/hashes@2.4.0` remains an isolated test candidate only. No KDF dependency, parameters, or persistent format is approved.
+
+## 2026-11-07 isolated RFC vector result
+
+The pinned `@noble/hashes@2.4.0` candidate has now passed the complete RFC 9106 §5.3 Argon2id known-answer test in the isolated Node.js GitHub Actions harness:
+- Workflow run: [42272387331](https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42272387331)
+- Commit: `889ee746033675175dfb5496e6e57eb6ed7c3821`
+- Exact 32-byte RFC output matched.
+- Mutating each of password, salt, secret K, and associated data X produced a different output.
+
+This upgrades the evidence from source-level API mapping to a passing Node.js known-answer test. It does **not** establish browser compatibility, acceptable Android/iOS latency or memory use, cancellation behavior, independent Argon2 audit coverage, or production readiness. The 32 KiB RFC vector is a correctness vector, not a secure production KDF setting.
+
+**Decision remains unchanged:** `@noble/hashes@2.4.0` is still an isolated candidate. Do not add it to the root dependency graph or freeze production KDF parameters until browser/device benchmarks, provenance review, and independent security review are complete.
+
