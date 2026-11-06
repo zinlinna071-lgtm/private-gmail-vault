@@ -19,7 +19,7 @@ export async function readBoundedJson(
 
   const contentLength = request.headers.get("content-length");
   if (contentLength !== null) {
-    if (!/^\\d+$/.test(contentLength)) {
+    if (!/^\d+$/.test(contentLength)) {
       return { ok: false, reason: "invalid_json" };
     }
     if (Number(contentLength) > maxBytes) {
