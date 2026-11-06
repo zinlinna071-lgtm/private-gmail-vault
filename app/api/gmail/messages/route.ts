@@ -9,6 +9,8 @@ export const dynamic = "force-dynamic";
 type GmailHeader = { name?: string; value?: string };
 type GmailMessage = { id?: string; threadId?: string; snippet?: string; internalDate?: string; payload?: { headers?: GmailHeader[] } };
 
+const MAILBOX_LABELS = new Set(["INBOX", "SENT", "STARRED", "DRAFT", "SPAM", "TRASH", "IMPORTANT", "UNREAD", "ALL"]);
+
 function header(headers: GmailHeader[] | undefined, name: string) {
   return headers?.find((item) => item.name?.toLowerCase() === name.toLowerCase())?.value ?? "";
 }
@@ -20,8 +22,12 @@ export async function GET(request: NextRequest) {
 
   const rawQuery = request.nextUrl.searchParams.get("q") ?? "";
   const query = rawQuery.trim();
+  const mailbox = (request.nextUrl.searchParams.get("label") ?? "INBOX").toUpperCase();
   if (query.length > 200 || /[\u0000-\u001f\u007f]/.test(query)) {
     return NextResponse.json({ error: "invalid_search_query" }, { status: 400 });
+  }
+  if (!MAILBOX_LABELS.has(mailbox)) {
+    return NextResponse.json({ error: "invalid_mailbox" }, { status: 400 });
   }
 
   try {
@@ -92,7 +98,8 @@ export async function GET(request: NextRequest) {
     const listUrl = new URL("https://gmail.googleapis.com/gmail/v1/users/me/messages");
     listUrl.searchParams.set("maxResults", "20");
     if (query) listUrl.searchParams.set("q", query);
-    else listUrl.searchParams.set("labelIds", "INBOX");
+    if (mailbox !== "ALL") listUrl.searchParams.set("labelIds", mailbox);
+    if (mailbox === "SPAM" || mailbox === "TRASH") listUrl.searchParams.set("includeSpamTrash", "true");
     const listResponse = await fetch(listUrl, {
       headers: { Authorization: `Bearer ${accessToken}` },
       cache: "no-store"
@@ -128,6 +135,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       account: connection.email_address,
       query,
+      mailbox,
       messages: messages.filter((message): message is NonNullable<typeof message> => message !== null)
     }, { headers: { "Cache-Control": "no-store, private" } });
   } catch {
