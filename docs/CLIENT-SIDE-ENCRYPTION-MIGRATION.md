@@ -129,6 +129,27 @@ The exact recovery encoding, entropy, KDF parameters, envelope format, and state
 - Preview verification is complete.
 - Production deployment, production secrets, and production database changes each require separate explicit approval.
 
+## 7A. Implementation progress (feature branch only)
+
+Completed and committed:
+- Browser AES-256-GCM record encryption/decryption utility with versioned envelope and AAD binding.
+- Client-side DEK wrapping utility, separate from KDF selection.
+- Shared record protocol constants/types and strict API-boundary envelope validation.
+- Bounded streaming JSON reader for mutation endpoints; the streamed byte count is enforced even when Content-Length is absent or inaccurate.
+- Same-origin checks for create, update, and delete operations.
+- Unit tests for encryption, key envelopes, bounded request parsing, and encrypted record envelope validation.
+
+Not yet implemented or verified:
+- The UI still sends plaintext account fields to the existing legacy API.
+- The existing GET API still decrypts records on the server.
+- The new envelope validator is not yet wired into API routes.
+- No client-only KDF is selected; the Argon2id spike has not yet produced a verified RFC test result.
+- No client-only unlock flow, wrapped-DEK persistence, or reviewed recovery protocol exists.
+- No legacy-data migration or database scheme marker has been applied.
+- The application is not zero-knowledge and must not be used for high-value real credentials.
+
+The ciphertext-only route migration must be atomic with the UI/key-unlock flow and an explicit legacy-data plan. Do not deploy a partial route change that breaks the current UI or makes existing records unreadable.
+
 ## 8. Non-goals and safety rules
 
 - No Gmail or provider integrations.
