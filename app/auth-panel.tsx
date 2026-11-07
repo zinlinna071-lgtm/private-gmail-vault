@@ -113,6 +113,11 @@ export default function AuthPanel() {
             <input id="master-password" type={showPassword ? "text" : "password"} autoComplete={mode === "register" ? "new-password" : "current-password"} value={password} onChange={e => setPassword(e.target.value)} minLength={12} maxLength={128} required placeholder="Enter your Master Password" />
             <button className="password-toggle" type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? "Hide Master Password" : "Show Master Password"} aria-pressed={showPassword} aria-controls="master-password">{showPassword ? "HIDE" : "SHOW"}</button>
           </div>
+          <div className={password.length ? "password-activity is-active" : "password-activity"} aria-live="polite">
+            <span className="password-activity-bars" aria-hidden="true"><i /><i /><i /><i /></span>
+            <span>{password.length ? "INPUT RESPONSE ACTIVE" : "TYPE TO EXPLORE THE INTERFACE"}</span>
+            <small>Text stays in this form until you choose to sign in.</small>
+          </div>
         </> : <>
           <label htmlFor="recovery-code">Recovery Code</label>
           <input id="recovery-code" autoComplete="off" value={recoveryCode} onChange={e => setRecoveryCode(e.target.value)} required placeholder="Enter your saved Recovery Code" />
