@@ -4,6 +4,8 @@ import {
   researchRegistrySchema
 } from "../lib/security-research/publications";
 
+const commit = "a".repeat(40);
+
 function validPaper() {
   return {
     slug: "argon2id-browser-validation",
@@ -19,8 +21,74 @@ function validPaper() {
       en: "A reproducible compatibility study.",
       my: "ပြန်လည်စမ်းသပ်နိုင်သော ကိုက်ညီမှုလေ့လာချက်။"
     },
+    researchQuestion: {
+      en: "Does the implementation match the published test vector?",
+      my: "Implementation သည် ထုတ်ပြန်ထားသော Test Vector နှင့် ကိုက်ညီသလား။"
+    },
+    objective: {
+      en: "Verify compatibility in controlled environments.",
+      my: "ထိန်းချုပ်ထားသော ပတ်ဝန်းကျင်တွင် ကိုက်ညီမှုကို စစ်ဆေးရန်။"
+    },
+    scope: {
+      authorizedAssets: ["Repository-owned Argon2id test harness"],
+      exclusions: ["Production accounts", "Third-party systems"]
+    },
+    environment: {
+      kind: "ci",
+      runtime: "GitHub-hosted Linux",
+      harness: "Node.js test harness v1",
+      dataClassification: "synthetic"
+    },
     testRunId: "42281411743",
-    commit: "a".repeat(40),
+    commit,
+    result: "pass",
+    evidence: [{
+      id: "rfc-vector-run",
+      kind: "ci-run",
+      summary: {
+        en: "Hosted CI record for the named compatibility checks.",
+        my: "သတ်မှတ်ထားသော ကိုက်ညီမှုစစ်ဆေးမှုများ၏ CI မှတ်တမ်း။"
+      },
+      href: "https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42281411743"
+    }],
+    findings: [{
+      classification: "confirmed",
+      severity: "informational",
+      confidence: "high",
+      title: {
+        en: "Published vector matched",
+        my: "ထုတ်ပြန်ထားသော Vector နှင့် ကိုက်ညီမှုရှိသည်"
+      },
+      details: {
+        en: "The candidate matched the named RFC vector in this test scope.",
+        my: "ဤစမ်းသပ်မှုအတိုင်းအတာအတွင်း Candidate သည် သတ်မှတ်ထားသော RFC Vector နှင့် ကိုက်ညီခဲ့သည်။"
+      },
+      evidenceIds: ["rfc-vector-run"]
+    }],
+    remediation: {
+      status: "not-required",
+      summary: {
+        en: "No remediation was required for this compatibility check.",
+        my: "ဤကိုက်ညီမှုစစ်ဆေးမှုအတွက် ပြုပြင်ရန် မလိုအပ်ခဲ့ပါ။"
+      }
+    },
+    retest: {
+      status: "not-performed",
+      summary: {
+        en: "No separate retest is claimed.",
+        my: "သီးခြားပြန်လည်စမ်းသပ်မှု ပြုလုပ်ထားကြောင်း မဆိုထားပါ။"
+      }
+    },
+    limitations: {
+      en: "This does not establish end-to-end Vault security.",
+      my: "ဤစမ်းသပ်မှုတစ်ခုတည်းဖြင့် Vault တစ်ခုလုံး၏ လုံခြုံမှုကို အတည်မပြုနိုင်ပါ။"
+    },
+    review: {
+      technical: { approvedAt: "2026-11-07" },
+      securityPrivacy: { approvedAt: "2026-11-07" },
+      bilingual: { approvedAt: "2026-11-07" },
+      owner: { approvedAt: "2026-11-07" }
+    },
     status: "published" as const,
     editions: {
       en: {
@@ -37,7 +105,7 @@ function validPaper() {
 }
 
 describe("public research publication registry", () => {
-  it("accepts a complete bilingual, evidence-linked publication", () => {
+  it("accepts a complete bilingual paper with provenance and all approval gates", () => {
     expect(researchPublicationSchema.parse(validPaper())).toEqual(validPaper());
   });
 
@@ -45,7 +113,7 @@ describe("public research publication registry", () => {
     expect(() => researchPublicationSchema.parse({ ...validPaper(), status: "draft" })).toThrow();
   });
 
-  it("requires English and Burmese editions with at least one section", () => {
+  it("requires complete English and Burmese editions", () => {
     const paper = validPaper();
     expect(() => researchPublicationSchema.parse({
       ...paper,
@@ -53,11 +121,51 @@ describe("public research publication registry", () => {
     })).toThrow();
   });
 
-  it("rejects non-HTTPS references", () => {
+  it("requires an isolated or otherwise explicitly classified test environment and scope", () => {
+    const paper = validPaper();
+    expect(() => researchPublicationSchema.parse({
+      ...paper,
+      environment: { ...paper.environment, dataClassification: "real-production" }
+    })).toThrow();
+    expect(() => researchPublicationSchema.parse({
+      ...paper,
+      scope: { ...paper.scope, exclusions: [] }
+    })).toThrow();
+  });
+
+  it("rejects findings that point to missing evidence", () => {
+    const paper = validPaper();
+    expect(() => researchPublicationSchema.parse({
+      ...paper,
+      findings: [{ ...paper.findings[0], evidenceIds: ["missing-evidence"] }]
+    })).toThrow();
+  });
+
+  it("requires exact provenance for a completed retest", () => {
+    const paper = validPaper();
+    expect(() => researchPublicationSchema.parse({
+      ...paper,
+      retest: { status: "passed", summary: paper.retest.summary }
+    })).toThrow();
+  });
+
+  it("requires a commit for remediation marked implemented", () => {
+    const paper = validPaper();
+    expect(() => researchPublicationSchema.parse({
+      ...paper,
+      remediation: { ...paper.remediation, status: "implemented" }
+    })).toThrow();
+  });
+
+  it("rejects non-HTTPS references and evidence links", () => {
     const paper = validPaper();
     expect(() => researchPublicationSchema.parse({
       ...paper,
       references: [{ label: "Unsafe", href: "http://example.com/paper" }]
+    })).toThrow();
+    expect(() => researchPublicationSchema.parse({
+      ...paper,
+      evidence: [{ ...paper.evidence[0], href: "http://example.com/run" }]
     })).toThrow();
   });
 
@@ -72,13 +180,17 @@ describe("public research publication registry", () => {
     expect(() => researchPublicationSchema.parse({ ...validPaper(), internalNote: "private" })).toThrow();
   });
 
-  it("rejects duplicate slugs and publication IDs", () => {
+  it("rejects duplicate evidence IDs, slugs, and publication IDs", () => {
     const paper = validPaper();
+    expect(() => researchPublicationSchema.parse({
+      ...paper,
+      evidence: [paper.evidence[0], paper.evidence[0]]
+    })).toThrow();
     expect(() => researchRegistrySchema.parse([paper, { ...paper, publicationId: "PAV-SEC-2026-002" }])).toThrow();
     expect(() => researchRegistrySchema.parse([paper, { ...paper, slug: "another-paper" }])).toThrow();
   });
 
-  it("keeps the public registry empty until a paper is approved", () => {
+  it("keeps the public registry empty until a fully approved paper exists", () => {
     expect(researchRegistrySchema.parse([])).toEqual([]);
   });
 });
