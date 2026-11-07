@@ -173,3 +173,20 @@ A source-only review of app/vault/vault-manager.tsx confirmed:
 - No API, authentication, encryption, persistence, or database behavior was changed in this UI/accessibility pass.
 
 Status: IMPLEMENTED IN SOURCE; NOT RUNTIME-VERIFIED. Browser checks are still required for reveal state announcements, clipboard permission success/failure, mobile behavior, and focus/announcement quality with assistive technology. No claim is made that clipboard contents are automatically cleared.
+
+
+### Sensitive data lifecycle review — 2026-11-08
+
+Reviewed the Vault UI and current collection API without changing backend behavior.
+
+Observed lifecycle:
+- The Add/Edit form uses controlled React state. closeForm() resets the form object; successful saves also close and clear it. A failed save intentionally retains entered values for correction/retry.
+- Opening a record resets the username, password, and backup-code reveal flags. Closing the inspector clears the active record selection and resets reveal flags.
+- The collection API currently decrypts every authorized user's record server-side and returns plaintext account fields in the JSON response. The mounted Vault client retains the returned records in its items React state. Closing an individual inspector does not clear that collection cache.
+- Therefore, masking and closing controls reduce on-screen exposure but do not guarantee erasure from JavaScript memory, browser process memory, developer tools, extensions, or operating-system clipboard.
+- The current design is server-mediated encryption, NOT zero-knowledge. The browser receives plaintext record values after authentication.
+- The application does not automatically clear clipboard contents after copying.
+
+No backend, API, authentication, encryption, database, or production configuration was changed. A safer per-record fetch/data-minimization design and a browser-side key lifecycle would require a separately approved architecture/security change; it must not be represented as completed work.
+
+Status: SOURCE-REVIEWED LIMITATION; REDESIGN PLANNED; NOT IMPLEMENTED OR VERIFIED. Runtime memory inspection, browser cache behavior, clipboard permissions, and assistive-technology checks remain outstanding.
