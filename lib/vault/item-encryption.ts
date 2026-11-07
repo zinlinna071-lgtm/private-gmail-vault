@@ -10,7 +10,7 @@ function getKey(): Buffer {
   // HKDF separates this purpose from recovery-code encryption.
   const value = process.env.VAULT_ENCRYPTION_KEY;
   if (!value || !/^[a-fA-F0-9]{64}$/.test(value)) {
-    throw new Error("VAULT_ENCRYPTION_KEY must be exactly 64 hexadecimal characters (32 random bytes).");
+    throw new Error("VAULT_ENCRYPTION_KEY is not configured or is invalid; it must be exactly 64 hexadecimal characters (32 random bytes).");
   }
   return Buffer.from(hkdfSync(
     "sha256",
