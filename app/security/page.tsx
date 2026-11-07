@@ -79,7 +79,7 @@ export default function SecurityPage() {
           <span>PRIVATE ACCOUNT VAULT <small>SECURITY OPERATIONS CENTER</small></span>
         </Link>
         <nav className="security-nav-links" aria-label="Security navigation">
-          <a href="#interactive-lab">Interactive lab</a><a href="#surface">Test scope</a><Link href="/security/architecture">UI/UX architecture</Link><Link href="/security/research">Research</Link>
+          <Link href="/security/guide">Start here</Link><a href="#interactive-lab">Interactive lab</a><a href="#surface">Test scope</a><Link href="/security/architecture">UI/UX architecture</Link><Link href="/security/research">Research</Link>
         </nav>
         <span className="security-nav-status"><i /> PUBLIC · READ ONLY</span>
       </header>
@@ -94,7 +94,7 @@ export default function SecurityPage() {
             <span><b>PUBLIC ACCESS</b> Read-only reporting</span>
             <span><b>EVIDENCE SOURCE</b> Linked CI records</span>
           </div>
-          <div className="security-hero-actions"><a href="#interactive-lab">Try the cryptography lab <span>↓</span></a><Link href="/security/research">Research library ↗</Link></div>
+          <div className="security-hero-actions"><Link href="/security/guide">New to cybersecurity? Start here ↗</Link><a href="#interactive-lab">Try the cryptography lab <span>↓</span></a><Link href="/security/research">Research library ↗</Link></div>
         </div>
         <div className="security-signal" aria-label="Decorative conceptual architecture illustration, not connected to live telemetry">
           <div className="signal-grid" />
