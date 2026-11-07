@@ -176,7 +176,18 @@ export default function SecurityArchitecturePage() {
       </section>
 
       <section className="security-section">
-        <div className="security-section-heading"><div><span className="section-index">08 / VERIFICATION ROADMAP</span><h2>Implemented is not the same as verified.</h2></div><span className="section-aside">TRANSPARENT STATUS</span></div>
+        <div className="security-section-heading"><div><span className="section-index">08 / SENSITIVE DATA LIFECYCLE</span><h2>Concealment is not memory erasure.</h2></div><span className="section-aside">CURRENT ARCHITECTURE</span></div>
+        <div className="security-module-grid">
+          <article className="security-module"><span className="module-status">IMPLEMENTED</span><h3>Concealed by default</h3><p>Username, password, and backup-code fields are masked in the record inspector until the user explicitly reveals them. Changing or closing a record resets the reveal controls.</p></article>
+          <article className="security-module"><span className="module-status">IMPLEMENTED</span><h3>Form state cleanup</h3><p>Closing the Add/Edit form clears its controlled form state. A failed save retains the entered values so the user can correct and retry.</p></article>
+          <article className="security-module"><span className="module-status status-untested">CURRENT LIMITATION</span><h3>Authenticated browser memory</h3><p>The current API decrypts records on the server and returns their plaintext fields to the authenticated browser. The collection keeps those records in client-side application state while it is mounted. Closing the inspector hides the detail view; it does not erase the collection cache or guarantee removal from browser memory.</p></article>
+          <article className="security-module"><span className="module-status status-untested">NOT ZERO-KNOWLEDGE</span><h3>Future architecture work</h3><p>Reducing plaintext exposure requires a separately reviewed data-flow redesign, such as fetching one record only when opened and defining a browser-side key lifecycle. No such redesign is claimed as implemented in this phase.</p></article>
+        </div>
+        <p className="security-footnote">This page documents the current server-mediated encryption model. It is not a zero-knowledge claim. Clipboard contents are controlled by the operating system and are not automatically cleared by this application.</p>
+      </section>
+
+      <section className="security-section">
+        <div className="security-section-heading"><div><span className="section-index">09 / VERIFICATION ROADMAP</span><h2>Implemented is not the same as verified.</h2></div><span className="section-aside">TRANSPARENT STATUS</span></div>
         <div className="security-module-grid">
           <article className="security-module"><span className="module-status">IMPLEMENTED</span><h3>Shared visual foundation</h3><p>Shared CSS tokens, entry transitions, interactive feedback, and reduced-motion rules exist in source.</p></article>
           <article className="security-module"><span className="module-status">IMPLEMENTED</span><h3>Public research reading UI</h3><p>Research pages include bilingual switching, structured sections, and provenance fields.</p></article>
@@ -188,7 +199,7 @@ export default function SecurityArchitecturePage() {
       </section>
 
       <section className="security-section">
-        <div className="security-section-heading"><div><span className="section-index">09 / QA PROTOCOL</span><h2>What must be checked before verification is claimed.</h2></div><span className="section-aside">PLANNED · NOT RUN</span></div>
+        <div className="security-section-heading"><div><span className="section-index">10 / QA PROTOCOL</span><h2>What must be checked before verification is claimed.</h2></div><span className="section-aside">PLANNED · NOT RUN</span></div>
         <div className="operation-list">
           <div><b>01</b><span><strong>Viewport sweep</strong><small>Run the same route at 360, 390, 768, 1024, and 1440 CSS pixels; check overflow, navigation, content order, dialogs, and touch target spacing.</small></span><em>PLANNED</em></div>
           <div><b>02</b><span><strong>Keyboard-only journey</strong><small>Tab through navigation, forms, dialogs, reveal/copy actions, and close controls; verify visible focus, logical order, and no keyboard trap.</small></span><em>PLANNED</em></div>
