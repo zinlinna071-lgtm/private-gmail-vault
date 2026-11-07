@@ -136,3 +136,15 @@ Implemented a scoped palette bridge at the end of `app/globals.css` for the auth
 - Existing Vault data operations and authentication code were not changed by this CSS-only pass.
 
 The public UI/UX engineering page now describes this as an implemented visual alignment pass. This is a source-level implementation record only: no browser screenshots, build, cross-device visual check, keyboard walkthrough, screen-reader audit, or performance profile has been run for this commit. Check mobile layout and all dialogs/inspector states in browser QA before calling the theme verified.
+
+
+### Vault interaction accessibility refinement — 2026-11-08
+
+Source-reviewed the authenticated Vault collection interactions in `app/vault/vault-manager.tsx` and implemented a focused keyboard-flow improvement:
+- When Add Account or Edit Record opens the shared form, focus moves to the first Account name field.
+- When that form closes, focus returns to the persistent Add account toolbar control.
+- The form now has an explicit accessible name through `aria-labelledby`.
+- Existing native `<dialog>` inspector behavior, concealed-by-default sensitive values, explicit reveal controls, clipboard actions, and two-step delete confirmation remain unchanged.
+- No API request shape, authentication, encryption, persistence, or record data behavior was changed in this interaction-only refinement.
+
+Status: **IMPLEMENTED IN SOURCE**. This has not yet been verified in a running browser or with keyboard-only/screen-reader testing. The public QA protocol remains **PLANNED · NOT RUN** until those checks are performed.
