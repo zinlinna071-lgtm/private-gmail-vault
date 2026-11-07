@@ -148,3 +148,15 @@ Source-reviewed the authenticated Vault collection interactions in `app/vault/va
 - No API request shape, authentication, encryption, persistence, or record data behavior was changed in this interaction-only refinement.
 
 Status: **IMPLEMENTED IN SOURCE**. This has not yet been verified in a running browser or with keyboard-only/screen-reader testing. The public QA protocol remains **PLANNED · NOT RUN** until those checks are performed.
+
+
+### Inspector and mobile dialog refinement — 2026-11-08
+
+A second source-only interaction pass extends the Vault keyboard flow:
+- The native record inspector places initial focus on its explicit Close record control when opened.
+- Opening the delete confirmation moves focus to **Keep record** first, reducing the risk of accidental destructive confirmation through keyboard activation.
+- Cancelling the confirmation restores focus to **Delete record**.
+- The inspector uses dynamic viewport height where supported, with the existing `vh` fallback, and contains overscroll within the dialog on touch devices.
+- Delete still requires an explicit second action on **Confirm delete**. The data/API behavior is unchanged.
+
+Status: **IMPLEMENTED IN SOURCE; NOT BROWSER-VERIFIED**. Native dialog focus restoration, mobile viewport behavior, touch scrolling, and screen-reader announcements still require runtime QA.
