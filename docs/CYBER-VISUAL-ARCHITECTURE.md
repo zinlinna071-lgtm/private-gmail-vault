@@ -124,3 +124,15 @@ Source inspection found that the authenticated Vault is not yet using the same p
 The public UI/UX architecture page has been corrected to describe this as two current visual languages. It no longer claims the entire product already shares one palette. The token table and calculated contrast samples apply to the public entry/Security palette only. Vault palette convergence is a planned design task, not an implemented change.
 
 Review boundary: this was a source-level comparison of the checked-in CSS and page composition. No browser rendering, viewport screenshot comparison, automated build, accessibility audit, or performance trace was run in this review.
+
+
+
+### Vault visual alignment pass — 2026-11-08
+
+Implemented a scoped palette bridge at the end of `app/globals.css` for the authenticated `.museum-shell` surface:
+- Main Vault background, ambient grid, header, supporting text, collection controls, forms, record cards, feedback, and footer now use the midnight/navy + teal/mint family already used by Login and public Security.
+- Interactive controls use the shared teal focus outline and halo treatment.
+- The museum identity is intentionally retained through its editorial layout, emblem/artwork geometry, and restrained warm-metal details inside decorative artwork rather than applying a flat global recolor.
+- Existing Vault data operations and authentication code were not changed by this CSS-only pass.
+
+The public UI/UX engineering page now describes this as an implemented visual alignment pass. This is a source-level implementation record only: no browser screenshots, build, cross-device visual check, keyboard walkthrough, screen-reader audit, or performance profile has been run for this commit. Check mobile layout and all dialogs/inspector states in browser QA before calling the theme verified.
