@@ -133,8 +133,27 @@ export default function VaultManager() {
     setter(values.includes(id) ? values.filter(value => value !== id) : [...values, id]);
   }
 
+  const latestUpdate = items.reduce<string | null>((latest, item) => {
+    if (!latest || new Date(item.updatedAt).getTime() > new Date(latest).getTime()) return item.updatedAt;
+    return latest;
+  }, null);
+  const formattedLatestUpdate = latestUpdate
+    ? new Date(latestUpdate).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })
+    : "No records yet";
+
   return (
     <section className="vault-manager">
+      <div className="vault-workspace-overview">
+        <div className="vault-workspace-heading">
+          <div><span>VAULT WORKSPACE / OVERVIEW</span><h2>Control center</h2><p>Your saved records, search scope, and latest record update.</p></div>
+          <span className={loading ? "vault-connection is-loading" : error ? "vault-connection is-error" : "vault-connection"}><i />{loading ? "LOADING VAULT" : error ? "CHECK CONNECTION" : "VAULT DATA LOADED"}</span>
+        </div>
+        <div className="vault-stat-grid">
+          <article><small>SAVED RECORDS</small><strong>{loading ? "—" : items.length.toString().padStart(2, "0")}</strong><span>Private account entries</span></article>
+          <article><small>SEARCH MATCHES</small><strong>{loading ? "—" : filteredItems.length.toString().padStart(2, "0")}</strong><span>Currently visible results</span></article>
+          <article><small>LAST RECORD UPDATE</small><strong className="vault-stat-date">{loading ? "Loading" : formattedLatestUpdate}</strong><span>From saved record metadata</span></article>
+        </div>
+      </div>
       <div className="vault-toolbar">
         <input
           className="search-input"
