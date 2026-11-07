@@ -1,6 +1,6 @@
 # The Curator's Signal — Discovery Experience
 
-**Status:** Approved implementation direction; staged implementation  
+**Status:** Approved direction; visual interaction prototype implemented; server integration pending  
 **Branch:** `design/cyber-visual-architecture`  
 **Scope:** Public discovery experience and Secondary-account registration entry  
 **Security classification:** UX discovery layer only; never an authentication or authorization control
@@ -99,4 +99,4 @@ The user completes the ordinary registration flow. The server consumes the claim
 
 ## Current implementation truth
 
-This document defines the approved direction. A visual prototype or client-side interaction is not evidence that server-side challenge validation, registration claims, account roles, quotas, or Owner authorization are implemented. Each phase must be reported separately as planned, implemented, tested, or independently verified. Do not store real high-value credentials or claim production readiness until the security foundation and release gates have passed.
+This document defines the approved direction. The first visual prototype is available at `/curator-preview`. It demonstrates the three archive marks, reorderable Fourfold Lock, hint interaction, responsive layout, and reduced-motion behavior. This is not yet connected to server-side challenge validation and deliberately does not issue a registration claim or create an account. Server-side challenge validation, registration claims, account roles, quotas, and Owner authorization remain separate implementation gates. Each phase must be reported separately as planned, implemented, tested, or independently verified. Do not store real high-value credentials or claim production readiness until the security foundation and release gates have passed.
