@@ -37,3 +37,21 @@ npm --prefix tools/crypto-primitives-spike test
 - Best-effort buffer clearing is not a guarantee of JavaScript memory zeroization.
 - Passing this harness verifies only these primitive vectors in the runtime where it was executed. It does not validate the Vault protocol, application key lifecycle, side-channel resistance, zero-knowledge architecture, or formal CAVP compliance.
 - Browser-engine and physical-device tests are tracked separately in `docs/VAULT-CRYPTO-TEST-VECTOR-CATALOG.md`.
+
+
+## Browser compatibility matrix
+
+A separate browser-only harness runs the same public HKDF-SHA-256 and AES-256-GCM known-answer checks inside Chromium, Firefox, and WebKit. It reuses the Playwright and esbuild packages already isolated under **tools/argon2id-browser-spike**; it does not add dependencies to the root application.
+
+Run from the repository root:
+
+\`\`\`sh
+cd tools/argon2id-browser-spike
+npm install --ignore-scripts --no-audit --no-fund
+npx playwright install chromium firefox webkit
+node run-crypto-primitives-browser-test.mjs
+\`\`\`
+
+The browser runner bundles **tools/crypto-primitives-spike/browser-test-entry.js** and uses a local test-only HTTP server. It does not import the Vault application, call Vault APIs, or handle real credentials. The CI workflow is **.github/workflows/vault-crypto-primitives-browser.yml**.
+
+**Status:** browser harness implemented; no browser-matrix PASS claim until the new workflow reaches and completes all three engines. A workflow that fails before test steps is UNRESOLVED / NOT RUN.
