@@ -266,3 +266,18 @@ The migration must define partial-failure behavior, backup handling, version neg
 #### Approval boundary
 
 This is a proposed target, not a statement of implemented functionality. The existing server-decrypted collection endpoint remains active until a separately approved implementation replaces it. No backend changes, database migrations, authentication changes, production deployments, or secret changes are authorized by this document.
+
+
+## Evidence-safe visual presentation — 2026-11-08
+
+The public experience uses a strict visual truth rule: **no invented facts, no fabricated telemetry, and no imagery that could reasonably be mistaken for factual system output.**
+
+- The Public Security hero's decorative signal/radar illustration was removed and replaced with a plain-language reading guide.
+- Historical CI evidence cards now pair the technical record with everyday-language explanations in English and Burmese. Each explanation states the boundary of what the named check does not prove.
+- The Research Library now explains PASS, NOT RUN, LIMITED, and PLANNED in plain language before readers interpret papers.
+- The beginner guide's conceptual diagrams remain labelled CONCEPT ONLY or HOW TO READ; they are not evidence, live activity, or actual Vault payloads.
+- The lab console's architecture map remains a reference diagram with explicit text that it is not a live network map and does not assert deployed or connected components. Its telemetry area reports that no trusted source is connected; it does not generate filler events.
+- Real graphs require traceable source data, units, time range, collection method, and limitations. If no verified measurements exist, do not draw a graph.
+- Decorative animation must not resemble a running scan, packet stream, active attack, or live event feed.
+
+This change is presentation-only. It does not connect telemetry, change tests, modify authentication, alter encryption, touch the database, or change deployment configuration. Browser rendering, accessibility, and mobile visual QA remain unverified until actually run.
