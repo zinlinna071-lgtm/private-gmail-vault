@@ -11,7 +11,7 @@ type DraftSummary = {
   updated_at: string;
   ready_at?: string | null;
 };
-type DraftDetail = DraftSummary & { content: unknown; reviews: Record<string, { decision: string; notes: string; reviewerUserId: string; reviewedAt: string }> };
+type DraftDetail = DraftSummary & { content: unknown; reviews: Record<string, Array<{ decision: string; notes: string; reviewerUserId: string; reviewedAt: string }>> };
 
 const contentTemplate = {
   researchQuestion: { en: "", my: "" },
@@ -174,13 +174,15 @@ export function ResearchWorkbench({ isOwner, isReviewer }: { isOwner: boolean; i
               <h3>{selected.title_en}</h3>
               <p lang="my">{selected.title_my}</p>
               <p>Category: {selected.category}</p>
-              <p>Reviews recorded: {Object.keys(selected.reviews ?? {}).length} / 4</p>
-              {Object.entries(selected.reviews ?? {}).map(([stage, review]) => (
-                <div className="research-workbench-review-record" key={stage}>
-                  <strong>{stateLabel(stage)} · {review.decision}</strong>
-                  <p>{review.notes}</p>
-                </div>
-              ))}
+              <p>Review stages with records: {Object.keys(selected.reviews ?? {}).length} / 4</p>
+              {Object.entries(selected.reviews ?? {}).flatMap(([stage, history]) =>
+                (Array.isArray(history) ? history : []).map((review, index) => (
+                  <div className="research-workbench-review-record" key={`${stage}-${index}`}>
+                    <strong>{stateLabel(stage)} · {review.decision} · {new Date(review.reviewedAt).toLocaleString()}</strong>
+                    <p>{review.notes}</p>
+                  </div>
+                ))
+              )}
               {canReview && (
                 <div className="research-workbench-form">
                   <label>Review notes<textarea value={reviewNotes} onChange={(event) => setReviewNotes(event.target.value)} rows={4} maxLength={2000} /></label>
