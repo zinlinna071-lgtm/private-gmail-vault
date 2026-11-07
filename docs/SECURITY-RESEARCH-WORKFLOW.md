@@ -13,7 +13,7 @@ Approval order is strictly sequential:
 5. Final owner approval.
 6. Marked READY_TO_PUBLISH for a separate publication release.
 
-A reviewer may approve or request changes. A changes-requested decision returns the draft to DRAFT; the author must update and resubmit it. Technical, security/privacy, and bilingual reviewers cannot approve their own authored draft. Owner approval is a separate final gate.
+Reviewers are assigned through the server-side reviewer UUID allowlist. Technical, security/privacy, and bilingual approvals must come from different reviewer accounts; authors cannot approve their own reviews. Each decision is appended to review history rather than overwritten. A reviewer may approve or request changes. A changes-requested decision returns the draft to DRAFT; the author must update and resubmit it. Technical, security/privacy, and bilingual reviewers cannot approve their own authored draft. Owner approval is a separate final gate.
 
 ## Access configuration
 
@@ -26,10 +26,10 @@ If the owner ID is missing or invalid, the workflow fails closed. Reviewer IDs a
 
 The current API supports:
 - `GET/POST /api/security/research/drafts`
-- `PATCH /api/security/research/drafts/:id`
+- `GET/PATCH /api/security/research/drafts/:id`
 - `POST /api/security/research/review`
 
-All mutations require same-origin JSON requests and an authenticated session. Draft reads and writes are scoped to the owner; review decisions require configured reviewer identity. The database table is service-role only with RLS enabled and no grants to anon/authenticated roles.
+All mutations require same-origin JSON requests and an authenticated session. Owner draft reads and writes are scoped to the owner; reviewers see only their review queue and the sanitized draft content required for review. Review decisions require configured reviewer identity. The database table is service-role only with RLS enabled and no grants to anon/authenticated roles.
 
 ## Draft contents
 
