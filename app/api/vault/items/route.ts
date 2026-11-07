@@ -25,6 +25,18 @@ function response(body: unknown, status = 200) {
   });
 }
 
+function logVaultFailure(operation: "GET" | "POST", stage: string, error: unknown) {
+  const candidate = error && typeof error === "object" && "code" in error
+    ? (error as { code?: unknown }).code
+    : undefined;
+  const code = typeof candidate === "string" && /^[A-Z0-9_-]{1,32}$/.test(candidate)
+    ? candidate
+    : undefined;
+
+  // Never log request bodies, user identifiers, credentials, ciphertext, keys, or raw errors.
+  console.error(`[vault] ${operation} failed`, { stage, ...(code ? { code } : {}) });
+}
+
 async function getUser() {
   const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -32,16 +44,22 @@ async function getUser() {
 }
 
 export async function GET() {
+  let stage = "auth";
   try {
     const user = await getUser();
     if (!user) return response({ error: "Please sign in again." }, 401);
+
+    stage = "admin_client";
     const admin = createSupabaseAdminClient();
+
+    stage = "select";
     const { data, error } = await admin.from("vault_items")
       .select("id,ciphertext,iv,auth_tag,created_at,updated_at")
       .eq("user_id", user.id)
       .order("updated_at", { ascending: false });
     if (error) throw error;
 
+    stage = "decrypt";
     const items = (data ?? []).map((row) => ({
       id: row.id,
       ...entrySchema.parse(JSON.parse(decryptVaultItem({
@@ -53,7 +71,8 @@ export async function GET() {
       updatedAt: row.updated_at
     }));
     return response({ items });
-  } catch {
+  } catch (error) {
+    logVaultFailure("GET", stage, error);
     return response({ error: "Could not open the Vault. Check the server encryption setup." }, 500);
   }
 }
@@ -63,9 +82,13 @@ export async function POST(request: Request) {
   if (!isJsonContentType(request.headers.get("content-type"))) {
     return response({ error: "Unsupported content type." }, 415);
   }
+
+  let stage = "auth";
   try {
     const user = await getUser();
     if (!user) return response({ error: "Please sign in again." }, 401);
+
+    stage = "body";
     const body = await readBoundedJson(request, 20_000);
     if (!body.ok) {
       return body.reason === "too_large"
@@ -75,9 +98,14 @@ export async function POST(request: Request) {
     const parsed = entrySchema.safeParse(body.value);
     if (!parsed.success) return response({ error: "Please check the account details and try again." }, 400);
 
+    stage = "encrypt";
     const id = randomUUID();
     const encrypted = encryptVaultItem(JSON.stringify(parsed.data), user.id, id);
+
+    stage = "admin_client";
     const admin = createSupabaseAdminClient();
+
+    stage = "insert";
     const { data, error } = await admin.from("vault_items").insert({
       id,
       user_id: user.id,
@@ -87,7 +115,8 @@ export async function POST(request: Request) {
     }).select("id,created_at,updated_at").single();
     if (error) throw error;
     return response({ item: { id, ...parsed.data, createdAt: data.created_at, updatedAt: data.updated_at } }, 201);
-  } catch {
+  } catch (error) {
+    logVaultFailure("POST", stage, error);
     return response({ error: "Could not save this account. Check the server encryption setup." }, 500);
   }
 }
