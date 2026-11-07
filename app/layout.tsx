@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./security-experience.css";
+import "./motion-system.css";
 import { getPublicSiteUrl } from "@/lib/seo/site-url";
 
 export const metadata: Metadata = {
