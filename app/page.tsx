@@ -1,6 +1,5 @@
 import Link from "next/link";
 import AuthPanel from "./auth-panel";
-import ShieldModel from "./shield-model";
 import "./entry-experience.css";
 import type { Metadata } from "next";
 
@@ -44,7 +43,6 @@ export default function Home() {
             <Link href="/security/research">Research Library</Link> · <Link href="/support">Research Fund</Link>
           </footer>
         </section>
-        <ShieldModel />
       </div>
     </main>
   );
