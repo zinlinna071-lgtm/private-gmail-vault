@@ -257,3 +257,117 @@ footer { margin-top: 42px; color: #71809a; font-size: 11px; line-height: 1.7; le
   .operation-list>div { grid-template-columns:24px 1fr; }
   .operation-list em { grid-column:2; justify-self:start; }
 }
+
+
+/* Extended sign-in / sign-out cinematic transitions */
+.vault-entry-transition {
+  background:
+    radial-gradient(ellipse at 50% 42%,#1c594b 0%,#102e38 34%,#091b29 68%,#07131e 100%);
+  backdrop-filter:blur(22px);
+}
+.vault-entry-orbit { width:124px; height:124px; margin-bottom:13px; }
+.vault-entry-orbit b { width:68px; height:68px; border-radius:21px; font-size:30px; }
+.vault-entry-caption,.vault-exit-caption {
+  color:#73b9a9; font-size:8px; font-weight:800; letter-spacing:.2em;
+}
+.vault-entry-progress { width:min(260px,82%); height:4px; }
+.vault-exit-transition {
+  position:fixed; z-index:1000; inset:0; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:13px; padding:28px;
+  overflow:hidden; background:
+    radial-gradient(ellipse at 50% 42%,#243b50 0%,#101f31 40%,#080f1c 78%,#060b14 100%);
+  color:#eef7ff; text-align:center; animation:vault-exit-screen-in .48s cubic-bezier(.2,.8,.2,1) both;
+}
+.vault-exit-transition::before {
+  position:absolute; inset:0; content:""; pointer-events:none; opacity:.22;
+  background-image:linear-gradient(#79a9c31c 1px,transparent 1px),linear-gradient(90deg,#79a9c31c 1px,transparent 1px);
+  background-size:34px 34px; mask-image:radial-gradient(ellipse,#000 10%,transparent 76%);
+  animation:vault-exit-grid 1.8s ease-in-out both;
+}
+.vault-exit-transition strong {
+  position:relative; color:#d9edff; font-size:13px; font-weight:900;
+  letter-spacing:.24em; text-shadow:0 0 24px #8fcaff77;
+  animation:vault-exit-text-in .55s .22s both;
+}
+.vault-exit-transition p {
+  position:relative; margin:0; color:#a8bdcf; font-size:13px;
+  animation:vault-exit-text-in .55s .34s both;
+}
+.vault-exit-scene {
+  position:relative; display:grid; place-items:center; width:160px; height:160px; margin-bottom:8px;
+}
+.exit-orbit {
+  position:absolute; border:1px solid #8bc6ed66; border-radius:50%;
+  box-shadow:0 0 22px #6ca9dc18; animation:vault-exit-orbit 1.8s ease-in-out both;
+}
+.exit-orbit-one { inset:5px; border-style:dashed; }
+.exit-orbit-two { inset:23px; border-color:#a5d9ee55; animation-delay:.12s; }
+.exit-shield {
+  position:relative; display:grid; place-items:center; width:76px; height:76px;
+  border:1px solid #b2d9f0; border-radius:25px 25px 31px 31px;
+  background:linear-gradient(145deg,#315b79,#172d45);
+  box-shadow:0 0 38px #78b8e45c,inset 0 0 20px #c2e8ff1c;
+  animation:vault-exit-shield .95s .18s cubic-bezier(.2,.8,.2,1) both;
+}
+.exit-shield span { color:#e4f5ff; font-size:30px; font-weight:900; }
+.exit-shield i {
+  position:absolute; right:-5px; bottom:-4px; width:23px; height:23px;
+  border:2px solid #0d2031; border-radius:50%; background:#6ddbb7;
+}
+.exit-shield i::after {
+  position:absolute; left:6px; top:4px; width:6px; height:10px;
+  border-right:2px solid #092c28; border-bottom:2px solid #092c28;
+  content:""; transform:rotate(42deg);
+}
+.exit-particles { position:absolute; inset:0; }
+.exit-particles i {
+  position:absolute; left:50%; top:50%; width:4px; height:4px;
+  border-radius:50%; background:#a6dcf8; box-shadow:0 0 12px #a6dcf8;
+  animation:vault-exit-particle 1.2s ease-out both;
+}
+.exit-particles i:nth-child(1) { --x:-68px; --y:-42px; }
+.exit-particles i:nth-child(2) { --x:65px; --y:-48px; animation-delay:.08s; }
+.exit-particles i:nth-child(3) { --x:-76px; --y:35px; animation-delay:.16s; }
+.exit-particles i:nth-child(4) { --x:74px; --y:39px; animation-delay:.12s; }
+.exit-particles i:nth-child(5) { --x:0px; --y:-78px; animation-delay:.2s; }
+.exit-particles i:nth-child(6) { --x:0px; --y:78px; animation-delay:.24s; }
+.vault-exit-progress {
+  position:relative; width:min(250px,80%); height:3px; overflow:hidden;
+  margin-top:9px; border-radius:8px; background:#ffffff20;
+}
+.vault-exit-progress i {
+  display:block; width:0; height:100%; border-radius:8px;
+  background:linear-gradient(90deg,#77bce8,#c7efff);
+  box-shadow:0 0 16px #8acfff; animation:vault-exit-progress 1.55s .12s ease-in-out forwards;
+}
+.signout-button { display:inline-flex; align-items:center; justify-content:center; gap:9px; }
+.signout-button:disabled { cursor:wait; opacity:.8; }
+.signout-button-spinner {
+  width:14px; height:14px; border:2px solid #e6efff66; border-top-color:#e6efff;
+  border-radius:50%; animation:auth-spin .7s linear infinite;
+}
+.signout-error {
+  margin:8px 0 0; color:#ffb9c6; font-size:11px; line-height:1.5;
+}
+@keyframes vault-exit-screen-in { from { opacity:0; backdrop-filter:blur(0); } to { opacity:1; backdrop-filter:blur(18px); } }
+@keyframes vault-exit-grid { 0% { opacity:0; transform:scale(1.08); } 35%,80% { opacity:.22; transform:scale(1); } 100% { opacity:0; } }
+@keyframes vault-exit-orbit { 0% { opacity:0; transform:scale(.6) rotate(-35deg); } 25% { opacity:.9; } 75% { opacity:.8; } 100% { opacity:0; transform:scale(1.18) rotate(35deg); } }
+@keyframes vault-exit-shield { 0% { opacity:0; transform:scale(.55) rotate(-12deg); filter:blur(5px); } 65% { opacity:1; transform:scale(1.08) rotate(3deg); filter:blur(0); } 100% { transform:scale(1); } }
+@keyframes vault-exit-particle { 0% { opacity:0; transform:translate(0,0) scale(.4); } 35% { opacity:1; } 100% { opacity:0; transform:translate(var(--x),var(--y)) scale(0); } }
+@keyframes vault-exit-text-in { from { opacity:0; transform:translateY(9px); } to { opacity:1; transform:translateY(0); } }
+@keyframes vault-exit-progress { 0% { width:0; } 100% { width:100%; } }
+@media(prefers-reduced-motion:reduce) {
+  .vault-exit-transition,.vault-exit-transition::before,.exit-orbit,.exit-shield,
+  .exit-particles i,.vault-exit-transition strong,.vault-exit-transition p,
+  .vault-exit-progress i,.signout-button-spinner {
+    animation:none !important;
+  }
+  .vault-exit-progress i { width:100%; }
+  .exit-shield { opacity:1; transform:none; }
+}
+@media(max-width:560px) {
+  .vault-exit-scene { width:138px; height:138px; }
+  .exit-orbit-one { inset:8px; }
+  .exit-orbit-two { inset:24px; }
+  .vault-exit-transition { padding:22px; }
+}
