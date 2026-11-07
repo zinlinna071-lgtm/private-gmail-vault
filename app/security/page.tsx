@@ -1,5 +1,6 @@
 import Link from "next/link";
 import LabActivityConsole from "./lab-activity-console";
+import CryptographyLearningLab from "./cryptography-learning-lab";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -107,6 +108,8 @@ export default function SecurityPage() {
       </section>
 
       <LabActivityConsole />
+
+      <CryptographyLearningLab />
 
       <section className="security-section" id="surface">
         <div className="security-section-heading"><div><span className="section-index">01 / ATTACK SURFACE</span><h2>Every boundary matters.</h2></div><span className="section-aside">DEFINED TEST SCOPE</span></div>
