@@ -60,3 +60,8 @@ Before a component is considered complete, verify:
 - The topology illustration is explicitly a reference architecture, not a live network map.
 - Historical CI evidence remains linked to its original GitHub Actions runs and is not presented as a live attack feed.
 - Private Vault summary metrics must continue to derive from authenticated, loaded records only.
+
+
+## 7. Interactive cryptography learning lab
+
+The public SHA-256 workbench uses the browser Web Crypto API to calculate a real digest from the visitor's text. The component does not send the input to the application server or persist it. It reports the actual UTF-8 byte count and only displays a digest after a successful browser calculation. It explicitly explains that SHA-256 is not encryption and is not a password-storage function. No sample digest, generated telemetry, or fabricated output is substituted when the browser API is unavailable.
