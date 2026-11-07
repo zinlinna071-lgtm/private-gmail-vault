@@ -21,7 +21,7 @@ export default function SecurityResearchPage() {
           <span className="security-brand-mark">V</span>
           <span>PRIVATE ACCOUNT VAULT <small>RESEARCH LIBRARY</small></span>
         </Link>
-        <span className="security-nav-status">ENGLISH · မြန်မာ</span>
+        <nav className="security-nav-links" aria-label="Research navigation"><Link href="/security/architecture">UI/UX architecture</Link><Link href="/security">Security operations</Link></nav><span className="security-nav-status">ENGLISH · မြန်မာ</span>
       </header>
 
       <section className="security-hero">
@@ -89,7 +89,7 @@ export default function SecurityResearchPage() {
       <footer className="security-footer">
         <div><span className="security-brand-mark">V</span><strong>PRIVATE ACCOUNT VAULT</strong></div>
         <p>Research publication is not a security certification. စာတမ်းထုတ်ဝေခြင်းသည် လုံခြုံရေးအသိအမှတ်ပြုလက်မှတ် မဟုတ်ပါ။</p>
-        <Link href="/security">Security dashboard ↗</Link>
+        <div className="security-footer-links"><Link href="/security/architecture">UI/UX engineering notes ↗</Link><Link href="/security">Security dashboard ↗</Link></div>
       </footer>
     </main>
   );
