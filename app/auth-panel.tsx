@@ -32,7 +32,7 @@ export default function AuthPanel() {
 
   function enterVault() {
     setEnteringVault(true);
-    window.setTimeout(() => window.location.assign("/vault"), 720);
+    window.setTimeout(() => window.location.assign("/vault"), 1950);
   }
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
