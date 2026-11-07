@@ -561,3 +561,8 @@ body {
   .research-publication-card { transition:none; }
   .research-article-edition { animation:none; }
 }
+
+
+/* Source provenance for historical CI evidence */
+.security-evidence .evidence-provenance { display:block; margin-top:5px; color:#78969e; font-family:var(--vault-font-mono); font-size:8px; letter-spacing:.08em; overflow-wrap:anywhere; }
+.security-evidence .evidence-provenance code { color:#b6d8d0; font-size:8px; letter-spacing:0; }
