@@ -165,3 +165,34 @@
   .entry-shell .auth-card::before,.auth-card-mark i { animation:none !important; }
   .entry-shell .auth-card,.password-toggle { transition:none !important; }
 }
+
+
+/* Responsive password-field feedback: interaction only, not a strength/security score */
+.password-activity {
+  display:flex; align-items:center; flex-wrap:wrap; gap:7px; min-height:22px; margin-top:7px;
+  color:#6e9198; font-size:8px; font-weight:900; letter-spacing:.12em;
+  transition:color .25s ease;
+}
+.password-activity-bars { display:flex; align-items:center; gap:3px; height:13px; }
+.password-activity-bars i {
+  display:block; width:3px; height:4px; border-radius:4px; background:#31565b;
+  transition:height .25s ease,background .25s ease,box-shadow .25s ease;
+}
+.password-activity-bars i:nth-child(2) { height:7px; }
+.password-activity-bars i:nth-child(3) { height:10px; }
+.password-activity-bars i:nth-child(4) { height:6px; }
+.password-activity.is-active { color:#9beed5; }
+.password-activity.is-active .password-activity-bars i {
+  background:#72eac8; box-shadow:0 0 9px #72eac877; animation:password-signal 1s ease-in-out infinite alternate;
+}
+.password-activity.is-active .password-activity-bars i:nth-child(2) { animation-delay:-.3s; }
+.password-activity.is-active .password-activity-bars i:nth-child(3) { animation-delay:-.55s; }
+.password-activity.is-active .password-activity-bars i:nth-child(4) { animation-delay:-.15s; }
+.password-activity small { flex-basis:100%; margin-left:19px; color:#78969d; font-size:9px; font-weight:500; letter-spacing:0; }
+@keyframes password-signal { from { transform:scaleY(.55); opacity:.65; } to { transform:scaleY(1.35); opacity:1; } }
+.entry-shell .primary-button:not(:disabled) { background-size:220% 100%; background-position:0% 50%; }
+.entry-shell .primary-button:hover:not(:disabled) { background-position:100% 50%; }
+@media(prefers-reduced-motion:reduce) {
+  .password-activity.is-active .password-activity-bars i { animation:none !important; }
+  .entry-shell .primary-button { background-position:0 50% !important; }
+}
