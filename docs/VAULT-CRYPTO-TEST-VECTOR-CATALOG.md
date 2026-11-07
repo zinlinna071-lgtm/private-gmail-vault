@@ -187,7 +187,7 @@ Use the following status vocabulary consistently:
 - Do not run migrations, merge to `main`, create a preview, or deploy.
 - A passing KAT verifies a particular algorithm/input/output combination. It does not prove protocol correctness, side-channel resistance, supply-chain integrity, secure key lifecycle, zero-knowledge architecture, or overall product security.
 
-**Current decision:** keep the catalog as a test plan. A dependency-free test-only harness now exists under `tools/crypto-primitives-spike/`; it exercises Web Crypto HKDF-SHA-256 and the two pinned AES-256-GCM vectors without importing application code. A local Node.js v22.16.0 spot-check of the three expected outputs and AES-GCM decryptions passed. The committed harness's full negative-test suite and its GitHub Actions workflow have not yet been observed passing; browser-engine and physical-device verification remain pending. No production crypto code is authorized by this document.
+**Current decision:** keep the catalog as a test plan. A dependency-free test-only harness now exists under `tools/crypto-primitives-spike/`; it exercises Web Crypto HKDF-SHA-256 and the two pinned AES-256-GCM vectors without importing application code. A local Node.js v22.16.0 spot-check of the three expected outputs and AES-GCM decryptions passed. The committed harness's GitHub Actions workflow has not yet been observed passing; browser-engine and physical-device verification remain pending. No production crypto code is authorized by this document.
 
 
 ## 11. Pinned AES-256-GCM reference vectors — NIST CAVP source
@@ -248,7 +248,7 @@ The harness uses Node.js Web Crypto only; it adds no root application dependency
 - NIST CAVP-origin AES-256-GCM vector B encryption/decryption and AAD/tamper checks.
 - Best-effort clearing of mutable test buffers.
 
-**Local spot-check (verified):** Node.js v22.16.0 Web Crypto reproduced the RFC 5869 OKM and both AES-256-GCM ciphertext+tag outputs; both AES-GCM decryptions recovered the expected plaintext bytes.
+**Local full harness execution (verified):** Node.js v22.16.0 ran the committed test logic in an isolated temporary directory. HKDF RFC 5869 output and IKM mutation passed; both AES-256-GCM vectors matched expected ciphertext+tag, both decryptions recovered the expected plaintext, and modified ciphertext/tag, IV, AAD, and key were rejected. Terminal result: `ALL TESTS PASSED`. This is a local Node.js run, not a GitHub-hosted CI result.
 
 **Not yet verified:** the committed `test-primitives.mjs` full test run, the new GitHub Actions workflow, Chromium/Firefox/WebKit execution of these HKDF/AES-GCM vectors, and physical mobile behavior. Do not mark those checks passed until a run URL and logs are inspected.
 
@@ -260,3 +260,17 @@ The workflow is scoped to pushes on `design/cyber-visual-architecture` that touc
 The new workflow was triggered by push and produced run [42413906114](https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42413906114). Its first attempt failed; a single retry also failed immediately. Both job records reported an empty step list and `runner_id: 0` / no runner name. The job-log endpoint returned no available log artifact. Therefore the failure cannot currently be attributed to the test script, Node.js, HKDF, or AES-GCM vectors.
 
 **Status:** workflow execution blocked/unresolved before any test-step evidence was exposed. Do not label the committed harness passed or failed cryptographically on this basis. The independent local Node.js v22.16.0 primitive spot-check remains the only new execution evidence for these three vector outputs. Investigate GitHub Actions runner/repository execution availability before changing the test code or claiming a CI result.
+
+
+### Full local harness run (2026-11-08)
+
+The complete test logic was executed under Node.js v22.16.0 in an isolated temporary directory, with no root application dependency or source changes. Observed output:
+
+```text
+PASS HKDF RFC 5869 + IKM mutation
+PASS NIST vector A encrypt/decrypt/tamper
+PASS NIST vector B encrypt/decrypt/tamper
+ALL TESTS PASSED
+```
+
+This verifies the script's KAT and negative-test behavior in the local Node.js Web Crypto runtime. It does not replace the hosted workflow or browser-engine/mobile compatibility runs.
