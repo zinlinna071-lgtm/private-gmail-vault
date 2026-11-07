@@ -566,3 +566,18 @@ body {
 /* Source provenance for historical CI evidence */
 .security-evidence .evidence-provenance { display:block; margin-top:5px; color:#78969e; font-family:var(--vault-font-mono); font-size:8px; letter-spacing:.08em; overflow-wrap:anywhere; }
 .security-evidence .evidence-provenance code { color:#b6d8d0; font-size:8px; letter-spacing:0; }
+
+
+/* Plain evidence guide replaces decorative signal artwork: no simulated activity */
+.security-reading-panel {
+  min-width:0; padding:clamp(22px,3vw,32px); border:1px solid #28505b; border-radius:16px;
+  background:linear-gradient(145deg,#102432e8,#0a1725f5); box-shadow:0 20px 60px #0003;
+}
+.reading-panel-kicker { color:#76e3c3; font-size:8px; font-weight:900; letter-spacing:.14em; }
+.security-reading-panel h2 { margin:14px 0 20px; color:#eafff9; font-size:clamp(21px,2.5vw,29px); letter-spacing:-.04em; }
+.reading-panel-item { display:flex; align-items:flex-start; gap:13px; padding:14px 0; border-top:1px solid #28505b; }
+.reading-panel-item>b { flex:0 0 28px; color:#76e3c3; font:700 12px/1.6 var(--vault-font-mono); }
+.reading-panel-item span { display:grid; gap:4px; }
+.reading-panel-item strong { color:#eafff9; font-size:12px; }
+.reading-panel-item small { color:#9ab6bf; font-size:10px; line-height:1.65; }
+.security-reading-panel>p { margin:16px 0 0; color:#9ab6bf; font-size:11px; line-height:1.8; }
