@@ -274,3 +274,10 @@ ALL TESTS PASSED
 ```
 
 This verifies the script's KAT and negative-test behavior in the local Node.js Web Crypto runtime. It does not replace the hosted workflow or browser-engine/mobile compatibility runs.
+
+
+### Public GitHub service-status cross-check (2026-11-08)
+
+The official GitHub Status page currently reports Actions as operational and lists no November 7 incident. Its history does list earlier November 5–6 Actions incidents, but those do not overlap this workflow's recorded start time (November 7, 2026 21:02 UTC). This public status check therefore does **not** establish a GitHub-wide outage as the cause. The job's empty step list and missing runner assignment remain an unresolved repository/run-specific execution failure; account billing, repository Actions policy, and runner provisioning details were not exposed by the available run logs.
+
+Reference: https://www.githubstatus.com/
