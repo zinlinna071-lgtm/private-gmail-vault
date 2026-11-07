@@ -3,7 +3,8 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import VaultManager from "./vault-manager";\nimport SignOutControl from "./sign-out-control";
+import VaultManager from "./vault-manager";
+import SignOutControl from "./sign-out-control";
 
 export default async function VaultPage() {
   const supabase = await createSupabaseServerClient();
@@ -26,9 +27,7 @@ export default async function VaultPage() {
             <h1>Your accounts<span>.</span></h1>
             <p className="intro">Signed in as {profile?.login_id ?? "Vault account"}.</p>
           </div>
-          <form action="/api/auth/logout" method="post">
-            <button className="secondary-button" type="submit">Sign out</button>
-          </form>
+          <SignOutControl />
         </div>
         <VaultManager />
         <footer>Private Account Vault</footer>
