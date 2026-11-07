@@ -23,7 +23,7 @@ const stack = [
 const principles = [
   ["01", "Security by Design", "Visual feedback must never replace authorization, encryption, or server-side validation. A polished interface is not proof of security."],
   ["02", "Art by Design", "The Vault is presented as a private digital collection: architectural space, restrained light, editorial hierarchy, and deliberate negative space."],
-  ["03", "Evidence before spectacle", "Historical CI, current source status, conceptual diagrams, and live telemetry are distinct. A visual effect must never impersonate a real security event."],
+  ["03", "Evidence before spectacle", "Historical CI, current source status, conceptual diagrams, and live telemetry are distinct. Do not use decorative network art, fake charts, or visual effects that could be mistaken for real system activity or test evidence."],
   ["04", "Clarity over density", "One clear task at a time, readable labels, hidden secrets by default, and explicit read-only or demo boundaries."]
 ];
 
