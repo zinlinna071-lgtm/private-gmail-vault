@@ -159,6 +159,7 @@ export default function SecurityPage() {
             <div className="evidence-boundary">NEW HKDF / AES-GCM BROWSER MATRIX</div>
             <h3>Cross-browser test harness implemented — execution unresolved.</h3>
             <p>The isolated suite is ready to check public cryptographic vectors in Chromium, Firefox, and WebKit. Three GitHub Actions runs (#1–#3) failed before any workflow step began. GitHub reported runner ID 0, empty step lists, and no available job logs.</p>
+            <p className="evidence-detail">Inspect the original records: <a href="https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42414589622" target="_blank" rel="noreferrer">Run #1</a> · <a href="https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42414724186" target="_blank" rel="noreferrer">Run #2</a> · <a href="https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42414737534" target="_blank" rel="noreferrer">Run #3</a>.</p>
             <p className="evidence-detail">No browser-engine test ran, so this is NOT RUN / UNRESOLVED — not a cryptographic test failure and not a pass. The root cause is not exposed in the available GitHub records.</p>
           </div>
           <span className="module-status status-untested">NOT RUN</span>
