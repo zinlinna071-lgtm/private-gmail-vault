@@ -62,7 +62,8 @@ const responsive = [
 
 const sources = [
   ["Application shell", "app/layout.tsx"],
-  ["Shared visual tokens and responsive rules", "app/security-experience.css"],
+  ["Shared public-surface tokens and responsive rules", "app/security-experience.css"],
+  ["Authenticated Vault museum palette and layout", "app/globals.css"],
   ["Motion tokens and reduced-motion behavior", "app/motion-system.css"],
   ["Public Security Operations composition", "app/security/page.tsx"],
   ["Bilingual research article interaction", "app/security/research/[slug]/research-article.tsx"],
@@ -129,7 +130,7 @@ export default function SecurityArchitecturePage() {
 
       <section className="security-section">
         <div className="security-section-heading"><div><span className="section-index">03 / VISUAL LANGUAGE</span><h2>A quiet, instrument-grade palette.</h2></div><span className="section-aside">SOURCE TOKENS</span></div>
-        <p className="security-lead">The shared visual system uses deep navy surfaces, restrained teal and mint accents, subdued blue-gray supporting text, translucent layers, and consistent corner geometry.</p>
+        <p className="security-lead">The public entry and Security surfaces use deep navy, restrained teal and mint accents, and subdued blue-gray text. The authenticated Vault currently has a distinct warm charcoal, olive, and antique-gold museum palette in its `.museum-shell` rules in `app/globals.css`. These are two implemented visual languages, not yet one unified theme. The shared tokens below describe the public entry and Security surfaces; Vault palette convergence remains planned.</p>
         <div className="security-module-grid">
           {tokens.map(([label, token, value]) => <article className="security-module" key={token}><span className="module-number">{label}</span><h3>{value}</h3><p><code>{token}</code></p></article>)}
         </div>
