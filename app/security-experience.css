@@ -289,3 +289,32 @@ a { transition:color .2s ease,text-shadow .2s ease; }
   .lab-console-state i,.lab-event-row { animation:none !important; }
   .lab-chart i { transition:none !important; }
 }
+
+
+/* Vault workspace overview — metrics are derived from the authenticated user's loaded records */
+.vault-workspace-overview { margin:24px 0 20px; padding:20px; border:1px solid #28505b; border-radius:16px; background:linear-gradient(145deg,#0d2533e8,#091722f5); box-shadow:0 18px 48px #0003,inset 0 1px #b6fff20d; }
+.vault-workspace-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; }
+.vault-workspace-heading>div>span { color:#76e3c3; font-size:8px; font-weight:900; letter-spacing:.16em; }
+.vault-workspace-heading h2 { margin:8px 0 4px; color:#eafff9; font-size:20px; letter-spacing:-.035em; }
+.vault-workspace-heading p { margin:0; color:#91adb5; font-size:11px; line-height:1.6; }
+.vault-connection { display:inline-flex; align-items:center; gap:7px; flex:0 0 auto; padding:7px 9px; border:1px solid #315e57; border-radius:6px; color:#9ce8d1; background:#0a211f; font-size:7px; font-weight:900; letter-spacing:.1em; }
+.vault-connection i { width:6px; height:6px; border-radius:50%; background:#71e2be; box-shadow:0 0 9px #71e2be; }
+.vault-connection.is-loading { border-color:#355566; color:#9bc7d0; background:#0b1d2a; }
+.vault-connection.is-loading i { background:#77c9dc; box-shadow:0 0 9px #77c9dc; animation:lab-pulse 1.4s ease-in-out infinite; }
+.vault-connection.is-error { border-color:#765047; color:#e6a69b; background:#281917; }
+.vault-connection.is-error i { background:#e58c7e; box-shadow:0 0 9px #e58c7e; }
+.vault-stat-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:18px; }
+.vault-stat-grid article { min-width:0; padding:13px; border:1px solid #23434e; border-radius:10px; background:linear-gradient(145deg,#0b1d29,#081520); }
+.vault-stat-grid small { display:block; color:#719a9c; font-size:7px; font-weight:900; letter-spacing:.12em; }
+.vault-stat-grid strong { display:block; margin-top:8px; color:#dffff3; font-size:clamp(23px,3vw,30px); line-height:1.1; letter-spacing:-.04em; overflow-wrap:anywhere; }
+.vault-stat-grid strong.vault-stat-date { font-size:clamp(10px,1.4vw,13px); line-height:1.5; letter-spacing:0; }
+.vault-stat-grid article>span { display:block; margin-top:7px; color:#78969e; font-size:8px; line-height:1.5; }
+@media(max-width:560px) {
+  .vault-workspace-overview { padding:14px; margin-top:20px; }
+  .vault-workspace-heading { flex-direction:column; }
+  .vault-stat-grid { grid-template-columns:1fr 1fr; }
+  .vault-stat-grid article:last-child { grid-column:1 / -1; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .vault-connection.is-loading i { animation:none !important; }
+}
