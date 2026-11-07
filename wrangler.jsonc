@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "private-gmail-vault",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-11-07",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "previews": {
+    "vars": {
+      "NEXT_PUBLIC_SUPABASE_URL": "https://wqejgaqjagdvgkpwuhnr.supabase.co",
+      "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_DE2zZidVpfxetvYKkiFouA_tAf_s9cu"
+    }
+  },
+  "preview_urls": true,
+  "upload_source_maps": true,
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  }
+}

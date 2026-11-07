@@ -1,0 +1,197 @@
+"use client";
+
+import { useState } from "react";
+
+type Mode = "login" | "register" | "recover";
+
+export default function AuthPanel() {
+  const [mode, setMode] = useState<Mode>("login");
+  const [loginId, setLoginId] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [recoveryCode, setRecoveryCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [issuedCode, setIssuedCode] = useState("");
+  const [requiresAcknowledgement, setRequiresAcknowledgement] = useState(false);
+  const [enteringVault, setEnteringVault] = useState(false);
+  const [errorCycle, setErrorCycle] = useState(0);
+
+  function clearFeedback() {
+    setError("");
+    setMessage("");
+  }
+
+  function showError(value: string) {
+    setError(value);
+    setErrorCycle((current) => current + 1);
+  }
+
+  function enterVault() {
+    setEnteringVault(true);
+    window.setTimeout(() => window.location.assign("/vault"), 1950);
+  }
+
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (busy) return;
+    setBusy(true);
+    clearFeedback();
+    if (!requiresAcknowledgement) setIssuedCode("");
+
+    const endpoint = mode === "register" ? "/api/auth/register" : mode === "recover" ? "/api/auth/recovery" : "/api/auth/login";
+    const payload = mode === "register"
+      ? { loginId, password }
+      : mode === "recover"
+        ? { loginId, recoveryCode, newPassword }
+        : { loginId, password };
+
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "Request failed.");
+
+      if (data.recoveryCode) {
+        setIssuedCode(data.recoveryCode);
+        setRequiresAcknowledgement(Boolean(data.requiresAcknowledgement));
+        if (mode === "recover") {
+          setMessage(data.signedIn === false
+            ? "Your password was updated and the new code is pending. Sign in with your new Master Password to retrieve the same code."
+            : "Your Master Password is updated. Save this new Recovery Code, then confirm below.");
+        } else if (mode === "register") {
+          setMessage(data.signedIn === false
+            ? "Vault account created. Save this Recovery Code. Sign in afterward to retrieve it again if this response is lost."
+            : "Vault account created. Save this Recovery Code before continuing.");
+        } else {
+          setMessage("An unconfirmed Recovery Code was found. Save it safely, then confirm below.");
+        }
+      } else if (mode === "login") {
+        enterVault();
+        return;
+      } else {
+        setMessage("Password reset. You can now sign in with your new Master Password.");
+        setMode("login");
+        setPassword("");
+        setNewPassword("");
+      }
+    } catch (err) {
+      showError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function acknowledgeSavedCode() {
+    if (busy) return;
+    setBusy(true);
+    clearFeedback();
+    try {
+      const response = await fetch("/api/auth/recovery/acknowledge", { method: "POST" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "Could not confirm saved code.");
+      setRequiresAcknowledgement(false);
+      setIssuedCode("");
+      enterVault();
+    } catch (err) {
+      showError(err instanceof Error ? err.message : "Could not confirm saved code.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function copyCode() {
+    try {
+      await navigator.clipboard.writeText(issuedCode);
+      setMessage("Recovery Code copied. Store it somewhere safe before confirming.");
+    } catch {
+      setMessage("Copy was blocked by this browser. Select and copy the Recovery Code manually before confirming.");
+    }
+  }
+
+  const title = mode === "login" ? "Welcome back" : mode === "register" ? "Create your Vault" : "Recover access";
+  const description = mode === "login" ? "Your secure space is one step away." : mode === "register" ? "Set up your private access credentials." : "Use your saved Recovery Code to continue.";
+
+  return (
+    <div className={`auth-card${busy ? " is-busy" : ""}`}>
+      <div className="auth-card-heading">
+        <div>
+          <span className="auth-card-overline">PRIVATE ACCESS PORTAL</span>
+          <h2 key={mode} className="auth-heading-enter">{title}</h2>
+          <p>{description}</p>
+        </div>
+        <span className={`auth-card-mark${busy ? " is-processing" : ""}`} aria-hidden="true"><i /><i /><i /></span>
+      </div>
+
+      <div className="tabs" role="tablist" aria-label="Vault authentication">
+        <button type="button" role="tab" aria-selected={mode === "login"} disabled={requiresAcknowledgement || busy} className={mode === "login" ? "tab active" : "tab"} onClick={() => { setMode("login"); clearFeedback(); setIssuedCode(""); }}>Sign in</button>
+        <button type="button" role="tab" aria-selected={mode === "register"} disabled={requiresAcknowledgement || busy} className={mode === "register" ? "tab active" : "tab"} onClick={() => { setMode("register"); clearFeedback(); setIssuedCode(""); }}>Create Vault</button>
+        <button type="button" role="tab" aria-selected={mode === "recover"} disabled={requiresAcknowledgement || busy} className={mode === "recover" ? "tab active" : "tab"} onClick={() => { setMode("recover"); clearFeedback(); setIssuedCode(""); }}>Recover</button>
+      </div>
+
+      {!requiresAcknowledgement && (
+        <form onSubmit={submit} className="auth-form" aria-busy={busy}>
+          <label htmlFor="login-id">Vault Login ID</label>
+          <input id="login-id" autoComplete="username" value={loginId} onChange={e => { setLoginId(e.target.value); if (error) setError(""); }} minLength={4} maxLength={32} pattern="[A-Za-z0-9][A-Za-z0-9._-]{3,31}" required placeholder="Your private login ID" aria-invalid={Boolean(error)} />
+          {mode !== "recover" ? (
+            <>
+              <label htmlFor="master-password">Master Password</label>
+              <div className="password-field">
+                <input id="master-password" type={showPassword ? "text" : "password"} autoComplete={mode === "register" ? "new-password" : "current-password"} value={password} onChange={e => { setPassword(e.target.value); if (error) setError(""); }} minLength={12} maxLength={128} required placeholder="Enter your Master Password" aria-invalid={Boolean(error)} />
+                <button className="password-toggle" type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? "Hide Master Password" : "Show Master Password"} aria-pressed={showPassword} aria-controls="master-password">{showPassword ? "HIDE" : "SHOW"}</button>
+              </div>
+              <div className={password.length ? "password-activity is-active" : "password-activity"} aria-live="polite">
+                <span className="password-activity-bars" aria-hidden="true"><i /><i /><i /><i /></span>
+                <span>{password.length ? "INPUT RESPONSE ACTIVE" : "TYPE TO EXPLORE THE INTERFACE"}</span>
+                <small>Text stays in this form until you choose to sign in.</small>
+              </div>
+            </>
+          ) : (
+            <>
+              <label htmlFor="recovery-code">Recovery Code</label>
+              <input id="recovery-code" autoComplete="off" value={recoveryCode} onChange={e => { setRecoveryCode(e.target.value); if (error) setError(""); }} required placeholder="Enter your saved Recovery Code" aria-invalid={Boolean(error)} />
+              <label htmlFor="new-password">New Master Password</label>
+              <div className="password-field">
+                <input id="new-password" type={showNewPassword ? "text" : "password"} autoComplete="new-password" value={newPassword} onChange={e => { setNewPassword(e.target.value); if (error) setError(""); }} minLength={12} maxLength={128} required placeholder="At least 12 characters" aria-invalid={Boolean(error)} />
+                <button className="password-toggle" type="button" onClick={() => setShowNewPassword(value => !value)} aria-label={showNewPassword ? "Hide new Master Password" : "Show new Master Password"} aria-pressed={showNewPassword} aria-controls="new-password">{showNewPassword ? "HIDE" : "SHOW"}</button>
+              </div>
+            </>
+          )}
+          <button className="primary-button auth-submit" type="submit" disabled={busy}>
+            {busy ? <><span className="button-spinner" aria-hidden="true" />{mode === "login" ? "Verifying access…" : mode === "register" ? "Creating secure Vault…" : "Recovering access…"}</> : mode === "register" ? "Create secure Vault" : mode === "recover" ? "Reset Master Password" : "Sign in securely"}
+          </button>
+          {busy && <p className="auth-processing-note" role="status">Securely processing your request. Please keep this page open.</p>}
+        </form>
+      )}
+
+      {error && <div key={errorCycle} className="feedback error auth-feedback-enter" role="alert"><span className="feedback-icon" aria-hidden="true">!</span><span>{error}</span></div>}
+      {message && <div className="feedback success auth-feedback-enter" role="status"><span className="feedback-icon" aria-hidden="true">✓</span><span>{message}</span></div>}
+
+      {issuedCode && (
+        <div className="recovery-box auth-panel-enter">
+          <strong>Your Recovery Code</strong>
+          <code>{issuedCode}</code>
+          <p>Save it offline in a secure place separate from this device. Do not close this screen until you have stored it safely.</p>
+          <button type="button" className="secondary-button" onClick={copyCode}>Copy Recovery Code</button>
+          {requiresAcknowledgement && <button type="button" className="primary-button" disabled={busy} onClick={acknowledgeSavedCode}>{busy ? <><span className="button-spinner" aria-hidden="true" />Confirming…</> : "I have safely saved this code"}</button>}
+        </div>
+      )}
+      <p className="auth-footnote">Your Vault Login ID and Master Password are used only to access this private vault.</p>
+
+      {enteringVault && (
+        <div className="vault-entry-transition" role="status" aria-live="assertive">
+          <div className="vault-entry-orbit" aria-hidden="true"><span /><span /><span /><b>V</b></div>
+          <strong>ACCESS VERIFIED</strong>
+          <p>Opening your private Vault…</p>
+          <div className="vault-entry-progress" aria-hidden="true"><i /></div>
+        </div>
+      )}
+    </div>
+  );
+}

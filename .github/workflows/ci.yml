@@ -1,0 +1,116 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - "setup/**"
+      - "feature/**"
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: webhook_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d webhook_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/webhook_test
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        id: setup_node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        id: install_dependencies
+        run: npm install
+      - name: Dependency security audit
+        id: dependency_security_audit
+        run: |
+          npm audit --json > npm-audit.json || true
+          node -e 'const fs=require("fs");const a=JSON.parse(fs.readFileSync("npm-audit.json","utf8"));const v=a.vulnerabilities||{};for(const [name,item] of Object.entries(v)){const via=(item.via||[]).map(x=>typeof x==="string"?x:x.title).join("; ");console.log(JSON.stringify({package:name,severity:item.severity,isDirect:item.isDirect,range:item.range,fixAvailable:item.fixAvailable,advisories:via}));}console.log("Audit totals:",JSON.stringify(a.metadata?.vulnerabilities||{}));'
+      - name: Enforce dependency security threshold
+        id: enforce_dependency_security_threshold
+        run: npm audit --audit-level=moderate
+      - name: Audit remediation dry run
+        id: audit_remediation_dry_run
+        run: |
+          npm audit fix --dry-run --json > npm-audit-fix-dry-run.json || true
+          node -e 'const fs=require("fs");try{const a=JSON.parse(fs.readFileSync("npm-audit-fix-dry-run.json","utf8"));console.log("Dry-run package changes:",JSON.stringify({added:a.added,removed:a.removed,changed:a.changed,audited:a.audited,auditTotals:a.audit?.metadata?.vulnerabilities||a.metadata?.vulnerabilities||null}));}catch(e){console.log("Dry-run output was not JSON; inspect npm output in this job log.");}'
+      - name: Dependency tree diagnostics
+        id: dependency_tree_diagnostics
+        run: npm ls --all @typescript-eslint/eslint-plugin @typescript-eslint/parser @typescript-eslint/typescript-estree minimatch || true
+      - name: Automated tests
+        id: automated_tests
+        run: npm test
+      - name: Type check
+        id: type_check
+        run: npm run typecheck
+      - name: PostgreSQL webhook migration tests
+        id: postgres_migration_tests
+        run: bash scripts/test-github-webhook-migration.sh
+      - name: Production build
+        id: production_build
+        run: npm run build
+      - name: CI failure diagnostics
+        if: always()
+        env:
+          CHECKOUT_OUTCOME: ${{ steps.checkout.outcome || 'not-run' }}
+          SETUP_NODE_OUTCOME: ${{ steps.setup_node.outcome || 'not-run' }}
+          INSTALL_OUTCOME: ${{ steps.install_dependencies.outcome || 'not-run' }}
+          AUDIT_REPORT_OUTCOME: ${{ steps.dependency_security_audit.outcome || 'not-run' }}
+          SECURITY_THRESHOLD_OUTCOME: ${{ steps.enforce_dependency_security_threshold.outcome || 'not-run' }}
+          AUDIT_DRY_RUN_OUTCOME: ${{ steps.audit_remediation_dry_run.outcome || 'not-run' }}
+          TREE_DIAGNOSTICS_OUTCOME: ${{ steps.dependency_tree_diagnostics.outcome || 'not-run' }}
+          TESTS_OUTCOME: ${{ steps.automated_tests.outcome || 'not-run' }}
+          TYPECHECK_OUTCOME: ${{ steps.type_check.outcome || 'not-run' }}
+          POSTGRES_TESTS_OUTCOME: ${{ steps.postgres_migration_tests.outcome || 'not-run' }}
+          BUILD_OUTCOME: ${{ steps.production_build.outcome || 'not-run' }}
+        run: |
+          {
+            echo "# CI step outcomes"
+            echo
+            echo "| Step | Outcome |"
+            echo "|---|---|"
+            echo "| Checkout | $CHECKOUT_OUTCOME |"
+            echo "| Node setup | $SETUP_NODE_OUTCOME |"
+            echo "| Dependency install | $INSTALL_OUTCOME |"
+            echo "| Dependency audit report | $AUDIT_REPORT_OUTCOME |"
+            echo "| Security threshold | $SECURITY_THRESHOLD_OUTCOME |"
+            echo "| Audit dry run | $AUDIT_DRY_RUN_OUTCOME |"
+            echo "| Dependency diagnostics | $TREE_DIAGNOSTICS_OUTCOME |"
+            echo "| Automated tests | $TESTS_OUTCOME |"
+            echo "| Type check | $TYPECHECK_OUTCOME |"
+            echo "| PostgreSQL migration tests | $POSTGRES_TESTS_OUTCOME |"
+            echo "| Production build | $BUILD_OUTCOME |"
+          } | tee ci-diagnostics.md
+          cat ci-diagnostics.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload CI diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ci-diagnostics.md
+            npm-audit.json
+            npm-audit-fix-dry-run.json
+          if-no-files-found: warn
+          retention-days: 7

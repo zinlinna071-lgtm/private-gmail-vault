@@ -1,0 +1,14 @@
+{
+  "name": "argon2id-browser-compatibility-spike",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node run-browser-test.mjs"
+  },
+  "devDependencies": {
+    "@noble/hashes": "2.4.0",
+    "esbuild": "0.25.12",
+    "playwright": "1.56.1"
+  }
+}

@@ -1,0 +1,17 @@
+node_modules/
+.next/
+out/
+build/
+dist/
+.env
+.env.*
+!.env.example
+.vercel/
+*.log
+.DS_Store
+
+# Cloudflare build output and local development state
+.open-next/
+.wrangler/
+.dev.vars*
+cloudflare-env.d.ts
