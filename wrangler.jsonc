@@ -6,6 +6,7 @@
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
   "previews": {},
+  "preview_urls": true,
   "upload_source_maps": true,
   "assets": {
     "directory": ".open-next/assets",
