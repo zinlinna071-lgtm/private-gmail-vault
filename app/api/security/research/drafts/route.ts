@@ -17,14 +17,14 @@ export async function GET() {
   try {
     const actor = await getResearchActor();
     if (!actor) return reply({ error: "Research authoring is not configured or you are not signed in." }, 401);
-    if (!actor.isOwner) return reply({ error: "Owner access required." }, 403);
+    if (!actor.isOwner && !actor.isReviewer) return reply({ error: "Assigned reviewer access required." }, 403);
     const admin = createSupabaseAdminClient();
     const { data, error } = await admin.from("security_research_drafts")
       .select("id,title_en,title_my,category,workflow_state,created_at,updated_at,ready_at,reviews")
-      .eq("owner_user_id", actor.id)
       .order("updated_at", { ascending: false }).limit(50);
+    const visible = actor.isOwner ? (data ?? []) : (data ?? []).filter((draft) => ["DRAFT", "SECURITY_PRIVACY_REVIEW", "BILINGUAL_REVIEW"].includes(draft.workflow_state));
     if (error) return reply({ error: "Research drafts are not available. Check the database migration." }, 503);
-    return reply({ drafts: data ?? [] });
+    return reply({ drafts: visible });
   } catch {
     return reply({ error: "Could not load research drafts." }, 503);
   }
