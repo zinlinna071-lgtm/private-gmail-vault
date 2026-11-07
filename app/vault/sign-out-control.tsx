@@ -17,7 +17,7 @@ export default function SignOutControl() {
         cache: "no-store",
         redirect: "follow"
       });
-      if (!response.ok || !response.redirected || !new URL(response.url).pathname.startsWith("/")) {
+      if (!response.ok || !response.redirected || new URL(response.url).pathname !== "/") {
         throw new Error("Could not complete sign out. Please retry.");
       }
       // The server has revoked the session before the visual exit begins.
