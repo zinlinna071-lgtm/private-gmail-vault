@@ -112,3 +112,15 @@ Source-review refinements:
 ## Release boundary
 
 All work remains on the design branch until reviewed. No merge to `main`, production deploy, production secret change, or production database migration is implied by this design work.
+
+
+### Cross-surface consistency review — 2026-11-08
+
+Source inspection found that the authenticated Vault is not yet using the same palette as Login and the public Security surfaces:
+- Login and Security use the midnight/navy + teal/mint visual language defined in `app/security-experience.css` and `app/entry-experience.css`.
+- The authenticated Vault's `.museum-shell` in `app/globals.css` still uses warm charcoal/green, parchment-like text, and antique-gold accents.
+- The shared motion stylesheet covers all three surfaces, but shared motion does not make their color, typography, or component tokens identical.
+
+The public UI/UX architecture page has been corrected to describe this as two current visual languages. It no longer claims the entire product already shares one palette. The token table and calculated contrast samples apply to the public entry/Security palette only. Vault palette convergence is a planned design task, not an implemented change.
+
+Review boundary: this was a source-level comparison of the checked-in CSS and page composition. No browser rendering, viewport screenshot comparison, automated build, accessibility audit, or performance trace was run in this review.
