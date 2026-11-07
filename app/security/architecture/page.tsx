@@ -95,7 +95,7 @@ export default function SecurityArchitecturePage() {
             <Link href="/security/research">Research publications ↗</Link>
           </div>
         </div>
-        <div className="security-signal" aria-label="Conceptual design architecture, not a live system diagram">
+        <div className="security-signal" role="img" aria-label="Conceptual design architecture, not a live system diagram">
           <div className="signal-grid" />
           <div className="signal-ring signal-ring-one" /><div className="signal-ring signal-ring-two" />
           <div className="signal-core"><span>UX</span><small>DESIGN SYSTEM</small></div>
@@ -107,7 +107,7 @@ export default function SecurityArchitecturePage() {
       </section>
 
       <section className="security-notice">
-        <span className="notice-icon">i</span>
+        <span className="notice-icon" aria-hidden="true">i</span>
         <div><strong>Documentation status · Initial public edition</strong><p>This page records source-observed implementation, not a completed independent UX audit. Browser-level visual verification across the full device matrix, accessibility audit, and performance profiling remain outstanding unless explicitly marked otherwise.</p></div>
       </section>
 
