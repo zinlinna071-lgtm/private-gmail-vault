@@ -68,7 +68,7 @@ export default function CryptographyLearningLab() {
           {state === "ready" ? (
             <>
               <div className="crypto-digest" aria-label={"SHA-256 digest: " + digest}>{digest.match(/.{1,8}/g)?.map((chunk, index) => <span key={index}>{chunk}</span>)}</div>
-              <div className="crypto-result-meta"><span>ACTUAL INPUT SIZE <b>{byteLength} BYTES</b></span><button type="button" onClick={copyDigest} disabled={!navigator.clipboard?.writeText}>{copied ? "COPIED ✓" : "COPY DIGEST"}</button></div>
+              <div className="crypto-result-meta"><span>ACTUAL INPUT SIZE <b>{byteLength} BYTES</b></span><button type="button" onClick={copyDigest} >{copied ? "COPIED ✓" : "COPY DIGEST"}</button></div>
             </>
           ) : (
             <div className="crypto-empty">{state === "error" ? "Web Crypto is unavailable here. Open this page in a supported secure browser context." : "Your digest will appear here after calculation. No example hash is substituted."}</div>
