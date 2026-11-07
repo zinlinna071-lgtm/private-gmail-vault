@@ -96,16 +96,14 @@ export default function SecurityPage() {
           </div>
           <div className="security-hero-actions"><Link href="/security/guide">New to cybersecurity? Start here ↗</Link><a href="#interactive-lab">Try the cryptography lab <span>↓</span></a><Link href="/security/research">Research library ↗</Link></div>
         </div>
-        <div className="security-signal" aria-label="Decorative conceptual architecture illustration, not connected to live telemetry">
-          <div className="signal-grid" />
-          <div className="signal-ring signal-ring-one" /><div className="signal-ring signal-ring-two" />
-          <div className="signal-core"><span>V</span><small>VAULT MODEL</small></div>
-          <div className="signal-node signal-node-a"><i /> IDENTITY BOUNDARY</div>
-          <div className="signal-node signal-node-b"><i /> CRYPTO BOUNDARY</div>
-          <div className="signal-node signal-node-c"><i /> API BOUNDARY</div>
-          <div className="signal-scan" />
-          <div className="signal-caption">CONCEPTUAL MAP · NOT LIVE TELEMETRY · NOT A TEST RUN</div>
-        </div>
+        <aside className="security-reading-panel" aria-label="How to read this security page">
+          <span className="reading-panel-kicker">A CLEAR GUIDE · အလွယ်တကူဖတ်ရှုရန်</span>
+          <h2>Three things to look for.</h2>
+          <div className="reading-panel-item"><b>01</b><span><strong>What is being checked?</strong><small>The named feature and exact test scope.</small></span></div>
+          <div className="reading-panel-item"><b>02</b><span><strong>What evidence exists?</strong><small>The original test record, code revision, and environment.</small></span></div>
+          <div className="reading-panel-item"><b>03</b><span><strong>What is still unknown?</strong><small>Untested areas and limits are shown openly.</small></span></div>
+          <p lang="my">စမ်းသပ်ထားတဲ့အရာ၊ အထောက်အထားအစစ်နဲ့ မစစ်ဆေးရသေးတဲ့အချက်တွေကို သီးခြားခွဲပြထားပါတယ်။</p>
+        </aside>
       </section>
 
       <section className="security-notice">
