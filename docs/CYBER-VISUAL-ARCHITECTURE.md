@@ -69,6 +69,7 @@ When no real data is available, show an explicit empty/unavailable state. Demons
 - [ ] Establish a consistent operations shell, navigation, status language, and responsive grid.
 - [x] Distinguish live telemetry, historical evidence, test fixtures, and decorative visuals in the public Security Operations page.
 - [x] Add source-verified timestamps and commit provenance to the published historical CI evidence cards.
+- [x] Align public dashboard section numbering and keep local tools clearly separate from system telemetry.
 - [ ] Build accessible event and metric transitions driven by actual data changes.
 
 ### Phase C — research publication experience
