@@ -216,11 +216,13 @@ export default function VaultManager() {
 
   async function copyValue(value: string, label: string) {
     if (!value) return;
+    setError("");
+    setMessage("");
     try {
       await navigator.clipboard.writeText(value);
       setMessage(label + " copied to clipboard.");
     } catch {
-      setError("Clipboard access is unavailable. Please copy the value manually.");
+      setError("Clipboard access is unavailable. Please copy the revealed value manually.");
     }
   }
 
@@ -431,17 +433,17 @@ export default function VaultManager() {
 
             <div className="museum-detail-fields">
               <section>
-                <div className="museum-detail-label"><span>EMAIL / USERNAME</span><button type="button" onClick={() => setShowIdentity(value => !value)}>{showIdentity ? "HIDE" : "REVEAL"}</button></div>
+                <div className="museum-detail-label"><span>EMAIL / USERNAME</span><button type="button" aria-pressed={showIdentity} onClick={() => setShowIdentity(value => !value)}>{showIdentity ? "HIDE" : "REVEAL"}</button></div>
                 <p className="museum-sensitive-value">{showIdentity ? activeItem.username || "No identifier saved" : activeItem.username ? "••••••••••••" : "Not saved"}</p>
                 {showIdentity && activeItem.username && <button className="museum-inline-action" type="button" onClick={() => void copyValue(activeItem.username, "Identifier")}>Copy identifier</button>}
               </section>
               <section>
-                <div className="museum-detail-label"><span>PASSWORD</span><button type="button" onClick={() => setShowPassword(value => !value)}>{showPassword ? "HIDE" : "REVEAL"}</button></div>
+                <div className="museum-detail-label"><span>PASSWORD</span><button type="button" aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}>{showPassword ? "HIDE" : "REVEAL"}</button></div>
                 <p className="museum-sensitive-value">{showPassword ? activeItem.password || "No password saved" : activeItem.password ? "••••••••••••" : "Not saved"}</p>
                 {showPassword && activeItem.password && <button className="museum-inline-action" type="button" onClick={() => void copyValue(activeItem.password, "Password")}>Copy password</button>}
               </section>
               <section>
-                <div className="museum-detail-label"><span>BACKUP CODES</span><button type="button" onClick={() => setShowCodes(value => !value)}>{showCodes ? "HIDE" : "REVEAL"}</button></div>
+                <div className="museum-detail-label"><span>BACKUP CODES</span><button type="button" aria-pressed={showCodes} onClick={() => setShowCodes(value => !value)}>{showCodes ? "HIDE" : "REVEAL"}</button></div>
                 <pre className="museum-sensitive-value">{showCodes ? activeItem.backupCodes || "No backup codes saved" : activeItem.backupCodes ? "••••••••••••••••" : "Not saved"}</pre>
                 {showCodes && activeItem.backupCodes && <button className="museum-inline-action" type="button" onClick={() => void copyValue(activeItem.backupCodes, "Backup codes")}>Copy backup codes</button>}
               </section>
