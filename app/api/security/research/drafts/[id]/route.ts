@@ -1,3 +1,20 @@
+import { NextResponse } from "next/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { isSameOriginRequest } from "@/lib/auth/vault";
+import { isJsonContentType } from "@/lib/auth/content-type";
+import { readBoundedJson } from "@/lib/auth/bounded-json";
+import { createResearchDraftSchema } from "@/lib/security-research/workflow";
+import { getResearchActor } from "@/lib/security-research/workflow-auth";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+function reply(body: unknown, status = 200) {
+  return NextResponse.json(body, { status, headers: { "Cache-Control": "no-store, max-age=0", Pragma: "no-cache" } });
+}
+
+type Context = { params: Promise<{ id: string }> };
+
 export async function GET(_request: Request, context: Context) {
   const actor = await getResearchActor();
   if (!actor || (!actor.isOwner && !actor.isReviewer)) return reply({ error: "Research review access required." }, 401);
@@ -20,23 +37,6 @@ export async function GET(_request: Request, context: Context) {
     return reply({ error: "Could not load the research draft." }, 503);
   }
 }
-
-import { NextResponse } from "next/server";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { isSameOriginRequest } from "@/lib/auth/vault";
-import { isJsonContentType } from "@/lib/auth/content-type";
-import { readBoundedJson } from "@/lib/auth/bounded-json";
-import { createResearchDraftSchema } from "@/lib/security-research/workflow";
-import { getResearchActor } from "@/lib/security-research/workflow-auth";
-
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-
-function reply(body: unknown, status = 200) {
-  return NextResponse.json(body, { status, headers: { "Cache-Control": "no-store, max-age=0", Pragma: "no-cache" } });
-}
-
-type Context = { params: Promise<{ id: string }> };
 
 export async function PATCH(request: Request, context: Context) {
   if (!isSameOriginRequest(request)) return reply({ error: "Invalid request origin." }, 403);
