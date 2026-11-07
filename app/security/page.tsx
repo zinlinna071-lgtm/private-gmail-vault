@@ -79,7 +79,7 @@ export default function SecurityPage() {
           <span>PRIVATE ACCOUNT VAULT <small>SECURITY OPERATIONS CENTER</small></span>
         </Link>
         <nav className="security-nav-links" aria-label="Security navigation">
-          <a href="#interactive-lab">Interactive lab</a><a href="#surface">Test scope</a><Link href="/security/research">Research</Link>
+          <a href="#interactive-lab">Interactive lab</a><a href="#surface">Test scope</a><Link href="/security/architecture">UI/UX architecture</Link><Link href="/security/research">Research</Link>
         </nav>
         <span className="security-nav-status"><i /> PUBLIC · READ ONLY</span>
       </header>
