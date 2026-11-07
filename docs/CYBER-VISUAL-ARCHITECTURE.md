@@ -160,3 +160,16 @@ A second source-only interaction pass extends the Vault keyboard flow:
 - Delete still requires an explicit second action on **Confirm delete**. The data/API behavior is unchanged.
 
 Status: **IMPLEMENTED IN SOURCE; NOT BROWSER-VERIFIED**. Native dialog focus restoration, mobile viewport behavior, touch scrolling, and screen-reader announcements still require runtime QA.
+
+
+### Vault sensitive-field and clipboard feedback pass — 2026-11-08
+
+A source-only review of app/vault/vault-manager.tsx confirmed:
+- Username, password, and backup-code values are concealed by default in the record inspector.
+- Changing the active record resets all three reveal states; closing the inspector clears the active record and therefore returns the next opening to the concealed state.
+- Reveal controls now expose their current on/off state through aria-pressed.
+- Clipboard success feedback contains only the field label (for example, “Password copied to clipboard”), never the copied secret. A new copy attempt clears stale feedback first; failure asks the user to copy the currently revealed value manually.
+- The application cannot clear or control the operating-system clipboard after a successful copy. Users should treat copied credentials as remaining available to other apps with clipboard access until the OS or user replaces/clears them.
+- No API, authentication, encryption, persistence, or database behavior was changed in this UI/accessibility pass.
+
+Status: IMPLEMENTED IN SOURCE; NOT RUNTIME-VERIFIED. Browser checks are still required for reveal state announcements, clipboard permission success/failure, mobile behavior, and focus/announcement quality with assistive technology. No claim is made that clipboard contents are automatically cleared.
