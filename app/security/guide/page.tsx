@@ -154,6 +154,83 @@ export default function SecurityGuidePage() {
           </div>
         </section>
 
+        <section className={styles.visualSection} aria-labelledby="visual-title">
+          <div className={styles.sectionHeading}>
+            <span>LEARN BY LOOKING</span>
+            <h2 id="visual-title">See what the words mean.</h2>
+            <p>These are simplified teaching diagrams, not live system activity or a claim that every step is already implemented in this Vault.</p>
+            <p className={styles.myanmar}>အောက်ပါပုံတွေက နားလည်လွယ်စေဖို့ ရှင်းပြထားတဲ့ သင်ခန်းစာပုံစံများပါ။ တကယ့် Live activity မဟုတ်သလို Vault ထဲမှာ အဆင့်တိုင်း အကောင်အထည်ဖော်ပြီးပြီလို့လည်း မဆိုလိုပါဘူး။</p>
+          </div>
+
+          <article className={styles.visualCard}>
+            <div className={styles.visualCardHead}>
+              <div><span>01 / THE BASIC IDEA</span><h3>How encryption changes information</h3></div>
+              <span className={styles.conceptTag}>CONCEPT ONLY</span>
+            </div>
+            <div className={styles.encryptionFlow} role="img" aria-label="Conceptual diagram: readable information goes through encryption with a secret key and becomes protected unreadable data.">
+              <div className={styles.flowNode}>
+                <span className={styles.nodeIcon}>Aa</span>
+                <b>Readable information</b>
+                <small>Example: a private note</small>
+                <code>My secret note…</code>
+              </div>
+              <div className={styles.flowArrow}><span>→</span><small>ENCRYPT</small></div>
+              <div className={styles.flowNode}>
+                <span className={styles.nodeIcon}>⌑</span>
+                <b>Encryption + key</b>
+                <small>A mathematical process</small>
+                <code>Correct key required</code>
+              </div>
+              <div className={styles.flowArrow}><span>→</span><small>PROTECT</small></div>
+              <div className={styles.flowNode + " " + styles.protectedNode}>
+                <span className={styles.nodeIcon}>▦</span>
+                <b>Protected data</b>
+                <small>Not readable as the original note</small>
+                <code>8F · A2 · 91 · …</code>
+              </div>
+            </div>
+            <p className={styles.visualCaption}>The sample blocks are illustrative placeholders, not actual encrypted Vault data.</p>
+            <p className={styles.myanmar}>အချက်အလက်ကို encryption လုပ်လိုက်ရင် မူရင်းစာသားအတိုင်း ဖတ်လို့မရတော့ပါဘူး။ ပြန်ဖတ်ဖို့ သက်ဆိုင်ရာ key လိုအပ်ပါတယ်။ ပုံထဲက စာသားနဲ့ code တွေက ဥပမာသာ ဖြစ်ပါတယ်။</p>
+          </article>
+
+          <article className={styles.visualCard}>
+            <div className={styles.visualCardHead}>
+              <div><span>02 / A TAMPER CHECK</span><h3>What happens if protected data is changed?</h3></div>
+              <span className={styles.conceptTag}>CONCEPT ONLY</span>
+            </div>
+            <div className={styles.tamperFlow} role="img" aria-label="Conceptual tamper test: original protected data is accepted; altered protected data is rejected by integrity verification.">
+              <div className={styles.tamperCase}>
+                <span className={styles.caseLabel}>CASE A · UNCHANGED</span>
+                <div className={styles.dataStrip}><i/><i/><i/><i/><i/><i/></div>
+                <div className={styles.verifyArrow}>VERIFY <span>→</span></div>
+                <div className={styles.acceptResult}><b>ACCEPT</b><small>Integrity check passes</small></div>
+              </div>
+              <div className={styles.tamperCase}>
+                <span className={styles.caseLabel}>CASE B · ALTERED</span>
+                <div className={styles.dataStrip + " " + styles.alteredStrip}><i/><i/><i/><i/><i/><i/></div>
+                <div className={styles.verifyArrow}>VERIFY <span>→</span></div>
+                <div className={styles.rejectResult}><b>REJECT</b><small>Integrity check fails</small></div>
+              </div>
+            </div>
+            <p className={styles.visualCaption}>A conceptual explanation of authenticated encryption. This graphic does not run a test or display live telemetry.</p>
+            <p className={styles.myanmar}>မူရင်းအတိုင်းရှိတဲ့ protected data ကို စစ်ဆေးမှုက လက်ခံနိုင်ပါတယ်။ တစ်စုံတစ်ယောက်က ခွင့်ပြုချက်မရှိဘဲ ပြောင်းလဲထားရင် စစ်ဆေးမှုက ပယ်ချသင့်ပါတယ်။ ဒီပုံက သင်ခန်းစာပုံသာဖြစ်ပြီး တကယ့်စမ်းသပ်မှု မလုပ်ပါဘူး။</p>
+          </article>
+
+          <article className={styles.visualCard}>
+            <div className={styles.visualCardHead}>
+              <div><span>03 / FOLLOW THE EVIDENCE</span><h3>Not all test results prove the same thing</h3></div>
+              <span className={styles.conceptTag}>HOW TO READ</span>
+            </div>
+            <div className={styles.evidenceLadder}>
+              <div><span>01</span><b>Source review</b><small>Read the code and design</small><em>Shows what appears to be implemented</em></div>
+              <div><span>02</span><b>Local test</b><small>Run a test on one machine</small><em>Shows what passed in that local environment</em></div>
+              <div><span>03</span><b>Browser / hosted CI</b><small>Run across named browser engines</small><em>Shows compatibility only for completed runs</em></div>
+              <div><span>04</span><b>Physical device test</b><small>Test on real phones and hardware</small><em>Shows device-specific behavior and performance</em></div>
+            </div>
+            <p className={styles.myanmar}>Code ကိုဖတ်စစ်တာ၊ ကိုယ့်စက်မှာ စမ်းတာ၊ Browser အမျိုးမျိုးမှာ စမ်းတာ၊ တကယ့်ဖုန်းပေါ်မှာ စမ်းတာတွေဟာ အထောက်အထားအမျိုးအစား မတူကြပါဘူး။ တစ်ခုအောင်မြင်တာနဲ့ ကျန်တာအားလုံး အောင်မြင်တယ်လို့ မဆိုနိုင်ပါဘူး။</p>
+          </article>
+        </section>
+
         <section className={styles.resultSection} aria-labelledby="result-title">
           <div className={styles.sectionHeading}>
             <span>READING THE STATUS</span>
