@@ -82,23 +82,23 @@ const glossary = [
   },
   {
     term: "Argon2id",
-    meaning: "A password-based key-derivation method that makes repeated password guessing more expensive for an attacker. It does not rescue a weak password, and real settings must be measured on supported devices.",
-    myanmar: "Password ကနေ encryption key အတွက် အသုံးပြုမယ့်တန်ဖိုးကို ထုတ်ပေးတဲ့ နည်းလမ်းပါ။ Password ကို ခန့်မှန်းစမ်းသပ်ဖို့ ပိုကုန်ကျစေပါတယ်။ Password အားနည်းနေရင်တော့ ဒီနည်းလမ်းတစ်ခုတည်းနဲ့ မကာကွယ်နိုင်ပါဘူး။"
+    meaning: "A password-based key-derivation method that makes repeated password guessing more expensive for an attacker. It does not rescue a weak password. In this project, candidate compatibility has been tested, but production unlock settings and device performance are not approved.",
+    myanmar: "Password ကနေ encryption key အတွက် အသုံးပြုမယ့်တန်ဖိုးကို ထုတ်ပေးတဲ့ နည်းလမ်းပါ။ Password ကို ခန့်မှန်းစမ်းသပ်ဖို့ ပိုကုန်ကျစေပါတယ်။ Password အားနည်းနေရင် မကာကွယ်နိုင်ပါဘူး။ ဒီ Project မှာ နည်းပညာအလုပ်လုပ်ပုံကို စမ်းသပ်ထားပေမယ့် တကယ့်အသုံးပြုမယ့် setting နဲ့ ဖုန်းအမျိုးမျိုးရဲ့ မြန်နှုန်းကို အတည်မပြုရသေးပါဘူး။"
   },
   {
     term: "AES-GCM",
-    meaning: "An encryption method that protects the contents and checks whether the protected data or its associated context was changed. It still depends on keeping the key secret and using the method correctly.",
-    myanmar: "အချက်အလက်ကို ဖတ်မရအောင် ကာကွယ်ပေးသလို လမ်းကြောင်းမှာ ဒေတာပြောင်းလဲထားတာကိုလည်း စစ်ဆေးနိုင်တဲ့ encryption နည်းလမ်းပါ။ ဒါပေမယ့် key ပေါက်ကြားသွားရင် မကာကွယ်နိုင်ပါဘူး။"
+    meaning: "An encryption method that protects contents and detects changes to the protected data or its associated context. It still depends on keeping the key secret and using the method correctly. The isolated test checks the browser's built-in primitive, not the complete Vault save-and-unlock flow.",
+    myanmar: "အချက်အလက်ကို ဖတ်မရအောင် ကာကွယ်ပေးသလို ဒေတာပြောင်းလဲထားတာကိုလည်း သိရှိနိုင်တဲ့ encryption နည်းလမ်းပါ။ Key ပေါက်ကြားရင် မကာကွယ်နိုင်ပါဘူး။ ဒီစမ်းသပ်မှုက Browser ထဲက encryption နည်းပညာကိုသာ စစ်တာဖြစ်ပြီး Vault တစ်ခုလုံးရဲ့ သိမ်းဆည်းခြင်းနဲ့ ပြန်ဖွင့်ခြင်း လုပ်ငန်းစဉ်ကို အတည်ပြုတာ မဟုတ်ပါဘူး။"
   },
   {
     term: "HKDF",
-    meaning: "A method for creating separate purpose-specific keys from an already strong secret. It does not turn a weak password into a strong one.",
-    myanmar: "ရှိပြီးသား ခိုင်မာတဲ့ လျှို့ဝှက်တန်ဖိုးတစ်ခုကနေ အသုံးပြုမယ့်ရည်ရွယ်ချက် မတူတဲ့ key များကို ခွဲထုတ်ပေးတဲ့ နည်းလမ်းပါ။ Password အားနည်းမှုကို ပြုပြင်ပေးတာ မဟုတ်ပါဘူး။"
+    meaning: "A method for creating separate purpose-specific keys from an already strong secret. It does not turn a weak password into a strong one. Here it is checked as an isolated browser primitive; it is not yet an active HKDF helper in the Vault application.",
+    myanmar: "ရှိပြီးသား ခိုင်မာတဲ့ လျှို့ဝှက်တန်ဖိုးတစ်ခုကနေ ရည်ရွယ်ချက်မတူတဲ့ key များကို ခွဲထုတ်ပေးတဲ့ နည်းလမ်းပါ။ Password အားနည်းမှုကို ပြုပြင်ပေးတာ မဟုတ်ပါဘူး။ ဒီ Project မှာ browser နည်းပညာအဆင့်ကိုသာ သီးခြားစမ်းထားပြီး Vault application ထဲမှာ တကယ်ချိတ်ဆက်အသုံးပြုနေတဲ့အဆင့် မရောက်သေးပါဘူး။"
   },
   {
     term: "Browser engine",
-    meaning: "The software inside a browser that handles web pages and browser features. Testing three engines checks compatibility, not every security property of the whole app or every phone.",
-    myanmar: "Website ကို ဖွင့်ပြသပြီး browser အလုပ်လုပ်စေတဲ့ အတွင်းပိုင်းနည်းပညာပါ။ Browser သုံးမျိုးမှာ စမ်းတာက အဲဒီပတ်ဝန်းကျင်တွေမှာ အလုပ်လုပ်မလုပ် စစ်တာသာဖြစ်ပြီး App တစ်ခုလုံး သို့မဟုတ် ဖုန်းတိုင်း လုံခြုံကြောင်း အာမခံတာ မဟုတ်ပါဘူး။"
+    meaning: "The software inside a browser that handles web pages and browser features. A three-engine check compares compatibility; the new HKDF/AES-GCM browser matrix has not run yet, and desktop browsers do not replace physical-phone testing.",
+    myanmar: "Website ကို ဖွင့်ပြသပေးတဲ့ browser အတွင်းပိုင်းနည်းပညာပါ။ Browser သုံးမျိုးစမ်းတာက အလုပ်လုပ်ပုံ ကိုက်ညီမှုကို စစ်တာသာဖြစ်ပါတယ်။ HKDF/AES-GCM browser စမ်းသပ်ချက်အသစ်က မအောင်မြင်သေးတာမဟုတ်ဘဲ မစတင်နိုင်သေးတာပါ။ Desktop browser ရလဒ်က တကယ့်ဖုန်းစမ်းသပ်မှုကို အစားမထိုးနိုင်ပါဘူး။"
   }
 ];
 
