@@ -19,6 +19,8 @@ const checks = [
     name: "RFC 9106 Argon2id known-answer test",
     scope: "Node.js · isolated test harness",
     run: "42272387331",
+    date: "2026-11-06 18:37 UTC",
+    commit: "889ee746033675175dfb5496e6e57eb6ed7c3821",
     job: "RFC 9106 §5.3 known-answer test",
     href: "https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42272387331",
     detail: "The candidate implementation matched the published RFC 9106 known-answer vector.",
@@ -28,6 +30,8 @@ const checks = [
     name: "Argon2id browser compatibility",
     scope: "Chromium · hosted Linux",
     run: "42281120467",
+    date: "2026-11-06 19:36 UTC",
+    commit: "70cbd9eadd3970896fc49852a07f7a28ec2dfab3",
     job: "Chromium RFC 9106 compatibility test",
     href: "https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42281120467",
     detail: "The browser RFC vector and mutation checks completed successfully in Chromium.",
@@ -37,6 +41,8 @@ const checks = [
     name: "Cross-engine browser verification",
     scope: "Chromium · Firefox · WebKit",
     run: "42281411743",
+    date: "2026-11-06 19:38 UTC",
+    commit: "df67887f6282e206d4a9c6b416523ab6e5c05c3e",
     job: "Chromium Firefox and WebKit RFC 9106 tests",
     href: "https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42281411743",
     detail: "The RFC vector and mutation checks completed successfully across the three hosted browser engines.",
@@ -128,7 +134,7 @@ export default function SecurityPage() {
 
       <section className="security-section" id="evidence">
         <div className="security-section-heading"><div><span className="section-index">02 / VERIFIED CI EVIDENCE</span><h2>Checks with inspectable records.</h2></div><span className="section-aside">HISTORICAL RUNS · NOT LIVE</span></div>
-        <p className="security-lead">The records below are completed GitHub Actions jobs that were inspected. They are historical test evidence, not a live attack feed, and their success applies only to the named checks.</p>
+        <p className="security-lead">The records below are completed GitHub Actions jobs whose status, source branch, commit, and timestamps were checked against GitHub. They are historical test evidence, not a live attack feed, and their success applies only to the named checks.</p>
         <div className="security-evidence-list">
           {checks.map((check) => (
             <article className="security-evidence" key={check.run}>
@@ -136,7 +142,8 @@ export default function SecurityPage() {
               <div className="evidence-copy">
                 <div className="evidence-boundary">{check.boundary}</div>
                 <h3>{check.name}</h3><p>{check.scope}</p>
-                <small>GitHub Actions · Run #{check.run}</small>
+                <small>GitHub Actions · Run #{check.run} · {check.date}</small>
+                <small className="evidence-provenance">SOURCE COMMIT <code>{check.commit}</code></small>
                 <p className="evidence-detail">{check.detail}</p>
                 <code className="evidence-job">{check.job}</code>
               </div>
