@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 type Mode = "login" | "register" | "recover";
 
@@ -17,9 +17,12 @@ export default function AuthPanel() {
   const [busy, setBusy] = useState(false);
   const [issuedCode, setIssuedCode] = useState("");
   const [requiresAcknowledgement, setRequiresAcknowledgement] = useState(false);
+  const [showRegistrationNotice, setShowRegistrationNotice] = useState(false);
+  const [registrationAcknowledged, setRegistrationAcknowledged] = useState(false);
   const [enteringVault, setEnteringVault] = useState(false);
   const [demoEntry, setDemoEntry] = useState(false);
   const [errorCycle, setErrorCycle] = useState(0);
+  const formRef = useRef<HTMLFormElement>(null);
 
   function clearFeedback() {
     setError("");
@@ -39,6 +42,14 @@ export default function AuthPanel() {
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy) return;
+
+    // Registration credentials stay in the form. No account-creation request
+    // is sent until the user explicitly accepts the separate responsibility notice.
+    if (mode === "register" && !registrationAcknowledged) {
+      setShowRegistrationNotice(true);
+      return;
+    }
+
     setBusy(true);
     clearFeedback();
     if (!requiresAcknowledgement) setIssuedCode("");
@@ -99,6 +110,18 @@ export default function AuthPanel() {
     }
   }
 
+  function acceptRegistrationNotice() {
+    setRegistrationAcknowledged(true);
+    setShowRegistrationNotice(false);
+    // Let React commit the acknowledgement state before re-submitting the form.
+    window.setTimeout(() => formRef.current?.requestSubmit(), 0);
+  }
+
+  function cancelRegistrationNotice() {
+    setShowRegistrationNotice(false);
+    setRegistrationAcknowledged(false);
+  }
+
   async function acknowledgeSavedCode() {
     if (busy) return;
     setBusy(true);
@@ -141,13 +164,13 @@ export default function AuthPanel() {
       </div>
 
       <div className="tabs" role="tablist" aria-label="Vault authentication">
-        <button type="button" role="tab" aria-selected={mode === "login"} disabled={requiresAcknowledgement || busy} className={mode === "login" ? "tab active" : "tab"} onClick={() => { setMode("login"); clearFeedback(); setIssuedCode(""); }}>Sign in</button>
-        <button type="button" role="tab" aria-selected={mode === "register"} disabled={requiresAcknowledgement || busy} className={mode === "register" ? "tab active" : "tab"} onClick={() => { setMode("register"); clearFeedback(); setIssuedCode(""); }}>Create Vault</button>
-        <button type="button" role="tab" aria-selected={mode === "recover"} disabled={requiresAcknowledgement || busy} className={mode === "recover" ? "tab active" : "tab"} onClick={() => { setMode("recover"); clearFeedback(); setIssuedCode(""); }}>Recover</button>
+        <button type="button" role="tab" aria-selected={mode === "login"} disabled={requiresAcknowledgement || busy} className={mode === "login" ? "tab active" : "tab"} onClick={() => { setMode("login"); setRegistrationAcknowledged(false); setShowRegistrationNotice(false); clearFeedback(); setIssuedCode(""); }}>Sign in</button>
+        <button type="button" role="tab" aria-selected={mode === "register"} disabled={requiresAcknowledgement || busy} className={mode === "register" ? "tab active" : "tab"} onClick={() => { setMode("register"); setRegistrationAcknowledged(false); setShowRegistrationNotice(false); clearFeedback(); setIssuedCode(""); }}>Create Vault</button>
+        <button type="button" role="tab" aria-selected={mode === "recover"} disabled={requiresAcknowledgement || busy} className={mode === "recover" ? "tab active" : "tab"} onClick={() => { setMode("recover"); setRegistrationAcknowledged(false); setShowRegistrationNotice(false); clearFeedback(); setIssuedCode(""); }}>Recover</button>
       </div>
 
       {!requiresAcknowledgement && (
-        <form onSubmit={submit} className="auth-form" aria-busy={busy}>
+        <form ref={formRef} onSubmit={submit} className="auth-form" aria-busy={busy}>
           <label htmlFor="login-id">Vault Login ID</label>
           <input id="login-id" autoComplete="username" value={loginId} onChange={e => { setLoginId(e.target.value); if (error) setError(""); }} minLength={4} maxLength={32} pattern="[A-Za-z0-9][A-Za-z0-9._-]{3,31}" required={mode !== "login"} placeholder="Your private login ID" aria-invalid={Boolean(error)} />
           {mode !== "recover" ? (
@@ -194,6 +217,27 @@ export default function AuthPanel() {
         </div>
       )}
       <p className="auth-footnote">Your Vault Login ID and Master Password are used only to access this private vault.</p>
+
+      {showRegistrationNotice && (
+        <div className="registration-notice-backdrop" role="presentation">
+          <section className="registration-notice" role="dialog" aria-modal="true" aria-labelledby="registration-notice-title" aria-describedby="registration-notice-description">
+            <div className="registration-notice-topline"><span>BEFORE YOU CREATE YOUR VAULT</span><span className="registration-notice-mark" aria-hidden="true">!</span></div>
+            <h2 id="registration-notice-title">Your Vault. Your responsibility.</h2>
+            <p id="registration-notice-description" className="registration-notice-intro">Please review these points before creating your account. Your credentials have not been submitted.</p>
+            <div className="registration-notice-content">
+              <article><b>01</b><div><strong>Your choice, your data</strong><p>Storing account names, passwords, backup codes, or other sensitive information is entirely your choice. You decide what to place in your Vault.</p></div></article>
+              <article><b>02</b><div><strong>Protect your access</strong><p>You are responsible for safeguarding your device, Login ID, Master Password, and any Vault recovery information. Keep recovery material somewhere safe and separate.</p></div></article>
+              <article><b>03</b><div><strong>Recovery may not be possible</strong><p>If you lose the required unlock or recovery information, your stored records may become permanently inaccessible. Do not assume support or the Owner can restore them.</p></div></article>
+              <article><b>04</b><div><strong>Understand the current security status</strong><p>Security testing has defined limits. No system is risk-free. The public Security page explains which protections are implemented, which remain unverified, and what should not yet be stored.</p><a href="/security" target="_blank" rel="noreferrer">Review Security &amp; Transparency ↗</a></div></article>
+            </div>
+            <p className="registration-notice-final">By choosing “I understand &amp; create account”, you confirm that you have read this notice and choose to proceed. This acknowledgement does not change the technical security status or remove rights that cannot lawfully be waived.</p>
+            <div className="registration-notice-actions">
+              <button type="button" className="secondary-button" onClick={cancelRegistrationNotice}>Go back</button>
+              <button type="button" className="primary-button" onClick={acceptRegistrationNotice}>I understand &amp; create account</button>
+            </div>
+          </section>
+        </div>
+      )}
 
       {enteringVault && (
         <div className="vault-entry-transition" role="status" aria-live="assertive">
