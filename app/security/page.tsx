@@ -85,7 +85,7 @@ export default function SecurityPage() {
           <span>PRIVATE ACCOUNT VAULT <small>SECURITY OPERATIONS CENTER</small></span>
         </Link>
         <nav className="security-nav-links" aria-label="Security navigation">
-          <Link href="/security/guide">Start here</Link><a href="#interactive-lab">Interactive lab</a><a href="#surface">Test scope</a><Link href="/security/architecture">UI/UX architecture</Link><Link href="/security/research">Research</Link>
+          <Link href="/security/guide">Start here</Link><a href="#interactive-lab">Interactive lab</a><a href="#surface">Test scope</a><Link href="/security/architecture">UI/UX architecture</Link><Link href="/security/research">Research</Link><a href="#owner-privacy">Owner privacy</a>
         </nav>
         <span className="security-nav-status"><i /> PUBLIC · READ ONLY</span>
       </header>
@@ -114,7 +114,18 @@ export default function SecurityPage() {
 
       <section className="security-notice">
         <span className="notice-icon">!</span>
-        <div><strong>Prototype status — not independently audited</strong><p>Zero-knowledge is a target architecture, not a completed feature. The current API still decrypts vault data server-side, and the legacy authentication flow remains. Do not store high-value real credentials in this prototype. No real-user account is used as a security-test target.</p></div>
+        <div><strong>Critical privacy limitation — Owner/server-readable prototype</strong><p>Owner-inaccessible encryption is a design goal, not a live guarantee. The current Vault API receives plaintext account fields and decrypts records on the server using server-held key material. A sufficiently privileged server operator can technically access plaintext through this legacy path. Do not store real or high-value credentials here. This disclosure remains until the ciphertext-only client encryption migration is complete and independently verified.</p></div>
+      </section>
+
+      <section className="security-section" id="owner-privacy">
+        <div className="security-section-heading"><div><span className="section-index">PRIVACY COMMITMENT / OWNER-INACCESSIBLE VAULT</span><h2>The Owner must not be able to read your records.</h2></div><span className="section-aside">TARGET · NOT YET VERIFIED</span></div>
+        <p className="security-lead">Our approved target architecture separates Owner administration from Secondary Vault contents. The Master/Owner may operate the private Research Lab, but must not possess a Secondary user's decryption key, impersonation path, or recovery override. Records must be encrypted in the user's browser before transmission.</p>
+        <div className="security-module-grid">
+          <article className="security-module"><span className="module-number">01</span><span className="module-status status-untested">NOT IMPLEMENTED</span><h3>Client-held keys</h3><p>Each Secondary Vault uses its own random data key, wrapped by a key derived locally from the user's Vault Unlock Secret. The server receives ciphertext and wrapped-key metadata only.</p></article>
+          <article className="security-module"><span className="module-number">02</span><span className="module-status status-untested">NOT VERIFIED</span><h3>No Owner override</h3><p>Owner tools must not include record decryption, user impersonation, secret reveal, shared master keys, or support-side recovery backdoors.</p></article>
+          <article className="security-module"><span className="module-number">03</span><span className="module-status status-untested">AUDIT REQUIRED</span><h3>Evidence before claims</h3><p>Network inspection, source review, cross-user isolation tests, cryptographic tests, deployment provenance, and independent security review must support any public guarantee.</p></article>
+        </div>
+        <p className="security-footnote">Important: this is a future privacy commitment, not a description of the running prototype. The service cannot honestly claim that its Owner or server is technically unable to read records until the release gates are complete. <a href="https://github.com/zinlinna071-lgtm/private-gmail-vault/blob/design/cyber-visual-architecture/docs/OWNER-INACCESSIBLE-VAULT-PRIVACY-GUARANTEE.md" target="_blank" rel="noreferrer">Read the full privacy guarantee, limitations, and evidence plan ↗</a>.</p>
       </section>
 
       <LabActivityConsole />
