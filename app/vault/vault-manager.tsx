@@ -54,6 +54,9 @@ export default function VaultManager() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const inspectorRef = useRef<HTMLDialogElement>(null);
+  const firstAccountInputRef = useRef<HTMLInputElement>(null);
+  const addAccountButtonRef = useRef<HTMLButtonElement>(null);
+  const wasFormOpenRef = useRef(false);
 
   const loadItems = useCallback(async () => {
     setLoading(true);
@@ -95,6 +98,15 @@ export default function VaultManager() {
     () => items.find(item => item.id === activeItemId) ?? null,
     [items, activeItemId]
   );
+
+  useEffect(() => {
+    if (showForm) {
+      firstAccountInputRef.current?.focus();
+    } else if (wasFormOpenRef.current) {
+      addAccountButtonRef.current?.focus();
+    }
+    wasFormOpenRef.current = showForm;
+  }, [showForm]);
 
   useEffect(() => {
     const dialog = inspectorRef.current;
@@ -246,7 +258,7 @@ export default function VaultManager() {
             <option value="name">Name A–Z</option>
           </select>
         </label>
-        <button className="museum-add-button" type="button" onClick={startNew}>
+        <button ref={addAccountButtonRef} className="museum-add-button" type="button" onClick={startNew}>
           <span aria-hidden="true">＋</span> Add account
         </button>
       </div>
@@ -255,11 +267,11 @@ export default function VaultManager() {
       {message && <p className="museum-feedback is-success" role="status">{message}</p>}
 
       {showForm && (
-        <form className="museum-record-form" onSubmit={save}>
+        <form className="museum-record-form" onSubmit={save} aria-labelledby="museum-form-title">
           <div className="museum-form-heading">
             <div>
               <span className="museum-section-kicker">{editingId ? "REFINE AN ARCHIVE RECORD" : "ADD TO YOUR COLLECTION"}</span>
-              <h3>{editingId ? "Edit account record" : "A new account record"}</h3>
+              <h3 id="museum-form-title">{editingId ? "Edit account record" : "A new account record"}</h3>
               <p>Details are protected and only shown when you open this record.</p>
             </div>
             <button className="museum-close-button" type="button" onClick={closeForm} aria-label="Close form">×</button>
@@ -269,6 +281,7 @@ export default function VaultManager() {
             <label>
               <span>Account name</span>
               <input
+                ref={firstAccountInputRef}
                 autoComplete="off"
                 maxLength={100}
                 required
