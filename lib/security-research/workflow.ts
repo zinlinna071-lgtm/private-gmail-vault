@@ -48,7 +48,7 @@ export const researchDraftContentSchema = z.object({
     harness: z.string().trim().min(1).max(160),
     dataClassification: z.enum(["synthetic", "sanitized", "non-production"])
   }).strict(),
-  testRunId: z.string().regex(/^\\d{6,}$/),
+  testRunId: z.string().regex(/^\d{6,}$/),
   commit: z.string().regex(/^[a-f0-9]{40}$/i),
   result: z.enum(["pass", "fail", "blocked"]),
   evidence: z.array(evidence).min(1).max(40),
@@ -67,7 +67,7 @@ export const researchDraftContentSchema = z.object({
   }).strict(),
   retest: z.object({
     status: z.enum(["passed", "failed", "blocked", "not-performed"]),
-    testRunId: z.string().regex(/^\\d{6,}$/).optional(),
+    testRunId: z.string().regex(/^\d{6,}$/).optional(),
     commit: z.string().regex(/^[a-f0-9]{40}$/i).optional(),
     summary: localized
   }).strict(),
