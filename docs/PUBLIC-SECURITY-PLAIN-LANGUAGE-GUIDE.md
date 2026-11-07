@@ -150,3 +150,20 @@ All teaching diagrams are explicitly marked **CONCEPT ONLY** or **HOW TO READ**.
 - If future interactive learning demonstrations are added, keep them isolated from the real Vault and label them as simulations or local demonstrations.
 
 Update this section whenever the public learning visuals change.
+
+
+## Evidence and imagery integrity — mandatory
+
+The public security experience must never invent facts, measurements, events, outcomes, or evidence. It must also avoid imagery that could reasonably be mistaken for factual system output.
+
+- Do not create fake packet streams, terminal output, scan paths, attack maps, traffic charts, activity counters, heat maps, timelines, or success dashboards.
+- Do not use decorative animation, glowing nodes, moving lines, or radar-like effects in a way that resembles live network activity or a running test.
+- Prefer plain-language text, labelled architecture steps, tables, and diagrams whose meaning is explicit.
+- A conceptual diagram is allowed only when it is clearly labelled **CONCEPT ONLY** and does not resemble captured telemetry, a real test result, or a measured graph.
+- Illustrative sample values must be identified next to the sample, not only in a distant page disclaimer. Never use plausible-looking random values as visual filler.
+- A graph may be shown only when its underlying values come from an identified, inspectable source and the units, time range, collection method, and limitations are stated.
+- If no verified data exists, show the factual state plainly: **STANDBY**, **NOT RUN**, **NOT AVAILABLE**, or **NO PUBLISHED EVIDENCE**, whichever is accurate. Do not fill empty space with simulated data.
+- Keep the two reading levels together: a short everyday explanation first, followed by expandable or adjacent technical detail such as algorithm, test vector, commit, environment, and source record.
+- English is the primary interface language. Add Burmese explanations where they improve understanding, without mechanically translating every technical label.
+
+This rule applies to the Public Security Dashboard, Research Library, Security Guide, UI/UX Architecture page, login, Vault, and Private Security Lab. Visual polish must never make a claim appear more certain than its evidence.
