@@ -1,0 +1,31 @@
+name: Vault crypto primitive compatibility spike
+
+on:
+  push:
+    branches:
+      - design/cyber-visual-architecture
+    paths:
+      - "tools/crypto-primitives-spike/**"
+      - ".github/workflows/vault-crypto-primitives-spike.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  webcrypto-known-answer-tests:
+    name: HKDF-SHA-256 and AES-256-GCM known-answer tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: tools/crypto-primitives-spike
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run dependency-free Web Crypto vectors
+        run: npm test
