@@ -980,9 +980,12 @@ footer { margin-top: 42px; color: #71809a; font-size: 11px; line-height: 1.7; le
   width: min(620px, calc(100% - 28px));
   max-width: 620px;
   max-height: min(88vh, 900px);
+  max-height: min(88dvh, 900px);
   margin: auto;
   padding: 0;
   overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   border: 1px solid #c5ac7a66;
   border-radius: 9px;
   background: #171a16;
