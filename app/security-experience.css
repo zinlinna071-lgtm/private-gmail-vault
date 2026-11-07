@@ -377,3 +377,37 @@ body {
   html { scroll-behavior:auto; }
   .entry-brand-mark,.security-brand-mark { transition:none; }
 }
+
+/* Interactive learning lab — real browser-computed cryptographic output */
+.crypto-lab-section { padding:76px 0 0; }
+.crypto-lab { overflow:hidden; margin-top:22px; padding:clamp(16px,3vw,28px); border:1px solid #315b61; border-radius:18px; background:radial-gradient(ellipse at 85% 0%,#164b4930,transparent 42%),linear-gradient(145deg,#0b1d2a,#07121d); box-shadow:0 26px 80px #0005,inset 0 1px #c8fff20b; }
+.crypto-lab-head,.crypto-result-label,.crypto-controls,.crypto-result-meta { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.crypto-lab-head { padding-bottom:16px; border-bottom:1px solid #23434e; color:#a1d9ca; font:800 8px var(--vault-font-mono); letter-spacing:.13em; }
+.crypto-lab-head>span:last-child { display:flex; align-items:center; gap:7px; color:#7cb5a5; }
+.crypto-lab-head i { width:6px; height:6px; border-radius:50%; background:#72dfb7; }
+.crypto-input-label { display:flex; justify-content:space-between; margin:20px 0 9px; color:#a1d9ca; font:800 8px var(--vault-font-mono); letter-spacing:.12em; }
+.crypto-input-label small { color:#63888e; font-size:7px; }
+.crypto-lab textarea { display:block; width:100%; resize:vertical; min-height:104px; padding:14px; border:1px solid #31545d; border-radius:9px; outline:none; background:#071722; color:#e0fff4; font:12px/1.7 var(--vault-font-mono); }
+.crypto-lab textarea::placeholder { color:#597980; }
+.crypto-lab textarea:focus-visible { border-color:#79d9bd; box-shadow:0 0 0 3px #72e7c52b; }
+.crypto-controls { margin-top:11px; color:#77989c; font:8px var(--vault-font-mono); }
+.crypto-controls button,.crypto-result-meta button { padding:10px 13px; border:1px solid #4d9e83; border-radius:7px; background:linear-gradient(135deg,#174d43,#102f35); color:#caffeb; font:800 8px var(--vault-font-mono); letter-spacing:.08em; cursor:pointer; transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease; }
+.crypto-controls button:hover:not(:disabled),.crypto-result-meta button:hover:not(:disabled) { transform:translateY(-1px); border-color:#8cf0ca; box-shadow:0 7px 22px #45c99b20; }
+.crypto-controls button:disabled,.crypto-result-meta button:disabled { opacity:.45; cursor:not-allowed; }
+.crypto-result { margin-top:22px; padding:15px; border:1px solid #294b56; border-radius:10px; background:#071722; }
+.crypto-result.is-ready { border-color:#397a68; box-shadow:inset 0 0 28px #45c99b0b; }
+.crypto-result-label { color:#83b8ad; font:800 8px var(--vault-font-mono); letter-spacing:.1em; }
+.crypto-result-label span:last-child { color:#78989d; }
+.crypto-digest { display:flex; flex-wrap:wrap; gap:7px 11px; margin:17px 0; color:#d1ffed; font:600 clamp(12px,2vw,16px)/1.8 var(--vault-font-mono); letter-spacing:.04em; overflow-wrap:anywhere; }
+.crypto-digest span { padding:2px 4px; border-bottom:1px solid #28584d; }
+.crypto-result-meta { padding-top:12px; border-top:1px solid #1e3b44; color:#6e9298; font:7px var(--vault-font-mono); letter-spacing:.1em; }
+.crypto-result-meta b { margin-left:7px; color:#c1eadd; }
+.crypto-empty { min-height:76px; display:flex; align-items:center; color:#78969e; font-size:10px; line-height:1.8; }
+.crypto-learning-notes { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-top:14px; }
+.crypto-learning-notes article { padding:17px; border:1px solid #254650; border-radius:11px; background:linear-gradient(145deg,#0d202b,#091722); }
+.crypto-learning-notes article>span { color:#78bda9; font:800 7px var(--vault-font-mono); letter-spacing:.1em; }
+.crypto-learning-notes strong { display:block; margin-top:10px; color:#d4f1e6; font-size:11px; }
+.crypto-learning-notes p { margin:7px 0 0; color:#819da5; font-size:9px; line-height:1.75; }
+.crypto-safety-note { margin:13px 0 0; padding-left:12px; border-left:2px solid #b18a57; color:#9d9a84; font-size:9px; line-height:1.8; }
+@media(max-width:680px) { .crypto-learning-notes { grid-template-columns:1fr; }.crypto-controls { align-items:flex-start; flex-direction:column; }.crypto-controls button { width:100%; }.crypto-digest { gap:4px 7px; } }
+@media(prefers-reduced-motion:reduce) { .crypto-lab-section * { transition:none !important; } }
