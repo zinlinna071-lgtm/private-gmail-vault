@@ -50,7 +50,7 @@ export const researchDraftContentSchema = z.object({
   }).strict(),
   testRunId: z.string().regex(/^\d{6,}$/),
   commit: z.string().regex(/^[a-f0-9]{40}$/i),
-  result: z.enum(["pass", "fail", "blocked", "not-run"]),
+  result: z.enum(["pass", "fail", "blocked"]),
   evidence: z.array(evidence).min(1).max(40),
   findings: z.array(z.object({
     classification: z.enum(["confirmed", "observation", "hypothesis", "not-tested"]),
