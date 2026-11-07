@@ -186,6 +186,19 @@ export default function SecurityArchitecturePage() {
         </div>
       </section>
 
+      <section className="security-section">
+        <div className="security-section-heading"><div><span className="section-index">09 / QA PROTOCOL</span><h2>What must be checked before verification is claimed.</h2></div><span className="section-aside">PLANNED · NOT RUN</span></div>
+        <div className="operation-list">
+          <div><b>01</b><span><strong>Viewport sweep</strong><small>Run the same route at 360, 390, 768, 1024, and 1440 CSS pixels; check overflow, navigation, content order, dialogs, and touch target spacing.</small></span><em>PLANNED</em></div>
+          <div><b>02</b><span><strong>Keyboard-only journey</strong><small>Tab through navigation, forms, dialogs, reveal/copy actions, and close controls; verify visible focus, logical order, and no keyboard trap.</small></span><em>PLANNED</em></div>
+          <div><b>03</b><span><strong>Reduced-motion pass</strong><small>Enable the operating-system reduced-motion preference; confirm nonessential movement is suppressed and all content and state changes remain understandable.</small></span><em>PLANNED</em></div>
+          <div><b>04</b><span><strong>Assistive technology</strong><small>Review accessible names, landmarks, headings, status announcements, and dialog semantics with a screen reader.</small></span><em>PLANNED</em></div>
+          <div><b>05</b><span><strong>Rendered contrast</strong><small>Measure actual text against rendered surfaces, including translucent panels, gradients, hover/focus states, and disabled controls.</small></span><em>PLANNED</em></div>
+          <div><b>06</b><span><strong>Performance profile</strong><small>Capture mobile and desktop traces; inspect layout shifts, long tasks, animation smoothness, and Core Web Vitals under repeatable conditions.</small></span><em>PLANNED</em></div>
+        </div>
+        <p className="security-footnote">No browser-run evidence is attached to this edition. These are the acceptance checks for the next QA pass, not completed test results.</p>
+      </section>
+
       <footer className="security-footer">
         <div><span className="security-brand-mark">V</span><strong>PRIVATE ACCOUNT VAULT</strong></div>
         <p>Public engineering notes describe the current source, not a certification or guarantee of security.</p>
