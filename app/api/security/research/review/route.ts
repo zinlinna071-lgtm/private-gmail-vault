@@ -3,7 +3,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { isSameOriginRequest } from "@/lib/auth/vault";
 import { isJsonContentType } from "@/lib/auth/content-type";
 import { readBoundedJson } from "@/lib/auth/bounded-json";
-import { reviewSubmissionSchema, nextResearchWorkflowState } from "@/lib/security-research/workflow";
+import { hasPriorApprovalByActor, reviewSubmissionSchema, nextResearchWorkflowState } from "@/lib/security-research/workflow";
 import { getResearchActor } from "@/lib/security-research/workflow-auth";
 
 export const runtime = "nodejs";
@@ -45,14 +45,18 @@ export async function POST(request: Request) {
 
     const reviews = (draft.reviews && typeof draft.reviews === "object" && !Array.isArray(draft.reviews))
       ? draft.reviews as Record<string, unknown> : {};
-    const previousStages = stage === "technical" ? [] : stage === "securityPrivacy" ? ["technical"] : stage === "bilingual" ? ["technical", "securityPrivacy"] : [];
-    for (const previousStage of previousStages) {
-      const history = Array.isArray(reviews[previousStage]) ? reviews[previousStage] as Array<{ reviewerUserId?: string; decision?: string }> : [];
-      const latestApproval = [...history].reverse().find((item) => item.decision === "approved");
-      if (latestApproval?.reviewerUserId === actor.id) {
-        return reply({ error: "Technical, security/privacy, and bilingual approvals must come from different reviewer accounts." }, 403);
-      }
+    const priorStages = stage === "technical" ? []
+      : stage === "securityPrivacy" ? ["technical"]
+      : stage === "bilingual" ? ["technical", "securityPrivacy"]
+      : ["technical", "securityPrivacy", "bilingual"];
+    if (hasPriorApprovalByActor(reviews, priorStages, actor.id)) {
+      return reply({
+        error: stage === "owner"
+          ? "Final owner approval must be independent of all reviewer approvals."
+          : "Technical, security/privacy, and bilingual approvals must come from different reviewer accounts."
+      }, 403);
     }
+
     const record = { decision, notes, reviewerUserId: actor.id, reviewedAt: new Date().toISOString() };
     const history = Array.isArray(reviews[stage]) ? reviews[stage] as unknown[] : [];
     const updatedReviews = { ...reviews, [stage]: [...history, record] };
