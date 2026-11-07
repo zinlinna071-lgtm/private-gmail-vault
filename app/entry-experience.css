@@ -196,3 +196,47 @@
   .password-activity.is-active .password-activity-bars i { animation:none !important; }
   .entry-shell .primary-button { background-position:0 50% !important; }
 }
+
+
+/* Authentication state choreography: validation, loading, errors and successful access */
+.auth-heading-enter { animation: auth-heading-in .34s cubic-bezier(.2,.8,.2,1) both; }
+.entry-shell .auth-card.is-busy { border-color:#5aa99b; box-shadow:0 28px 90px #0008,0 0 42px #35d9b52b,inset 0 1px #b6fff22a; }
+.entry-shell .auth-form input[aria-invalid="true"] { border-color:#ff8294; box-shadow:0 0 0 3px #ff71851c,0 0 20px #ff71851a; }
+.entry-shell .auth-form input[aria-invalid="true"]:focus { border-color:#ff9aaa; box-shadow:0 0 0 3px #ff71852b,0 0 24px #ff718522; }
+.entry-shell .auth-submit { display:flex; align-items:center; justify-content:center; gap:11px; }
+.entry-shell .auth-submit:disabled { filter:saturate(.8); opacity:.86; cursor:wait; }
+.button-spinner { display:inline-block; width:16px; height:16px; flex:0 0 16px; border:2px solid #073a32a8; border-top-color:#073a32; border-radius:50%; animation:auth-spin .72s linear infinite; }
+.auth-processing-note { margin:0; color:#8fc9ba; font-size:10px; line-height:1.6; text-align:center; animation:auth-fade-in .25s ease both; }
+.entry-shell .auth-feedback-enter { display:flex; align-items:flex-start; gap:10px; animation:auth-feedback-in .32s cubic-bezier(.2,.8,.2,1) both,auth-error-nudge .34s ease .08s both; }
+.entry-shell .auth-feedback-enter.error { border:1px solid #a84e64; background:linear-gradient(110deg,#3b1d2b,#291925); box-shadow:0 8px 24px #0003,inset 0 1px #ffc4d11a; }
+.entry-shell .auth-feedback-enter.success { border:1px solid #327b68; background:linear-gradient(110deg,#12382f,#102b2d); box-shadow:0 8px 24px #0003,inset 0 1px #c5ffe51a; }
+.feedback-icon { display:grid; place-items:center; width:19px; height:19px; flex:0 0 19px; border:1px solid currentColor; border-radius:50%; font-size:11px; font-weight:900; line-height:1; }
+.auth-panel-enter { animation:auth-panel-in .38s cubic-bezier(.2,.8,.2,1) both; }
+.vault-entry-transition { position:absolute; z-index:10; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:28px; border:1px solid #4c9f8e; border-radius:inherit; background:radial-gradient(ellipse at 50% 38%,#17483f 0%,#0a2029 48%,#07141f 100%); text-align:center; animation:vault-transition-in .38s cubic-bezier(.2,.8,.2,1) both; }
+.vault-entry-transition strong { color:#c9ffeb; font-size:12px; font-weight:900; letter-spacing:.22em; text-shadow:0 0 20px #75edc566; }
+.vault-entry-transition p { margin:0; color:#9fc9bf; font-size:12px; }
+.vault-entry-orbit { position:relative; display:grid; place-items:center; width:104px; height:104px; margin-bottom:8px; }
+.vault-entry-orbit span { position:absolute; inset:0; border:1px solid #6be4bd70; border-radius:50%; animation:vault-orbit 1.5s ease-out infinite; }
+.vault-entry-orbit span:nth-child(2) { animation-delay:.35s; }
+.vault-entry-orbit span:nth-child(3) { animation-delay:.7s; }
+.vault-entry-orbit b { display:grid; place-items:center; width:58px; height:58px; border:1px solid #9bffe0; border-radius:18px; background:linear-gradient(145deg,#1b6556,#123746); color:#d8fff1; font-size:26px; box-shadow:0 0 34px #4fe3b95c,inset 0 0 20px #a7ffe51a; animation:vault-core-pulse 1.2s ease-in-out infinite; }
+.vault-entry-progress { width:min(220px,80%); height:3px; overflow:hidden; margin-top:8px; border-radius:9px; background:#ffffff1c; }
+.vault-entry-progress i { display:block; width:38%; height:100%; border-radius:9px; background:linear-gradient(90deg,#56dcb7,#c2ffe9); box-shadow:0 0 14px #76f0ce; animation:vault-progress .68s ease-in-out infinite alternate; }
+@keyframes auth-spin { to { transform:rotate(360deg); } }
+@keyframes auth-heading-in { from { opacity:0; transform:translateY(7px); filter:blur(3px); } to { opacity:1; transform:translateY(0); filter:blur(0); } }
+@keyframes auth-fade-in { from { opacity:0; } to { opacity:1; } }
+@keyframes auth-feedback-in { from { opacity:0; transform:translateY(8px) scale(.985); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes auth-error-nudge { 0%,100% { translate:0 0; } 25% { translate:-3px 0; } 50% { translate:3px 0; } 75% { translate:-2px 0; } }
+@keyframes auth-panel-in { from { opacity:0; transform:translateY(12px) scale(.985); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes vault-transition-in { from { opacity:0; backdrop-filter:blur(0); } to { opacity:1; backdrop-filter:blur(18px); } }
+@keyframes vault-orbit { 0% { transform:scale(.58); opacity:0; } 35% { opacity:.85; } 100% { transform:scale(1.45); opacity:0; } }
+@keyframes vault-core-pulse { 0%,100% { transform:scale(1); box-shadow:0 0 24px #4fe3b94a; } 50% { transform:scale(1.06); box-shadow:0 0 42px #4fe3b980; } }
+@keyframes vault-progress { from { transform:translateX(-15%); } to { transform:translateX(190%); } }
+@media(prefers-reduced-motion:reduce) {
+  .auth-heading-enter,.button-spinner,.auth-processing-note,.auth-feedback-enter,.auth-panel-enter,
+  .vault-entry-transition,.vault-entry-orbit span,.vault-entry-orbit b,.vault-entry-progress i {
+    animation:none !important;
+  }
+  .vault-entry-orbit span { opacity:.35; transform:scale(1); }
+  .vault-entry-progress i { width:100%; }
+}
