@@ -5,7 +5,12 @@
   "compatibility_date": "2026-11-07",
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
-  "previews": {},
+  "previews": {
+    "vars": {
+      "NEXT_PUBLIC_SUPABASE_URL": "https://wqejgaqjagdvgkpwuhnr.supabase.co",
+      "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_DE2zZidVpfxetvYKkiFouA_tAf_s9cu"
+    }
+  },
   "preview_urls": true,
   "upload_source_maps": true,
   "assets": {
