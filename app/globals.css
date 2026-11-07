@@ -1239,3 +1239,221 @@ footer { margin-top: 42px; color: #71809a; font-size: 11px; line-height: 1.7; le
   .museum-loading-orbit { animation: none; }
   .museum-asset-card, .museum-add-button { transition: none; }
 }
+
+
+/* Vault / Security Center shared visual language */
+.museum-shell {
+  background: radial-gradient(ellipse at 78% 5%, #123343 0%, #0b1724 34%, #080d17 76%);
+  color: #eaf1f7;
+}
+.museum-shell::before {
+  background:
+    radial-gradient(ellipse at 82% 11%, #43d6b21b 0%, transparent 34%),
+    radial-gradient(ellipse at 14% 38%, #3f91ad14 0%, transparent 35%),
+    linear-gradient(180deg, #0c1925 0%, #0a121d 54%, #080d17 100%);
+}
+.museum-ambient {
+  opacity: .2;
+  background-image: linear-gradient(#9bc8d00a 1px, transparent 1px), linear-gradient(90deg, #9bc8d00a 1px, transparent 1px);
+}
+.museum-header { border-bottom-color: #3a5263; }
+.museum-brand { color: #e4edf7; }
+.museum-brand-mark {
+  border-color: #4c9b87;
+  color: #a8f0d7;
+  background: #102a30;
+}
+.museum-brand-name small { color: #7790a5; }
+.museum-header-center { color: #a8c5bd; }
+.museum-status-light, .museum-wing-status span {
+  background: #65d6ad;
+  box-shadow: 0 0 14px #65d6ad99;
+}
+.museum-research-link { color: #76d8b6; }
+.museum-research-link:hover { color: #b4f3dc; }
+.museum-account-label { color: #8fa4b4; }
+.museum-header .signout-button {
+  border-color: #4c9b87;
+  color: #b9d8d0;
+}
+.museum-header .signout-button:hover {
+  border-color: #65d6ad;
+  background: #65d6ad12;
+}
+.museum-section-kicker { color: #76d8b6; }
+.museum-welcome {
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 0;
+  padding-bottom: clamp(34px, 5vw, 58px);
+}
+.museum-welcome h1 {
+  color: #eaf1f7;
+  font-family: inherit;
+  font-size: clamp(42px, 6.5vw, 76px);
+  font-weight: 650;
+  letter-spacing: -.055em;
+}
+.museum-welcome h1 em { color: #76d8b6; font-style: normal; }
+.museum-welcome-copy > p { color: #aab9c8; font-size: 13px; }
+.museum-welcome-emblem { display: none; }
+.museum-collection-heading h2 {
+  color: #eaf1f7;
+  font-family: inherit;
+  font-weight: 620;
+  letter-spacing: -.04em;
+}
+.museum-collection-heading h2 span { color: #76d8b6; }
+.museum-collection-heading p, .museum-form-heading p { color: #91a4b4; }
+.museum-collection-count strong { color: #9ce9ce; }
+.museum-collection-count span { color: #8197a8; }
+.museum-search {
+  border-color: #30495c;
+  border-radius: 7px;
+  background: #0d1b29;
+  color: #76d8b6;
+}
+.museum-search:focus-within { border-color: #65d6ad; box-shadow: 0 0 0 3px #65d6ad1c; }
+.museum-search input { color: #eaf1f7; }
+.museum-search input::placeholder { color: #71889a; }
+.museum-sort select {
+  border-color: #30495c;
+  border-radius: 7px;
+  background: #0d1b29;
+  color: #c0d0dc;
+}
+.museum-sort select:focus-visible { border-color: #65d6ad; outline-color: #65d6ad45; }
+.museum-add-button {
+  border-color: #65d6ad;
+  border-radius: 7px;
+  background: linear-gradient(135deg, #9ce9ce, #55c5a0);
+  color: #082019;
+}
+.museum-add-button:hover:not(:disabled) { box-shadow: 0 8px 28px #65d6ad26; }
+.museum-cancel-button {
+  border-color: #496477;
+  border-radius: 7px;
+  color: #c2d2de;
+}
+.museum-cancel-button:hover:not(:disabled) { border-color: #65d6ad; background: #65d6ad10; }
+.museum-feedback.is-error { border-color: #a95e6b70; background: #4b202b45; color: #ffc4cd; }
+.museum-feedback.is-success { border-color: #4c9b8775; background: #15372f80; color: #b8f0d9; }
+.museum-asset-card {
+  border-color: #30495c;
+  border-radius: 8px;
+  background: #0d1a27;
+}
+.museum-asset-card:hover {
+  border-color: #65d6ad8c;
+  box-shadow: 0 18px 45px #0008, 0 0 28px #65d6ad12;
+}
+.museum-artwork {
+  background: radial-gradient(circle at 50% 48%, #2b8d7b45, transparent 40%), linear-gradient(145deg, #183341, #0d1a27 76%);
+}
+.museum-artwork::before { border-color: #76d8b62e; }
+.museum-artwork::after {
+  background: repeating-linear-gradient(0deg, transparent 0 23px, #9bc8d014 24px), repeating-linear-gradient(90deg, transparent 0 23px, #9bc8d014 24px);
+}
+.museum-tone-1 .museum-artwork { background: radial-gradient(circle at 50% 48%, #397e9b55, transparent 40%), linear-gradient(145deg, #1b3446, #0d1926 76%); }
+.museum-tone-2 .museum-artwork { background: radial-gradient(circle at 50% 48%, #477c6a55, transparent 40%), linear-gradient(145deg, #1b3934, #0d1b1b 76%); }
+.museum-tone-3 .museum-artwork { background: radial-gradient(circle at 50% 48%, #4c6e9360, transparent 40%), linear-gradient(145deg, #26364c, #101a28 76%); }
+.museum-artwork-topline, .museum-artwork-bottomline { color: #9ccbbdba; }
+.museum-artwork-lock { color: #76d8b6; }
+.museum-artwork-orbit { border-color: #8dddc53d; }
+.museum-artwork-mark {
+  border-color: #65d6ad;
+  background: radial-gradient(circle at 33% 28%, #4d9e8b, #173a3a 70%);
+  box-shadow: 0 0 35px #65d6ad25, inset 0 0 22px #9ce9ce20;
+}
+.museum-artwork-mark span { color: #d7fff0; font-family: inherit; font-weight: 650; }
+.museum-artwork-bottomline { color: #8cc8b6b0; }
+.museum-asset-title-row h3 {
+  color: #e4edf7;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 16px;
+}
+.museum-asset-title-row > span { color: #76d8b6; }
+.museum-asset-caption > p { color: #7e9aac; }
+.museum-asset-meta { border-top-color: #30495c; color: #8098a9; }
+.museum-empty-state {
+  border-color: #30495c;
+  background: radial-gradient(ellipse at center, #1a675a2b, transparent 58%), #0d1a27cc;
+}
+.museum-empty-symbol { color: #76d8b6; }
+.museum-empty-state h3 { color: #e4edf7; font-family: inherit; font-weight: 600; }
+.museum-empty-state p { color: #91a4b4; }
+.museum-loading-orbit { border-color: #65d6ad55; border-top-color: #65d6ad; }
+.museum-record-form {
+  border-color: #3c6f69;
+  border-radius: 8px;
+  background: linear-gradient(145deg, #132a35, #0d1a27);
+  box-shadow: 0 18px 60px #0005;
+}
+.museum-form-heading h3 { color: #eaf1f7; font-family: inherit; font-weight: 620; }
+.museum-close-button { border-color: #496477; color: #a8c5bd; }
+.museum-close-button:hover { border-color: #65d6ad; background: #65d6ad14; }
+.museum-form-grid label > span { color: #b9cbd7; }
+.museum-form-grid input, .museum-form-grid textarea {
+  border-color: #30495c;
+  border-radius: 6px;
+  background: #091521;
+  color: #eaf1f7;
+}
+.museum-form-grid input:focus, .museum-form-grid textarea:focus {
+  border-color: #65d6ad;
+  box-shadow: 0 0 0 3px #65d6ad1c;
+}
+.museum-form-grid input::placeholder, .museum-form-grid textarea::placeholder { color: #71889a; }
+.museum-inspector {
+  border-color: #4c9b87;
+  border-radius: 10px;
+  background: #0d1a27;
+  color: #eaf1f7;
+}
+.museum-inspector::backdrop { background: #050b12e8; }
+.museum-inspector-topline { color: #76d8b6; }
+.museum-inspector-art {
+  border-color: #365b69;
+  background: radial-gradient(circle at center, #1c6d6348, transparent 45%), linear-gradient(145deg, #183341, #0d1a27);
+}
+.museum-inspector-art > div { border-color: #65d6ad; color: #c8ffeb; font-family: inherit; }
+.museum-inspector-art > span:last-child { color: #8cb9ad; }
+.museum-inspector-heading h2 { color: #eaf1f7; font-family: inherit; font-weight: 620; }
+.museum-inspector-heading p { color: #8fa4b4; }
+.museum-detail-fields section {
+  border-color: #30495c;
+  border-radius: 6px;
+  background: #091521;
+}
+.museum-detail-label span { color: #8eb5ad; }
+.museum-detail-label button, .museum-inline-action { color: #76d8b6; }
+.museum-sensitive-value { color: #e4edf7; }
+.museum-delete-link, .museum-delete-button { color: #ff9eac; }
+.museum-delete-button { border-color: #a95e6b70; background: #4b202b45; }
+.museum-delete-confirm { border-color: #a95e6b70; background: #4b202b45; }
+.museum-delete-confirm strong { color: #ffc4cd; }
+.museum-delete-confirm p { color: #c7a7ae; }
+.museum-inspector-note { border-top-color: #30495c; color: #8098a9; }
+.museum-research-wing {
+  border-color: #30495c;
+  border-radius: 8px;
+  background: linear-gradient(110deg, #122a36 0%, #10232d 56%, #0d1a27 100%);
+}
+.museum-wing-ring { border-color: #65d6ad58; }
+.museum-wing-core {
+  border-color: #65d6ad;
+  background: #153a3b;
+  color: #c8ffeb;
+  font-family: inherit;
+}
+.museum-wing-copy h2 { color: #eaf1f7; font-family: inherit; font-weight: 620; }
+.museum-wing-copy p { color: #91a4b4; }
+.museum-wing-status { color: #76d8b6; }
+.museum-wing-public-link { color: #76d8b6; }
+.museum-wing-public-link:hover { color: #b4f3dc; }
+.museum-footer { border-top-color: #30495c; color: #71889a; }
+@media (max-width: 680px) {
+  .museum-welcome { grid-template-columns: minmax(0, 1fr); }
+  .museum-welcome h1 { font-size: clamp(37px, 9vw, 52px); }
+  .museum-welcome-copy > p { font-size: 12px; }
+}
