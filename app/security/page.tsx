@@ -1,4 +1,5 @@
 import Link from "next/link";
+import LabActivityConsole from "./lab-activity-console";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -104,6 +105,8 @@ export default function SecurityPage() {
         <span className="notice-icon">!</span>
         <div><strong>Prototype status — not independently audited</strong><p>Zero-knowledge is a target architecture, not a completed feature. The current API still decrypts vault data server-side, and the legacy authentication flow remains. Do not store high-value real credentials in this prototype. No real-user account is used as a security-test target.</p></div>
       </section>
+
+      <LabActivityConsole />
 
       <section className="security-section" id="surface">
         <div className="security-section-heading"><div><span className="section-index">01 / ATTACK SURFACE</span><h2>Every boundary matters.</h2></div><span className="section-aside">DEFINED TEST SCOPE</span></div>
