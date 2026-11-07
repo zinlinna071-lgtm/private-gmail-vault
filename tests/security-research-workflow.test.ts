@@ -37,6 +37,14 @@ describe("private research workflow", () => {
     expect(researchDraftContentSchema.parse(content())).toEqual(content());
   });
 
+  it("accepts numeric CI run IDs and rejects malformed run IDs", () => {
+    const value = content();
+    value.testRunId = "42326674300";
+    expect(researchDraftContentSchema.safeParse(value).success).toBe(true);
+    value.testRunId = "run-42326674300";
+    expect(researchDraftContentSchema.safeParse(value).success).toBe(false);
+  });
+
   it("rejects evidence references that do not exist", () => {
     const value = content();
     value.findings[0].evidenceIds = ["not-present"];
