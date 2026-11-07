@@ -23,7 +23,8 @@ vi.mock("@/lib/supabase/admin", () => ({
   createSupabaseAdminClient: mocks.createSupabaseAdminClient
 }));
 vi.mock("@/lib/auth/rate-limit", () => ({
-  allowAuthAttempt: mocks.allowAuthAttempt
+  allowAuthAttempt: mocks.allowAuthAttempt,
+  AuthRateLimitError: class AuthRateLimitError extends Error {}
 }));
 vi.mock("@/lib/auth/vault", () => ({
   isSameOriginRequest: mocks.isSameOriginRequest,
