@@ -24,6 +24,8 @@ const checks = [
     job: "RFC 9106 §5.3 known-answer test",
     href: "https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42272387331",
     detail: "The candidate implementation matched the published RFC 9106 known-answer vector.",
+    plain: "The implementation was given a standard published example and produced the expected answer. This checks that specific calculation, not the complete Vault unlock process.",
+    plainMy: "ထုတ်ပြန်ထားတဲ့ စံနမူနာတစ်ခုကို ထည့်စမ်းပြီး မျှော်မှန်းထားတဲ့ အဖြေထွက်မထွက် စစ်ထားတာပါ။ Vault တစ်ခုလုံး ဖွင့်တဲ့လုပ်ငန်းစဉ်ကို စစ်ထားတာ မဟုတ်ပါဘူး။",
     boundary: "KDF TEST"
   },
   {
@@ -35,6 +37,8 @@ const checks = [
     job: "Chromium RFC 9106 compatibility test",
     href: "https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42281120467",
     detail: "The browser RFC vector and mutation checks completed successfully in Chromium.",
+    plain: "The same kind of standard example was checked in the Chromium browser environment. It does not prove compatibility on every browser or phone.",
+    plainMy: "Chromium Browser ပတ်ဝန်းကျင်မှာ စံနမူနာနဲ့ ပြောင်းလဲစမ်းသပ်ချက်တွေကို စစ်ဆေးအောင်မြင်ခဲ့တာပါ။ Browser နဲ့ ဖုန်းအားလုံးမှာ အလုပ်လုပ်မယ်လို့ သက်သေမပြပါဘူး။",
     boundary: "BROWSER TEST"
   },
   {
@@ -46,6 +50,8 @@ const checks = [
     job: "Chromium Firefox and WebKit RFC 9106 tests",
     href: "https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42281411743",
     detail: "The RFC vector and mutation checks completed successfully across the three hosted browser engines.",
+    plain: "The named checks completed in Chromium, Firefox, and WebKit in the recorded hosted environment. This is compatibility evidence for those checks only.",
+    plainMy: "ဖော်ပြထားတဲ့ စမ်းသပ်ချက်တွေကို Chromium၊ Firefox နဲ့ WebKit သုံးမျိုးမှာ သတ်မှတ်ထားတဲ့ Hosted ပတ်ဝန်းကျင်အတွင်း အောင်မြင်ခဲ့တာပါ။ ဒီစမ်းသပ်ချက်တွေအတွက်သာ အထောက်အထားဖြစ်ပါတယ်။",
     boundary: "CROSS-ENGINE TEST"
   }
 ];
@@ -143,6 +149,7 @@ export default function SecurityPage() {
                 <small>GitHub Actions · Run #{check.run} · {check.date}</small>
                 <small className="evidence-provenance">SOURCE COMMIT <code>{check.commit}</code></small>
                 <p className="evidence-detail">{check.detail}</p>
+                <div className="evidence-plain-language"><strong>IN EVERYDAY TERMS</strong><p>{check.plain}</p><p lang="my">{check.plainMy}</p></div>
                 <code className="evidence-job">{check.job}</code>
               </div>
               <span className="evidence-pass">JOB PASSED</span>
