@@ -18,6 +18,7 @@ export default function AuthPanel() {
   const [issuedCode, setIssuedCode] = useState("");
   const [requiresAcknowledgement, setRequiresAcknowledgement] = useState(false);
   const [enteringVault, setEnteringVault] = useState(false);
+  const [demoEntry, setDemoEntry] = useState(false);
   const [errorCycle, setErrorCycle] = useState(0);
 
   function clearFeedback() {
@@ -41,6 +42,16 @@ export default function AuthPanel() {
     setBusy(true);
     clearFeedback();
     if (!requiresAcknowledgement) setIssuedCode("");
+
+    // Empty credentials open a read-only UI preview only. This never creates
+    // an auth session and never grants access to real Vault records or APIs.
+    if (mode === "login" && !loginId.trim() && !password) {
+      setDemoEntry(true);
+      setEnteringVault(true);
+      window.setTimeout(() => window.location.assign("/vault-preview"), 850);
+      setBusy(false);
+      return;
+    }
 
     const endpoint = mode === "register" ? "/api/auth/register" : mode === "recover" ? "/api/auth/recovery" : "/api/auth/login";
     const payload = mode === "register"
@@ -138,12 +149,12 @@ export default function AuthPanel() {
       {!requiresAcknowledgement && (
         <form onSubmit={submit} className="auth-form" aria-busy={busy}>
           <label htmlFor="login-id">Vault Login ID</label>
-          <input id="login-id" autoComplete="username" value={loginId} onChange={e => { setLoginId(e.target.value); if (error) setError(""); }} minLength={4} maxLength={32} pattern="[A-Za-z0-9][A-Za-z0-9._-]{3,31}" required placeholder="Your private login ID" aria-invalid={Boolean(error)} />
+          <input id="login-id" autoComplete="username" value={loginId} onChange={e => { setLoginId(e.target.value); if (error) setError(""); }} minLength={4} maxLength={32} pattern="[A-Za-z0-9][A-Za-z0-9._-]{3,31}" required={mode !== "login"} placeholder="Your private login ID" aria-invalid={Boolean(error)} />
           {mode !== "recover" ? (
             <>
               <label htmlFor="master-password">Master Password</label>
               <div className="password-field">
-                <input id="master-password" type={showPassword ? "text" : "password"} autoComplete={mode === "register" ? "new-password" : "current-password"} value={password} onChange={e => { setPassword(e.target.value); if (error) setError(""); }} minLength={12} maxLength={128} required placeholder="Enter your Master Password" aria-invalid={Boolean(error)} />
+                <input id="master-password" type={showPassword ? "text" : "password"} autoComplete={mode === "register" ? "new-password" : "current-password"} value={password} onChange={e => { setPassword(e.target.value); if (error) setError(""); }} minLength={12} maxLength={128} required={mode !== "login"} placeholder="Enter your Master Password" aria-invalid={Boolean(error)} />
                 <button className="password-toggle" type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? "Hide Master Password" : "Show Master Password"} aria-pressed={showPassword} aria-controls="master-password">{showPassword ? "HIDE" : "SHOW"}</button>
               </div>
               <div className={password.length ? "password-activity is-active" : "password-activity"} aria-live="polite">
