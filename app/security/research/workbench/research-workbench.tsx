@@ -20,7 +20,7 @@ const contentTemplate = {
   environment: { kind: "isolated-lab", runtime: "", harness: "", dataClassification: "synthetic" },
   testRunId: "",
   commit: "",
-  result: "not-run",
+  result: "",
   evidence: [],
   findings: [],
   remediation: { status: "not-started", summary: { en: "", my: "" } },
