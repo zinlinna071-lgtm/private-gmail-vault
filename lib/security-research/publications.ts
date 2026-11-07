@@ -19,7 +19,7 @@ const editionSchema = z.object({
   }).strict()).min(1)
 }).strict();
 
-const calendarDate = z.string().regex(/^\\d{4}-\\d{2}-\\d{2}$/).refine((value) => {
+const calendarDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((value) => {
   const parsed = new Date(`${value}T00:00:00.000Z`);
   return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
 }, "Date must be a real calendar date");
@@ -41,7 +41,7 @@ const findingSchema = z.object({
   confidence: z.enum(["high", "medium", "low", "not-assessed"]),
   title: localizedText,
   details: localizedText,
-  evidenceIds: z.array(z.string().min(1))
+  evidenceIds: z.array(z.string().min(1)).min(1)
 }).strict();
 
 const approvalSchema = z.object({
@@ -50,8 +50,8 @@ const approvalSchema = z.object({
 
 export const researchPublicationSchema = z.object({
   slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
-  publicationId: z.string().regex(/^PAV-SEC-\\d{4}-\\d{3}$/),
-  version: z.string().regex(/^\\d+\\.\\d+\\.\\d+$/),
+  publicationId: z.string().regex(/^PAV-SEC-\d{4}-\d{3}$/),
+  version: z.string().regex(/^\d+\.\d+\.\d+$/),
   publishedAt: calendarDate,
   category: z.string().trim().min(1),
   title: localizedText,
@@ -68,7 +68,7 @@ export const researchPublicationSchema = z.object({
     harness: z.string().trim().min(1),
     dataClassification: z.enum(["synthetic", "sanitized", "non-production"])
   }).strict(),
-  testRunId: z.string().regex(/^\\d{6,}$/),
+  testRunId: z.string().regex(/^\d{6,}$/),
   commit: commitSha,
   result: z.enum(["pass", "fail", "blocked", "not-run"]),
   evidence: z.array(evidenceSchema).min(1),
@@ -80,7 +80,7 @@ export const researchPublicationSchema = z.object({
   }).strict(),
   retest: z.object({
     status: z.enum(["passed", "failed", "blocked", "not-performed"]),
-    testRunId: z.string().regex(/^\\d{6,}$/).optional(),
+    testRunId: z.string().regex(/^\d{6,}$/).optional(),
     commit: commitSha.optional(),
     summary: localizedText
   }).strict(),
@@ -111,7 +111,7 @@ export const researchPublicationSchema = z.object({
 
   paper.findings.forEach((finding, index) => {
     if (finding.evidenceIds.length === 0) {
-      context.addIssue({ code: "custom", path: ["findings", index, "evidenceIds"], message: "Every finding must cite evidence or explicitly use an empty list only when no evidence exists" });
+      context.addIssue({ code: "custom", path: ["findings", index, "evidenceIds"], message: "Every finding must cite at least one evidence item" });
     }
     finding.evidenceIds.forEach((id) => {
       if (!evidenceIds.has(id)) {
