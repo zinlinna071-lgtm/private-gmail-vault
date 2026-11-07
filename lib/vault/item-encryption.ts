@@ -1,14 +1,24 @@
 import "server-only";
-import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
+import { createCipheriv, createDecipheriv, hkdfSync, randomBytes } from "node:crypto";
 
 const ALGORITHM = "aes-256-gcm";
+const KEY_SALT = Buffer.from("private-account-vault-v1", "utf8");
+const KEY_INFO = Buffer.from("vault-item-encryption-v1", "utf8");
 
 function getKey(): Buffer {
-  const value = process.env.VAULT_DATA_ENCRYPTION_KEY;
+  // Derive a dedicated item-encryption key from the configured Vault master key.
+  // HKDF separates this purpose from recovery-code encryption.
+  const value = process.env.VAULT_ENCRYPTION_KEY;
   if (!value || !/^[a-fA-F0-9]{64}$/.test(value)) {
-    throw new Error("Vault data encryption key is not configured.");
+    throw new Error("VAULT_ENCRYPTION_KEY must be exactly 64 hexadecimal characters (32 random bytes).");
   }
-  return Buffer.from(value, "hex");
+  return Buffer.from(hkdfSync(
+    "sha256",
+    Buffer.from(value, "hex"),
+    KEY_SALT,
+    KEY_INFO,
+    32
+  ));
 }
 
 function getAad(userId: string, itemId: string): Buffer {
