@@ -240,3 +240,36 @@
   .vault-entry-orbit span { opacity:.35; transform:scale(1); }
   .vault-entry-progress i { width:100%; }
 }
+
+
+/* Motion system / authentication: calm ambient movement, clear state transitions */
+.entry-shell::before { animation: entry-grid-drift 34s ease-in-out infinite alternate; }
+.entry-shell::after { animation: entry-ambient-drift 22s ease-in-out infinite alternate; }
+.entry-nav { animation: auth-nav-arrive .7s cubic-bezier(.2,.75,.25,1) both; }
+.entry-copy { animation: auth-copy-arrive .85s cubic-bezier(.2,.75,.25,1) .08s both; }
+.entry-shell .auth-card { animation: auth-card-arrive .9s cubic-bezier(.2,.8,.2,1) .16s both; }
+.entry-shell .auth-card-mark { animation: auth-mark-glow 6s ease-in-out infinite; }
+.entry-shell .auth-card .tab,
+.entry-shell .auth-form input,
+.entry-shell .password-toggle,
+.entry-shell .primary-button,
+.entry-shell .secondary-button { transition: color .22s ease, background-color .22s ease, border-color .22s ease, box-shadow .28s ease, transform .28s cubic-bezier(.2,.8,.2,1), filter .22s ease; }
+.entry-shell .auth-form input:focus { transform: translateY(-1px); }
+.entry-shell .tab.active { animation: auth-tab-settle .28s cubic-bezier(.2,.8,.2,1) both; }
+.entry-shell .auth-submit:active:not(:disabled) { transform: translateY(1px) scale(.99); }
+.entry-shell .password-activity { transition: border-color .28s ease, background .28s ease, opacity .28s ease; }
+.entry-shell .auth-card.is-busy { border-color: #79e7c8; }
+.entry-shell .auth-card.is-busy .auth-card-mark { animation-duration: 1.8s; }
+.entry-shell .recovery-box { transform-origin: top center; }
+@keyframes entry-grid-drift { from { background-position: 0 0, 0 0; } to { background-position: 46px 23px, -23px 46px; } }
+@keyframes entry-ambient-drift { from { transform: translate3d(0,0,0) scale(1); } to { transform: translate3d(8vw,5vh,0) scale(1.12); } }
+@keyframes auth-nav-arrive { from { opacity:0; transform:translateY(-9px); } to { opacity:1; transform:translateY(0); } }
+@keyframes auth-copy-arrive { from { opacity:0; transform:translateY(16px); filter:blur(5px); } to { opacity:1; transform:translateY(0); filter:blur(0); } }
+@keyframes auth-card-arrive { from { opacity:0; transform:translateY(22px) scale(.985); filter:blur(8px); } to { opacity:1; transform:translateY(0) scale(1); filter:blur(0); } }
+@keyframes auth-mark-glow { 0%,100% { box-shadow:0 0 18px #3de0b51c,inset 0 0 12px #3de0b514; } 50% { box-shadow:0 0 30px #3de0b536,inset 0 0 18px #3de0b526; } }
+@keyframes auth-tab-settle { from { transform:scale(.975); } to { transform:scale(1); } }
+@media(prefers-reduced-motion:reduce) {
+  .entry-shell::before,.entry-shell::after,.entry-nav,.entry-copy,.entry-shell .auth-card,.entry-shell .auth-card-mark,
+  .entry-shell .auth-card .tab { animation:none !important; }
+  .entry-shell .auth-form input,.entry-shell .password-toggle,.entry-shell .primary-button,.entry-shell .secondary-button { transition:none !important; }
+}
