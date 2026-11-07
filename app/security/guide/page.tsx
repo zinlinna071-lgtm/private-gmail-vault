@@ -79,6 +79,26 @@ const glossary = [
     term: "Zero-knowledge",
     meaning: "An architecture where the service provider is designed not to receive the user's readable secrets or unlock keys.",
     myanmar: "ဝန်ဆောင်မှုပေးသူဘက်ကလည်း အသုံးပြုသူရဲ့ မူရင်းလျှို့ဝှက်အချက်အလက်နဲ့ ဖွင့်ရန် key ကို မရရှိစေဖို့ ဒီဇိုင်းလုပ်ထားတဲ့ စနစ်။ ဒီ Vault prototype မှာ မပြီးစီးသေးပါ။"
+  },
+  {
+    term: "Argon2id",
+    meaning: "A password-based key-derivation method that makes repeated password guessing more expensive for an attacker. It does not rescue a weak password, and real settings must be measured on supported devices.",
+    myanmar: "Password ကနေ encryption key အတွက် အသုံးပြုမယ့်တန်ဖိုးကို ထုတ်ပေးတဲ့ နည်းလမ်းပါ။ Password ကို ခန့်မှန်းစမ်းသပ်ဖို့ ပိုကုန်ကျစေပါတယ်။ Password အားနည်းနေရင်တော့ ဒီနည်းလမ်းတစ်ခုတည်းနဲ့ မကာကွယ်နိုင်ပါဘူး။"
+  },
+  {
+    term: "AES-GCM",
+    meaning: "An encryption method that protects the contents and checks whether the protected data or its associated context was changed. It still depends on keeping the key secret and using the method correctly.",
+    myanmar: "အချက်အလက်ကို ဖတ်မရအောင် ကာကွယ်ပေးသလို လမ်းကြောင်းမှာ ဒေတာပြောင်းလဲထားတာကိုလည်း စစ်ဆေးနိုင်တဲ့ encryption နည်းလမ်းပါ။ ဒါပေမယ့် key ပေါက်ကြားသွားရင် မကာကွယ်နိုင်ပါဘူး။"
+  },
+  {
+    term: "HKDF",
+    meaning: "A method for creating separate purpose-specific keys from an already strong secret. It does not turn a weak password into a strong one.",
+    myanmar: "ရှိပြီးသား ခိုင်မာတဲ့ လျှို့ဝှက်တန်ဖိုးတစ်ခုကနေ အသုံးပြုမယ့်ရည်ရွယ်ချက် မတူတဲ့ key များကို ခွဲထုတ်ပေးတဲ့ နည်းလမ်းပါ။ Password အားနည်းမှုကို ပြုပြင်ပေးတာ မဟုတ်ပါဘူး။"
+  },
+  {
+    term: "Browser engine",
+    meaning: "The software inside a browser that handles web pages and browser features. Testing three engines checks compatibility, not every security property of the whole app or every phone.",
+    myanmar: "Website ကို ဖွင့်ပြသပြီး browser အလုပ်လုပ်စေတဲ့ အတွင်းပိုင်းနည်းပညာပါ။ Browser သုံးမျိုးမှာ စမ်းတာက အဲဒီပတ်ဝန်းကျင်တွေမှာ အလုပ်လုပ်မလုပ် စစ်တာသာဖြစ်ပြီး App တစ်ခုလုံး သို့မဟုတ် ဖုန်းတိုင်း လုံခြုံကြောင်း အာမခံတာ မဟုတ်ပါဘူး။"
   }
 ];
 
