@@ -31,6 +31,21 @@ export default function SecurityResearchPage() {
         <p className="security-lead" lang="my">အတည်ပြုထားသော သုတေသနစာတမ်းများကို ဒီ Website ပေါ်မှာ တိုက်ရိုက်ဖတ်ရှုနိုင်ပါမယ်။ စမ်းသပ်မှုအတိုင်းအတာ၊ နည်းလမ်း၊ သက်သေအထောက်အထား၊ တွေ့ရှိချက်၊ ပြုပြင်ကာကွယ်မှုနှင့် ကန့်သတ်ချက်များ ပါဝင်မယ်။</p>
       </section>
 
+      <section className="security-section research-reading-guide" aria-labelledby="research-reading-title">
+        <div className="security-section-heading">
+          <div><span className="section-index">HOW TO READ THE EVIDENCE</span><h2 id="research-reading-title">A result is only as broad as its test.</h2></div>
+          <span className="section-aside">PLAIN LANGUAGE</span>
+        </div>
+        <p className="security-lead">A paper may describe a design, a source review, or an executed test. These are different kinds of evidence. Read the exact scope before drawing a conclusion.</p>
+        <p className="security-lead" lang="my">စာတမ်းတစ်ခုမှာ ဒီဇိုင်းအကြောင်း၊ Code စစ်ဆေးချက်၊ ဒါမှမဟုတ် တကယ်လုပ်ဆောင်ခဲ့တဲ့ စမ်းသပ်မှု ပါဝင်နိုင်ပါတယ်။ ဒီအရာတွေဟာ သက်သေအမျိုးအစား မတူကြပါဘူး။ ရလဒ်ကို မဆုံးဖြတ်ခင် စမ်းသပ်ထားတဲ့ အတိုင်းအတာကို အရင်ဖတ်ပါ။</p>
+        <div className="research-reading-list">
+          <p><strong>PASS</strong><span>The named check succeeded in its recorded environment. It does not certify the whole product.</span></p>
+          <p><strong>NOT RUN</strong><span>No test execution result exists. It is neither a pass nor a test failure.</span></p>
+          <p><strong>LIMITED</strong><span>Only the stated component, behavior, or source area was reviewed.</span></p>
+          <p><strong>PLANNED</strong><span>A proposed future task. It is not an implemented feature.</span></p>
+        </div>
+      </section>
+
       <section className="security-section">
         <div className="security-section-heading">
           <div><span className="section-index">01 / PUBLICATIONS</span><h2>Published research · ထုတ်ဝေပြီးစာတမ်းများ</h2></div>
