@@ -57,6 +57,9 @@ export default function VaultManager() {
   const firstAccountInputRef = useRef<HTMLInputElement>(null);
   const addAccountButtonRef = useRef<HTMLButtonElement>(null);
   const wasFormOpenRef = useRef(false);
+  const deleteRecordButtonRef = useRef<HTMLButtonElement>(null);
+  const keepRecordButtonRef = useRef<HTMLButtonElement>(null);
+  const wasDeleteConfirmOpenRef = useRef(false);
 
   const loadItems = useCallback(async () => {
     setLoading(true);
@@ -107,6 +110,15 @@ export default function VaultManager() {
     }
     wasFormOpenRef.current = showForm;
   }, [showForm]);
+
+  useEffect(() => {
+    if (confirmDelete) {
+      keepRecordButtonRef.current?.focus();
+    } else if (wasDeleteConfirmOpenRef.current) {
+      deleteRecordButtonRef.current?.focus();
+    }
+    wasDeleteConfirmOpenRef.current = confirmDelete;
+  }, [confirmDelete]);
 
   useEffect(() => {
     const dialog = inspectorRef.current;
@@ -404,7 +416,7 @@ export default function VaultManager() {
           <div className="museum-inspector-content">
             <div className="museum-inspector-topline">
               <span>PRIVATE ARCHIVE / RECORD DETAILS</span>
-              <button className="museum-close-button" type="button" onClick={closeInspector} aria-label="Close record">×</button>
+              <button className="museum-close-button" type="button" autoFocus onClick={closeInspector} aria-label="Close record">×</button>
             </div>
             <div className="museum-inspector-art">
               <span className="museum-section-kicker">COLLECTION OBJECT</span>
@@ -441,13 +453,13 @@ export default function VaultManager() {
                 <p>This permanently deletes the saved account record from your Vault.</p>
                 <div>
                   <button className="museum-delete-button" type="button" disabled={deleting} onClick={() => void removeItem(activeItem.id)}>{deleting ? "Removing…" : "Confirm delete"}</button>
-                  <button className="museum-cancel-button" type="button" disabled={deleting} onClick={() => setConfirmDelete(false)}>Keep record</button>
+                  <button ref={keepRecordButtonRef} className="museum-cancel-button" type="button" disabled={deleting} onClick={() => setConfirmDelete(false)}>Keep record</button>
                 </div>
               </div>
             ) : (
               <div className="museum-inspector-actions">
                 <button className="museum-add-button" type="button" onClick={() => startEdit(activeItem)}>Edit record</button>
-                <button className="museum-delete-link" type="button" onClick={() => setConfirmDelete(true)}>Delete record</button>
+                <button ref={deleteRecordButtonRef} className="museum-delete-link" type="button" onClick={() => setConfirmDelete(true)}>Delete record</button>
               </div>
             )}
             <p className="museum-inspector-note">Private details stay concealed until you choose to reveal them. Close this panel when finished.</p>
