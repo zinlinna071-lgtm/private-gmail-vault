@@ -291,3 +291,232 @@
   .step,.heroLinks a,.nextLinks a { transition: none !important; }
   .step:hover { transform: none; }
 }
+
+
+.visualSection {
+  padding: 38px 0 48px;
+  border-top: 1px solid #23434e;
+}
+.visualCard {
+  margin-top: 16px;
+  padding: clamp(17px,3vw,26px);
+  border: 1px solid #294d56;
+  border-radius: 16px;
+  background:
+    radial-gradient(ellipse at 90% 0%,#17463b38,transparent 42%),
+    linear-gradient(145deg,#102432e8,#091722f5);
+  box-shadow: inset 0 1px #b6fff20a,0 16px 38px #0002;
+}
+.visualCardHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+.visualCardHead>div>span {
+  color: #76e3c3;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .16em;
+}
+.visualCardHead h3 {
+  margin: 8px 0 0;
+  color: #eafff9;
+  font-size: clamp(17px,2.5vw,22px);
+  letter-spacing: -.035em;
+}
+.conceptTag {
+  flex: 0 0 auto;
+  padding: 6px 8px;
+  border: 1px solid #55717a;
+  border-radius: 4px;
+  color: #a8c3cb;
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: .12em;
+}
+.encryptionFlow {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) 64px minmax(0,1fr) 64px minmax(0,1fr);
+  align-items: center;
+  gap: 9px;
+}
+.flowNode {
+  display: flex;
+  min-width: 0;
+  min-height: 174px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 8px;
+  padding: 17px;
+  border: 1px solid #31535e;
+  border-radius: 12px;
+  background: #0a1b29;
+}
+.nodeIcon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid #417c76;
+  border-radius: 9px;
+  color: #8fe7cd;
+  background: #15352f;
+  font-size: 15px;
+  font-weight: 900;
+}
+.flowNode b {
+  color: #eafff9;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.flowNode small {
+  color: #91adb8;
+  font-size: 9px;
+  line-height: 1.6;
+}
+.flowNode code {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  padding: 6px 7px;
+  border: 1px solid #294751;
+  border-radius: 5px;
+  color: #a5c7cb;
+  background: #07131e;
+  font-size: 9px;
+}
+.protectedNode { border-color: #397b69; background: linear-gradient(145deg,#102e2c,#0a1b29); }
+.flowArrow {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  color: #78dfc1;
+}
+.flowArrow span { font-size: 25px; line-height: 1; }
+.flowArrow small {
+  color: #80a7a8;
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: .1em;
+}
+.visualCaption {
+  margin: 14px 0 0;
+  color: #77959f;
+  font-size: 9px;
+  line-height: 1.7;
+}
+.visualCard>.myanmar {
+  margin: 12px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid #23434e;
+  color: #a4c5c2;
+  font-size: 11px;
+  line-height: 1.9;
+}
+.tamperFlow {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 13px;
+}
+.tamperCase {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid #294d56;
+  border-radius: 12px;
+  background: #091a27;
+}
+.caseLabel {
+  color: #9bb9c0;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .12em;
+}
+.dataStrip {
+  display: flex;
+  width: min(100%,230px);
+  gap: 5px;
+}
+.dataStrip i {
+  flex: 1;
+  height: 27px;
+  border: 1px solid #3d8975;
+  border-radius: 4px;
+  background: linear-gradient(145deg,#246b5c,#12382f);
+}
+.alteredStrip i:nth-child(3) {
+  border-color: #bd8664;
+  background: repeating-linear-gradient(135deg,#754633 0 5px,#3d2927 5px 10px);
+  transform: translateY(-4px);
+}
+.verifyArrow {
+  color: #84aaa9;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .12em;
+}
+.verifyArrow span { padding-left: 8px; color: #78dfc1; font-size: 16px; vertical-align: -2px; }
+.acceptResult,.rejectResult {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 11px;
+  border: 1px solid;
+  border-radius: 7px;
+}
+.acceptResult { border-color: #36785f; background: #12372f66; color: #91e2bf; }
+.rejectResult { border-color: #815342; background: #3a211e66; color: #efb39b; }
+.acceptResult b,.rejectResult b { font-size: 10px; letter-spacing: .14em; }
+.acceptResult small,.rejectResult small { font-size: 8px; opacity: .85; }
+.evidenceLadder {
+  display: grid;
+  grid-template-columns: repeat(4,minmax(0,1fr));
+  gap: 9px;
+  counter-reset: evidence;
+}
+.evidenceLadder>div {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 154px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 15px;
+  border: 1px solid #294d56;
+  border-radius: 10px;
+  background: #091a27;
+}
+.evidenceLadder>div>span {
+  display: grid;
+  width: 27px;
+  height: 27px;
+  place-items: center;
+  border: 1px solid #417c76;
+  border-radius: 50%;
+  color: #8fe7cd;
+  font-size: 9px;
+  font-weight: 900;
+}
+.evidenceLadder b { color: #eafff9; font-size: 11px; line-height: 1.4; }
+.evidenceLadder small { color: #a3bdc5; font-size: 9px; line-height: 1.5; }
+.evidenceLadder em { margin-top: auto; color: #78a09f; font-size: 8px; font-style: normal; line-height: 1.6; }
+@media(max-width:760px) {
+  .evidenceLadder { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+@media(max-width:620px) {
+  .visualCardHead { flex-direction: column; }
+  .encryptionFlow { grid-template-columns: 1fr; }
+  .flowNode { min-height: 0; }
+  .flowArrow { grid-template-columns: auto auto; justify-content: center; align-items: center; }
+  .flowArrow span { transform: rotate(90deg); }
+  .tamperFlow { grid-template-columns: 1fr; }
+}
+@media(max-width:420px) {
+  .evidenceLadder { grid-template-columns: 1fr; }
+  .evidenceLadder>div { min-height: 0; }
+}
