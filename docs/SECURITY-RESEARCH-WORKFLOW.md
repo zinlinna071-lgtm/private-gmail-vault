@@ -13,7 +13,7 @@ Approval order is strictly sequential:
 5. Final owner approval.
 6. Marked READY_TO_PUBLISH for a separate publication release.
 
-Reviewers are assigned through the server-side reviewer UUID allowlist. Technical, security/privacy, and bilingual approvals must come from different reviewer accounts; authors cannot approve their own reviews. Each decision is appended to review history rather than overwritten. A reviewer may approve or request changes. A changes-requested decision returns the draft to DRAFT; the author must update and resubmit it. Technical, security/privacy, and bilingual reviewers cannot approve their own authored draft. Owner approval is a separate final gate.
+Reviewers are assigned through the server-side reviewer UUID allowlist. Technical, security/privacy, and bilingual approvals must come from different reviewer accounts. Final owner approval must also come from an account that did not approve any of those reviewer stages. Authors cannot approve their own reviewer stages. Each decision is appended to review history rather than overwritten. A reviewer may approve or request changes. A changes-requested decision returns the draft to DRAFT; the author must update and resubmit it. Prior approvals remain in the audit history and an account that has approved an earlier gate cannot approve another gate for that draft.
 
 ## Access configuration
 
