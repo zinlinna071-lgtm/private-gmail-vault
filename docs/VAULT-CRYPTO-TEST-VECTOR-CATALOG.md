@@ -16,7 +16,7 @@ This catalog maps the proposed Vault protocol to reproducible Known-Answer Tests
 - **Required KAT:** deterministic primitive-level expected-output comparison still needed.
 - **Not implemented:** proposed protocol features for which there is no active implementation to test.
 
-This is a coverage plan, not an assertion that the listed tests were executed in this change.
+This is a coverage plan, not an assertion that every listed test was executed in this change.
 
 ## 2. Current source and test inventory
 
@@ -105,7 +105,7 @@ Required assertions:
 5. The test verifies the Web Crypto combined output is split into ciphertext and tag consistently with the Vault envelope.
 6. No fixed test key or IV is ever used outside test-only code.
 
-**Vector selection remains pending:** select an exact AES-256-GCM case from NIST's official CAVP material and pin it before implementing the test. This catalog intentionally does not invent or guess a NIST expected output.
+**Pinned fixtures:** Section 11 records two AES-256-GCM vectors transcribed from a Chromium test fixture that identifies the original NIST CAVP `gcmEncryptExtIV256.rsp` source. Preserve that provenance when implementing the test.
 
 ## 6. DEK envelope compatibility tests
 
@@ -148,8 +148,8 @@ Keep Client Record V1 distinct from the proposed V2. Required regression coverag
 | Argon2id RFC vector | Chromium hosted CI | Previously passed |
 | Argon2id RFC vector | Firefox hosted CI | Previously passed |
 | Argon2id RFC vector | WebKit hosted CI | Previously passed |
-| Web Crypto AES-GCM KAT | Chromium / Firefox / WebKit | Planned; not recorded here as run |
-| HKDF-SHA-256 KAT | Node.js + browser Web Crypto | Planned; implementation not present |
+| Web Crypto AES-GCM KAT | Chromium / Firefox / WebKit | Isolated Node harness implemented; browser-engine run pending |
+| HKDF-SHA-256 KAT | Node.js + browser Web Crypto | Isolated test harness uses Web Crypto HKDF; no production helper |
 | DEK envelope round-trip | Current Vitest suite | Existing tests; no execution in this documentation task |
 | Physical mobile memory/latency | Low-/mid-/high-range Android and iOS Safari | Not run |
 
@@ -187,7 +187,7 @@ Use the following status vocabulary consistently:
 - Do not run migrations, merge to `main`, create a preview, or deploy.
 - A passing KAT verifies a particular algorithm/input/output combination. It does not prove protocol correctness, side-channel resistance, supply-chain integrity, secure key lifecycle, zero-knowledge architecture, or overall product security.
 
-**Current decision:** keep the catalog as a test plan. The next implementation candidate is a test-only HKDF/AES-GCM KAT harness after the AES official vector is pinned and the HKDF protocol details are approved. No production crypto code is authorized by this document.
+**Current decision:** keep the catalog as a test plan. A dependency-free test-only harness now exists under `tools/crypto-primitives-spike/`; it exercises Web Crypto HKDF-SHA-256 and the two pinned AES-256-GCM vectors without importing application code. A local Node.js v22.16.0 spot-check of the three expected outputs and AES-GCM decryptions passed. The committed harness's full negative-test suite and its GitHub Actions workflow have not yet been observed passing; browser-engine and physical-device verification remain pending. No production crypto code is authorized by this document.
 
 
 ## 11. Pinned AES-256-GCM reference vectors — NIST CAVP source
@@ -232,3 +232,24 @@ Required Web Crypto checks for each vector:
 7. Clear test buffers best-effort and ensure fixture keys are never reused outside tests.
 
 **Provenance note:** Chromium's fixture documents that the values originate in NIST's `gcmEncryptExtIV256.rsp` and identifies the vector groups by key/IV/plaintext/AAD/tag lengths. The test fixture is a reproducible transcription reference; the authoritative source family remains NIST CAVP. NIST states that informal vectors do not confer CAVP validation.
+
+
+## 12. Isolated primitive harness — implementation status (2026-11-08)
+
+A dependency-free test harness has been added on `design/cyber-visual-architecture`:
+
+- `tools/crypto-primitives-spike/package.json`
+- `tools/crypto-primitives-spike/test-primitives.mjs`
+- `.github/workflows/vault-crypto-primitives-spike.yml`
+
+The harness uses Node.js Web Crypto only; it adds no root application dependency and imports no Vault application module. It includes:
+- RFC 5869 Test Case 1 HKDF-SHA-256 expected-output check and IKM mutation check.
+- NIST CAVP-origin AES-256-GCM vector A encryption/decryption and tamper checks.
+- NIST CAVP-origin AES-256-GCM vector B encryption/decryption and AAD/tamper checks.
+- Best-effort clearing of mutable test buffers.
+
+**Local spot-check (verified):** Node.js v22.16.0 Web Crypto reproduced the RFC 5869 OKM and both AES-256-GCM ciphertext+tag outputs; both AES-GCM decryptions recovered the expected plaintext bytes.
+
+**Not yet verified:** the committed `test-primitives.mjs` full test run, the new GitHub Actions workflow, Chromium/Firefox/WebKit execution of these HKDF/AES-GCM vectors, and physical mobile behavior. Do not mark those checks passed until a run URL and logs are inspected.
+
+The workflow is scoped to pushes on `design/cyber-visual-architecture` that touch this isolated harness or its workflow file. It is not a production build, preview, deployment, or Vault integration.
