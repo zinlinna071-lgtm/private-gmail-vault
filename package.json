@@ -32,8 +32,6 @@
     "wrangler": "4.158.0"
   },
   "overrides": {
-    "@node-minify/core": "11.0.0",
-    "@node-minify/terser": "11.0.0",
     "glob": "14.0.4",
     "minimatch": "11.0.5",
     "postcss": "8.5.32"
