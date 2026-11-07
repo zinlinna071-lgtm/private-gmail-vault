@@ -45,12 +45,12 @@ A separate browser-only harness runs the same public HKDF-SHA-256 and AES-256-GC
 
 Run from the repository root:
 
-\`\`\`sh
+```sh
 cd tools/argon2id-browser-spike
 npm install --ignore-scripts --no-audit --no-fund
 npx playwright install chromium firefox webkit
 node run-crypto-primitives-browser-test.mjs
-\`\`\`
+```
 
 The browser runner bundles **tools/crypto-primitives-spike/browser-test-entry.js** and uses a local test-only HTTP server. It does not import the Vault application, call Vault APIs, or handle real credentials. The CI workflow is **.github/workflows/vault-crypto-primitives-browser.yml**.
 
