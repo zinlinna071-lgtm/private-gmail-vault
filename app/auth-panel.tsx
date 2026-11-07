@@ -1,11 +1,13 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 type Mode = "login" | "register" | "recover";
 
 export default function AuthPanel() {
   const [mode, setMode] = useState<Mode>("login");
+  const [mounted, setMounted] = useState(false);
   const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -23,6 +25,8 @@ export default function AuthPanel() {
   const [demoEntry, setDemoEntry] = useState(false);
   const [errorCycle, setErrorCycle] = useState(0);
   const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => setMounted(true), []);
 
   function clearFeedback() {
     setError("");
@@ -218,7 +222,7 @@ export default function AuthPanel() {
       )}
       <p className="auth-footnote">Your Vault Login ID and Master Password are used only to access this private vault.</p>
 
-      {showRegistrationNotice && (
+      {showRegistrationNotice && mounted && createPortal(
         <div className="registration-notice-backdrop" role="presentation">
           <section className="registration-notice" role="dialog" aria-modal="true" aria-labelledby="registration-notice-title" aria-describedby="registration-notice-description">
             <div className="registration-notice-topline"><span>BEFORE YOU CREATE YOUR VAULT</span><span className="registration-notice-mark" aria-hidden="true">!</span></div>
@@ -236,7 +240,8 @@ export default function AuthPanel() {
               <button type="button" className="primary-button" onClick={acceptRegistrationNotice}>I understand &amp; create account</button>
             </div>
           </section>
-        </div>
+        </div>,
+        document.body
       )}
 
       {enteringVault && (
