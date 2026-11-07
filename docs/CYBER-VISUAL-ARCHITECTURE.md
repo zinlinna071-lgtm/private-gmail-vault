@@ -71,12 +71,15 @@ When no real data is available, show an explicit empty/unavailable state. Demons
 - [ ] Build accessible event and metric transitions driven by actual data changes.
 
 ### Phase C — research publication experience
-- [ ] Research paper reading layout with abstract, scope, methodology, evidence, findings, remediation, retest, limitations, and references.
+- [x] Establish a responsive research-paper reading surface with abstract, provenance, structured sections, and references.
+- [x] Add a bilingual edition switch with a restrained transition tied to the user's actual language selection.
+- [ ] Verify every publication contains complete scope, methodology, findings, remediation, retest, limitations, and references.
 - [ ] Architecture diagrams with source-backed legends and safe public disclosure.
 - [ ] Draft → technical review → sensitive-data review → owner approval → publish workflow.
 
 ### Phase D — system-wide refinement
-- [ ] Typography, spacing, iconography, empty/loading/error states, and responsive QA.
+- [x] Refine research publication cards, empty state, provenance strip, and mobile reading layout.
+- [ ] System-wide typography, spacing, iconography, empty/loading/error states, and responsive QA.
 - [ ] Performance and reduced-motion QA.
 - [ ] Document design decisions and implementation evidence for public learning.
 
