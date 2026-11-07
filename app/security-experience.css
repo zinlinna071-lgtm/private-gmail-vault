@@ -581,3 +581,9 @@ body {
 .reading-panel-item strong { color:#eafff9; font-size:12px; }
 .reading-panel-item small { color:#9ab6bf; font-size:10px; line-height:1.65; }
 .security-reading-panel>p { margin:16px 0 0; color:#9ab6bf; font-size:11px; line-height:1.8; }
+
+.research-reading-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:20px; }
+.research-reading-list p { display:grid; gap:7px; margin:0; padding:15px; border:1px solid #294d56; border-radius:10px; background:#0a1725; }
+.research-reading-list strong { color:#8ce8d0; font:800 9px/1.4 var(--vault-font-mono); letter-spacing:.12em; }
+.research-reading-list span { color:#a9bfca; font-size:11px; line-height:1.7; }
+@media(max-width:560px) { .research-reading-list { grid-template-columns:1fr; } }
