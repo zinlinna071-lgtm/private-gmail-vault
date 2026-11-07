@@ -25,7 +25,7 @@ const scenarios = [
 const initialEvents: LabEvent[] = scenarios.slice(0, 4).map((event, index) => ({
   ...event,
   id: index,
-  time: new Date(Date.now() - (3 - index) * 1700).toLocaleTimeString("en-GB", { hour12: false })
+  time: "--:--:--"
 }));
 
 export default function LabActivityConsole() {
@@ -34,6 +34,11 @@ export default function LabActivityConsole() {
   const [ticks, setTicks] = useState([32, 54, 41, 68, 47, 76, 38, 59, 45, 71, 52, 64]);
 
   useEffect(() => {
+    const mountedAt = Date.now();
+    setEvents(current => current.map((event, index) => ({
+      ...event,
+      time: new Date(mountedAt - (current.length - 1 - index) * 1700).toLocaleTimeString("en-GB", { hour12: false })
+    })));
     let sequence = 4;
     const timer = window.setInterval(() => {
       const next = scenarios[sequence % scenarios.length];
