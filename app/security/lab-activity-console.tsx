@@ -20,7 +20,7 @@ export default function LabActivityConsole() {
     <section className="lab-console-section" aria-labelledby="lab-console-title">
       <div className="lab-console-heading">
         <div>
-          <span className="section-index">OBSERVABILITY / 02</span>
+          <span className="section-index">OBSERVABILITY / SOURCE STATUS</span>
           <h2 id="lab-console-title">The workstation is ready for real signals.</h2>
           <p>A high-resolution view of the system boundaries and evidence channels. Live telemetry will appear only after a verified source is connected.</p>
         </div>
