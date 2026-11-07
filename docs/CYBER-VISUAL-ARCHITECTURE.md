@@ -190,3 +190,79 @@ Observed lifecycle:
 No backend, API, authentication, encryption, database, or production configuration was changed. A safer per-record fetch/data-minimization design and a browser-side key lifecycle would require a separately approved architecture/security change; it must not be represented as completed work.
 
 Status: SOURCE-REVIEWED LIMITATION; REDESIGN PLANNED; NOT IMPLEMENTED OR VERIFIED. Runtime memory inspection, browser cache behavior, clipboard permissions, and assistive-technology checks remain outstanding.
+
+
+### Proposed Vault data-minimization and client-key architecture — 2026-11-08
+
+**Status: DESIGN PROPOSAL ONLY — NOT APPROVED FOR IMPLEMENTATION**
+
+This proposal follows the source review of the current collection API and Vault client. It does not change the existing API, database, authentication flow, encryption behavior, or production configuration.
+
+#### Confirmed current data flow
+
+1. The authenticated collection request `GET /api/vault/items` selects every row belonging to the authenticated user.
+2. The server decrypts every selected row and returns account name, username, password, and backup codes in one JSON response.
+3. The mounted Vault client stores the complete returned collection in React state.
+4. The per-record API route currently supports update and delete; it does not provide a per-record GET endpoint.
+5. The current server-mediated encryption model is not zero-knowledge. The server has the ability to decrypt stored records.
+
+#### Proposed security target
+
+The target architecture should ensure that the server stores and serves ciphertext but never receives the Vault data-encryption key and never decrypts account content. The browser should decrypt only what is required for the current interaction.
+
+A possible high-level flow:
+
+- **Unlock:** Authenticate the user, then derive a key-encryption key from a Vault secret using a separately reviewed Argon2id implementation and parameters. The derivation adapter, password policy, rate limiting, recovery, and memory-handling rules must be reviewed before implementation.
+- **Key envelope:** Use the existing client-side key-envelope module only after its integration and independent tests are reviewed. The envelope binds the wrapped random data-encryption key to the Vault identifier through authenticated additional data.
+- **Collection:** Return record identifiers, timestamps, and encrypted metadata envelopes only. Do not return plaintext account names, usernames, passwords, or backup codes from the collection endpoint.
+- **Local metadata view:** Decrypt metadata in the browser to render names and support search/sort. This means metadata plaintext still exists in browser memory while the collection is in use; the design must not claim otherwise.
+- **Record detail:** Fetch the selected record's encrypted secret payload only when the user opens it. Decrypt locally for the active inspector. On close, discard references and reset UI state, while documenting that JavaScript garbage collection does not guarantee secure memory erasure.
+- **Mutations:** Encrypt content in the browser before sending it to the API. The server validates envelope shape, size, ownership, and request origin, then stores ciphertext without decrypting it.
+- **Cache and observability:** Keep sensitive responses non-cacheable. Never log plaintext, keys, envelopes, or request bodies. Public telemetry must contain no account identifiers or secret-bearing payloads.
+
+#### Metadata privacy decision
+
+A collection needs enough information to show useful record labels. Returning account names or usernames in plaintext would leak metadata to the server and database. The preferred direction is therefore encrypted metadata envelopes that the browser decrypts locally. The collection endpoint may return all metadata ciphertexts, but it must not return secret payload ciphertexts until a record is opened.
+
+This is a deliberate compromise: it reduces secret exposure and server knowledge, but does not eliminate browser-memory exposure for decrypted collection labels. Search and sorting happen locally after metadata decryption.
+
+#### Required security controls before implementation
+
+- A reviewed Argon2id adapter with documented parameters, input normalization, versioning, and test vectors.
+- Non-extractable browser CryptoKeys where supported; no raw key persistence in localStorage, sessionStorage, IndexedDB, URLs, logs, or analytics.
+- Explicit key lifecycle for unlock, lock, tab close, session expiry, failed unlock, and account switching.
+- Authenticated ownership checks on every read and write; cross-user and cross-Vault identifier substitution tests.
+- Strict schema/size validation, same-origin protections for mutations, and no-store response headers.
+- Authenticated additional data binding ciphertext to Vault ID, record ID, field purpose, and format version.
+- Cryptographic test vectors, tamper tests, wrong-key tests, IV uniqueness strategy, malformed-envelope tests, and browser compatibility tests.
+- Recovery and device-change design reviewed before claiming users can recover data. Loss of the only decryption key must not silently become server-side plaintext recovery.
+- Threat model covering XSS, malicious browser extensions, compromised devices, server compromise, backups, logs, and clipboard exposure. Client-side encryption does not protect secrets while an attacker controls the unlocked browser.
+- Independent security review before production use.
+
+#### Legacy data migration — separate approval required
+
+Existing rows use server-side encryption. They cannot simply be relabeled as client-encrypted data. A migration would require an explicit, tested conversion flow that:
+1. Reads one legacy record through the existing authenticated path.
+2. Encrypts it in the user's browser under the newly unlocked client-side data key.
+3. Writes the new versioned ciphertext and envelope.
+4. Verifies the new ciphertext can be decrypted locally before marking that record migrated.
+5. Preserves a carefully controlled rollback/recovery strategy without leaving duplicate plaintext or weakening access controls.
+
+The migration must define partial-failure behavior, backup handling, version negotiation, concurrent edits, account recovery, and deletion of legacy ciphertext. Do not run a migration or alter the current schema until the owner approves a detailed plan and test environment.
+
+#### Acceptance tests required before any release claim
+
+- Collection response contains no plaintext account name, username, password, or backup code and no secret-payload ciphertext.
+- Collection response is scoped to the authenticated user and cannot enumerate another user's records.
+- Opening one record fetches only that record's secret envelope.
+- Changing record IDs cannot cross Vault ownership boundaries.
+- Browser-side decrypt fails for wrong keys, modified ciphertext, modified AAD, wrong Vault IDs, and wrong record IDs.
+- No secret values appear in logs, URLs, analytics, error messages, or browser persistence.
+- Lock, sign-out, session expiry, and account switching clear application references and return the UI to a concealed state.
+- Cache headers remain non-cacheable for every sensitive route.
+- Migration tests cover empty Vaults, large records, malformed legacy rows, network interruption, duplicate submission, partial completion, and rollback.
+- Runtime tests cover current supported mobile and desktop browsers. Source inspection alone is not sufficient.
+
+#### Approval boundary
+
+This is a proposed target, not a statement of implemented functionality. The existing server-decrypted collection endpoint remains active until a separately approved implementation replaces it. No backend changes, database migrations, authentication changes, production deployments, or secret changes are authorized by this document.
