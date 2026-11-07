@@ -1552,3 +1552,142 @@ footer { margin-top: 42px; color: #71809a; font-size: 11px; line-height: 1.7; le
   .museum-inline-action,.museum-delete-link,.security-evidence,.security-module,.surface-step,
   .operation-list > div,.crypto-learning-notes article,.lab-console,.crypto-lab { transition:none !important; }
 }
+
+ 
+/* Vault museum palette bridge — retain the editorial museum character,
+   while aligning the main surfaces and interactive controls with the public
+   midnight/teal system. Warm brass remains a restrained decorative material. */
+.museum-shell {
+  background: var(--vault-bg, #070f19);
+  color: var(--vault-text, #eafff9);
+  font-family: var(--vault-font-ui, Inter, ui-sans-serif, system-ui, sans-serif);
+}
+.museum-shell::before {
+  background:
+    radial-gradient(ellipse at 82% 11%, #176b6b22 0%, transparent 36%),
+    radial-gradient(ellipse at 14% 38%, #327c8520 0%, transparent 36%),
+    linear-gradient(180deg, #0d2029 0%, #091721 56%, #070f19 100%);
+}
+.museum-ambient {
+  opacity: .14;
+  background-image: linear-gradient(#80e7d00a 1px, transparent 1px), linear-gradient(90deg, #80e7d00a 1px, transparent 1px);
+}
+.museum-header { border-bottom-color: #28505b66; }
+.museum-brand { color: var(--vault-text, #eafff9); }
+.museum-brand-mark {
+  border-color: #76e3c377;
+  color: #b8ffeb;
+  background: linear-gradient(145deg, #174b52, #0c2031);
+  font-family: inherit;
+}
+.museum-brand-name small,.museum-account-label { color: var(--vault-muted, #9ab6bf); }
+.museum-header-center { color: #9ab6bf; }
+.museum-status-light,.museum-wing-status span { background: #76e3c3; box-shadow: 0 0 12px #76e3c366; }
+.museum-research-link { color: #8ce8d0; }
+.museum-research-link:hover { color: #b8ffeb; }
+.museum-header .signout-button {
+  border-color: #4b8d8b88;
+  color: #d6fff3;
+}
+.museum-header .signout-button:hover { border-color: #76e3c3; background: #76e3c314; }
+.museum-welcome { border-bottom-color: #28505b66; }
+.museum-section-kicker { color: #76e3c3; }
+.museum-welcome h1,.museum-collection-heading h2,.museum-asset-title-row h3,
+.museum-form-heading h3,.museum-empty-state h3 {
+  font-family: var(--vault-font-ui, Inter, ui-sans-serif, system-ui, sans-serif);
+}
+.museum-welcome h1 { color: #eafff9; }
+.museum-welcome h1 em,.museum-collection-heading h2 span { color: #8ce8d0; }
+.museum-welcome-copy > p,.museum-collection-heading p { color: #a9bfca; }
+.museum-emblem-orbit { border-color: #76e3c344; }
+.museum-emblem-core {
+  border-color: #76e3c388;
+  background: radial-gradient(circle at 35% 28%, #28656a, #102b36 70%);
+  box-shadow: 0 0 65px #3dd8b51c, inset 0 0 28px #76e3c31a;
+}
+.museum-emblem-core span { color: #b8ffeb; font-family: inherit; }
+.museum-emblem-caption,.museum-collection-count span { color: #8daeb5; }
+.museum-collection-heading h2 { color: #eafff9; }
+.museum-collection-count strong { color: #8ce8d0; font-family: inherit; }
+.museum-search {
+  border-color: #28505b;
+  background: #0b1b29;
+  color: #76e3c3;
+}
+.museum-search:focus-within { border-color: #76e3c3; box-shadow: 0 0 0 3px #76e3c320; }
+.museum-search input { color: #eafff9; }
+.museum-search input::placeholder { color: #78969f; }
+.museum-search > button { color: #9ab6bf; }
+.museum-sort select {
+  border-color: #28505b;
+  background: #0b1b29;
+  color: #c5d8d9;
+}
+.museum-sort select:focus-visible { border-color: #76e3c3; outline-color: #76e3c355; }
+.museum-add-button {
+  border-color: #a1ffe4;
+  border-radius: 10px;
+  background: linear-gradient(100deg, #62e9c0, #a2f5e0 48%, #62d9e9);
+  color: #06251f;
+}
+.museum-cancel-button {
+  border-color: #4c928a;
+  border-radius: 10px;
+  color: #d6fff3;
+}
+.museum-cancel-button:hover:not(:disabled) { border-color: #76e3c3; background: #76e3c314; }
+.museum-asset-card {
+  border-color: #28505b;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #102635, #0b1b29);
+}
+.museum-asset-card:hover { border-color: #76e3c388; box-shadow: 0 18px 45px #0006, 0 0 26px #3dd8b510; }
+.museum-asset-card:focus-visible { outline-color: #76e3c3; }
+.museum-asset-caption { color: #eafff9; }
+.museum-asset-title-row h3 { color: #eafff9; }
+.museum-asset-title-row > span { color: #8ce8d0; }
+.museum-asset-caption > p,.museum-asset-meta { color: #9ab6bf; }
+.museum-asset-meta { border-top-color: #28505b; }
+.museum-empty-state {
+  border-color: #28505b;
+  border-radius: 12px;
+  background: radial-gradient(ellipse at center, #176b6b20, transparent 58%), #0b1b29aa;
+}
+.museum-empty-symbol { color: #76e3c3; }
+.museum-empty-state h3 { color: #eafff9; }
+.museum-empty-state p { color: #9ab6bf; }
+.museum-loading-orbit { border-color: #76e3c355; border-top-color: #76e3c3; }
+.museum-record-form {
+  border-color: #28505b;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #102635, #0b1b29);
+}
+.museum-form-heading h3 { color: #eafff9; }
+.museum-form-heading p { color: #9ab6bf; }
+.museum-close-button { border-color: #4c928a88; color: #b8ffeb; }
+.museum-close-button:hover { background: #76e3c314; border-color: #76e3c3; }
+.museum-form-grid label > span { color: #b8d0d1; }
+.museum-form-grid input,.museum-form-grid textarea {
+  border-color: #28505b;
+  border-radius: 8px;
+  background: #071522;
+  color: #eafff9;
+}
+.museum-form-grid input:focus,.museum-form-grid textarea:focus {
+  border-color: #76e3c3;
+  box-shadow: 0 0 0 3px #76e3c320;
+}
+.museum-feedback.is-success { border-color: #28745f; background: #12372f66; color: #b8ffeb; }
+.museum-feedback.is-error { border-color: #9f65605c; background: #572b272e; color: #edb9b0; }
+.museum-footer { border-top-color: #28505b66; color: #78969f; }
+.museum-footer a { color: #8ce8d0; }
+.museum-shell :is(button,a,input,textarea,select,[tabindex]):focus-visible {
+  outline: 2px solid #76e3c3;
+  outline-offset: 3px;
+}
+.museum-shell .museum-search input:focus-visible,
+.museum-shell .museum-form-grid input:focus-visible,
+.museum-shell .museum-form-grid textarea:focus-visible {
+  outline: 2px solid #76e3c3;
+  outline-offset: 2px;
+}
