@@ -52,7 +52,7 @@ export default function CryptographyLearningLab() {
   return (
     <section className="crypto-lab-section" id="interactive-lab" aria-labelledby="crypto-lab-title">
       <div className="security-section-heading">
-        <div><span className="section-index">03 / INTERACTIVE CRYPTOGRAPHY</span><h2 id="crypto-lab-title">One message. One real fingerprint.</h2></div>
+        <div><span className="section-index">LOCAL / INTERACTIVE CRYPTOGRAPHY</span><h2 id="crypto-lab-title">One message. One real fingerprint.</h2></div>
         <span className="section-aside">BROWSER-NATIVE · SHA-256</span>
       </div>
       <p className="security-lead">Explore how a cryptographic hash turns text into a fixed-length digest. This lab calculates the actual SHA-256 result in your browser using the Web Crypto API. Your text is not uploaded or stored by this component.</p>
