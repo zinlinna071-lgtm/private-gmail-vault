@@ -45,11 +45,10 @@ export default async function VaultPage() {
       <div className="museum-main">
         <section className="museum-welcome" aria-labelledby="museum-welcome-title">
           <div className="museum-welcome-copy">
-            <span className="museum-section-kicker">A PRIVATE PLACE FOR WHAT MATTERS</span>
-            <h1 id="museum-welcome-title">Your digital world.<br /><em>Quietly protected.</em></h1>
+            <span className="museum-section-kicker">VAULT / PRIVATE ACCOUNTS</span>
+            <h1 id="museum-welcome-title">Your accounts.<br /><em>Under your control.</em></h1>
             <p>
-              A single, considered space for the records you choose to keep.
-              Explore your collection without navigating a maze of categories.
+              Store, find and manage your account credentials in one private place.
             </p>
           </div>
           <div className="museum-welcome-emblem" aria-label="Private collection emblem">
@@ -72,18 +71,16 @@ export default async function VaultPage() {
             <span className="museum-section-kicker">A SEPARATE PLACE WITHIN THE COLLECTION</span>
             <h2 id="museum-wing-title">Private Security Lab</h2>
             <p>
-              A dedicated research wing for authorized security testing, isolated test assets,
-              and evidence-led investigations. Its private test workspace will be connected
-              separately from the public research pages.
+              Authorized security testing and evidence-led research.
             </p>
             <div className="museum-wing-status"><span /> PRIVATE WORKSPACE · ACCESS GATE REQUIRED</div>
           </div>
-          <Link className="museum-wing-public-link" href="/security/research">Visit public research library <span aria-hidden="true">↗</span></Link>
+          <Link className="museum-wing-public-link" href="/security/research">Public security live <span aria-hidden="true">↗</span></Link>
         </section>
 
         <footer className="museum-footer">
           <span>PRIVATE DIGITAL VAULT</span>
-          <span>YOUR COLLECTION IS PRIVATE · PUBLIC RESEARCH IS READ ONLY</span>
+          <span>PRIVATE VAULT · PUBLIC SECURITY IS READ ONLY</span>
           <span>© {new Date().getFullYear()}</span>
         </footer>
       </div>
