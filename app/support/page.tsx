@@ -2,20 +2,45 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Research Fund Transparency | Private Account Vault",
-  description: "Public disclosure of the personally managed cybersecurity research fund, contribution verification policy, and transparent accounting status.",
+  title: "Support Independent Security Research | Private Account Vault",
+  description: "Discover the public cybersecurity research, practical learning tools, and transparent personal research fund supported by voluntary contributions.",
   alternates: { canonical: "/support" },
   openGraph: {
     type: "website",
-    title: "Cybersecurity Research Fund Transparency | Private Account Vault",
-    description: "Personal project disclosure, contribution verification policy, and research fund accounting status."
+    title: "Support Independent Security Research",
+    description: "Help sustain practical cybersecurity research and free public learning through transparent, voluntary support."
   }
 };
 
-const fundAssets = [
-  { asset: "BTC", network: "Bitcoin", precision: "8 decimals" },
-  { asset: "ETH", network: "Ethereum", precision: "18 decimals" },
-  { asset: "USDT", network: "Network to be announced", precision: "Network-specific" }
+const impactAreas = [
+  {
+    number: "01",
+    eyebrow: "INVESTIGATION",
+    title: "Independent security research",
+    description: "Time and resources for careful investigation, controlled experiments, technical validation, and responsible disclosure.",
+    detail: "Research that is evidence-led, reproducible, and honest about its limits."
+  },
+  {
+    number: "02",
+    eyebrow: "REAL-WORLD TESTING",
+    title: "Isolated testing infrastructure",
+    description: "Compute, lab environments, and specialist tooling for authorized experiments without putting real users or systems at risk.",
+    detail: "A safer place to test, measure, learn, and improve."
+  },
+  {
+    number: "03",
+    eyebrow: "PUBLIC KNOWLEDGE",
+    title: "Open learning & publications",
+    description: "Interactive security explainers, practical learning labs, and research papers written to make complex security ideas easier to understand.",
+    detail: "Knowledge that remains accessible to everyone."
+  }
+];
+
+const principles = [
+  ["No paywall", "Public learning resources remain free. A contribution never unlocks essential knowledge."],
+  ["No invented impact", "No fabricated donor counts, progress bars, attack statistics, or success stories."],
+  ["Proof before totals", "Only independently checked on-chain transfers can enter the confirmed donation record."],
+  ["Clear ownership", "This is a personally managed research project, not a registered charity or nonprofit."]
 ];
 
 export default function ResearchFundPage() {
@@ -29,80 +54,157 @@ export default function ResearchFundPage() {
         <span className="security-nav-status">PUBLIC · READ ONLY</span>
       </header>
 
-      <section className="fund-hero">
-        <span className="section-index">INDEPENDENT CYBERSECURITY RESEARCH</span>
-        <h1>Research funding.<br /><em>Open accounting.</em></h1>
-        <p className="security-lead">A public record of cryptocurrency contributions personally received and managed by the project owner. Every published donation must be independently verified on its blockchain network.</p>
-        <div className="fund-disclosure">
-          <strong>Personal project disclosure</strong>
-          <p>This is a personally operated research project, not a registered charity or nonprofit organization. Contributions are voluntary donations, not investments. They provide no ownership, financial return, or promise of benefit.</p>
-          <p lang="my">ဤ Project ကို ပိုင်ရှင်ကိုယ်တိုင် စီမံခန့်ခွဲသော ကိုယ်ပိုင်သုတေသနလုပ်ငန်းဖြစ်ပြီး မှတ်ပုံတင်ထားသော အလှူအဖွဲ့အစည်း သို့မဟုတ် အကျိုးအမြတ်မယူသော အဖွဲ့အစည်း မဟုတ်ပါ။ လှူဒါန်းငွေသည် ရင်းနှီးမြှုပ်နှံမှုမဟုတ်သလို အမြတ်ငွေ၊ ပိုင်ဆိုင်ခွင့် သို့မဟုတ် ပြန်လည်ရရှိမည့် အကျိုးအမြတ်ကိုလည်း မပေးပါ။</p>
+      <section className="fund-hero fund-hero-premium">
+        <div className="fund-hero-copy">
+          <span className="section-index">INDEPENDENT CYBERSECURITY RESEARCH · VOLUNTARY SUPPORT</span>
+          <div className="fund-open-status"><i /> CONTRIBUTION INTAKE NOT OPEN</div>
+          <h1>Help make security knowledge <em>more open.</em></h1>
+          <p className="security-lead">Behind every useful security lesson is time spent researching, testing, documenting, and making the result understandable. Voluntary support can help keep that work moving — and keep the learning open to everyone.</p>
+          <div className="fund-hero-actions">
+            <a className="fund-primary-link" href="#research-impact">See what support makes possible <span>↓</span></a>
+            <Link className="fund-secondary-link" href="/security">Explore the security lab ↗</Link>
+          </div>
+          <p className="fund-hero-note">No pressure. No membership. No paid access to essential research.</p>
+        </div>
+        <div className="fund-visual" aria-label="Abstract illustration representing open cybersecurity research">
+          <div className="fund-visual-orbit fund-orbit-one" />
+          <div className="fund-visual-orbit fund-orbit-two" />
+          <div className="fund-visual-core">
+            <span className="fund-core-overline">OPEN KNOWLEDGE</span>
+            <strong>SECURITY<br /><em>FOR ALL</em></strong>
+            <span className="fund-core-rule" />
+            <small>RESEARCH · VERIFY · SHARE</small>
+          </div>
+          <span className="fund-visual-tag fund-tag-top">EVIDENCE FIRST</span>
+          <span className="fund-visual-tag fund-tag-bottom">PUBLIC LEARNING</span>
+          <span className="fund-visual-cross fund-cross-one">+</span>
+          <span className="fund-visual-cross fund-cross-two">+</span>
+        </div>
+      </section>
+
+      <section className="fund-values-strip" aria-label="Project commitments">
+        <div><strong>FREE</strong><span>Public learning</span></div>
+        <div><strong>REAL</strong><span>Evidence-led research</span></div>
+        <div><strong>OPEN</strong><span>Transparent records</span></div>
+        <div><strong>VOLUNTARY</strong><span>Support by choice</span></div>
+      </section>
+
+      <section className="security-section fund-section fund-impact" id="research-impact">
+        <div className="security-section-heading">
+          <div><span className="section-index">01 / WHAT YOUR SUPPORT MAKES POSSIBLE</span><h2>Fuel the work. Share the knowledge.</h2></div>
+          <span className="section-aside">THREE AREAS OF FOCUS</span>
+        </div>
+        <p className="fund-section-intro">The goal is not to sell access. It is to build a stronger body of practical security knowledge and make more of it available to the public.</p>
+        <div className="fund-impact-grid">
+          {impactAreas.map((item) => (
+            <article className="fund-impact-card" key={item.number}>
+              <div className="fund-impact-top"><span>{item.number}</span><small>{item.eyebrow}</small></div>
+              <div className="fund-impact-symbol" aria-hidden="true">{item.number === "01" ? "⌁" : item.number === "02" ? "◈" : "✳"}</div>
+              <h3>{item.title}</h3>
+              <p>{item.description}</p>
+              <div className="fund-impact-detail">{item.detail}</div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="security-section fund-section fund-why">
+        <div className="fund-why-panel">
+          <span className="section-index">WHY THIS MATTERS</span>
+          <h2>Security should not be a black box.</h2>
+          <p>People deserve more than dramatic screens and impressive-sounding claims. They deserve explanations they can inspect, experiments with clear boundaries, and findings backed by evidence.</p>
+          <p>This project is being built around that idea: learn in public, test responsibly, document honestly, and never pretend that an unverified result is real.</p>
+          <Link href="/security">Explore the public security experience ↗</Link>
+        </div>
+        <div className="fund-principles">
+          {principles.map(([title, description], index) => (
+            <article key={title}>
+              <span>0{index + 1}</span>
+              <div><h3>{title}</h3><p>{description}</p></div>
+            </article>
+          ))}
         </div>
       </section>
 
       <section className="security-section fund-section">
         <div className="security-section-heading">
-          <div><span className="section-index">01 / FUND SUMMARY</span><h2>Confirmed contributions</h2></div>
+          <div><span className="section-index">02 / FUND TRANSPARENCY</span><h2>Every number must earn its place.</h2></div>
           <span className="section-aside">BLOCKCHAIN-VERIFIED ONLY</span>
         </div>
-        <div className="fund-empty-total">
-          <span className="fund-empty-mark">CONFIRMED DONATIONS</span>
-          <strong>No confirmed donations yet</strong>
-          <p>Public totals will appear here after real transactions are verified and reconciled. No sample or estimated donations are included.</p>
-          <p lang="my">အမှန်တကယ်ရရှိပြီး Blockchain မှာ အတည်ပြုစစ်ဆေးပြီးသော အလှူငွေများရှိလာမှသာ စုစုပေါင်းကို ဒီနေရာမှာ ဖော်ပြပါမယ်။ နမူနာ သို့မဟုတ် ခန့်မှန်းထားသော ငွေပမာဏများကို မထည့်သွင်းပါ။</p>
+        <div className="fund-transparency-layout">
+          <div className="fund-empty-total">
+            <span className="fund-empty-mark">CONFIRMED CONTRIBUTIONS</span>
+            <strong>No confirmed donations yet</strong>
+            <p>Contribution intake is not open. When it is, public totals will appear only after real transactions are verified and reconciled. No sample or estimated donations will be included.</p>
+            <p lang="my">လက်ရှိမှာ အလှူလက်ခံမှု မဖွင့်ရသေးပါ။ အမှန်တကယ်ရရှိပြီး Blockchain မှာ စစ်ဆေးအတည်ပြုထားတဲ့ အလှူငွေတွေရှိလာမှသာ ဒီနေရာမှာ စုစုပေါင်းကို ဖော်ပြပါမယ်။</p>
+          </div>
+          <div className="fund-transparency-points">
+            <article><span>01</span><div><strong>Verified on-chain</strong><p>Network, recipient, asset, amount, and confirmation state must match.</p></div></article>
+            <article><span>02</span><div><strong>Pending is not received</strong><p>Unconfirmed transfers stay separate and never inflate confirmed totals.</p></div></article>
+            <article><span>03</span><div><strong>Receipts are not impact</strong><p>Receiving a transfer does not prove how funds were later spent. Spending needs its own records.</p></div></article>
+          </div>
         </div>
         <div className="fund-asset-grid">
-          {fundAssets.map((item) => (
-            <article className="fund-asset-card" key={item.asset}>
-              <span>{item.asset}</span>
-              <strong>Not connected</strong>
-              <small>{item.network} · {item.precision}</small>
-            </article>
-          ))}
+          <article className="fund-asset-card"><span>BTC</span><strong>Not connected</strong><small>Bitcoin · Network not enabled</small></article>
+          <article className="fund-asset-card"><span>ETH</span><strong>Not connected</strong><small>Ethereum · Network not enabled</small></article>
+          <article className="fund-asset-card"><span>USDT</span><strong>Not connected</strong><small>Network selection required</small></article>
         </div>
-        <p className="security-footnote">BTC, ETH, and USDT are listed as potential future asset categories only. No receiving wallet or donation network is active or published at this stage.</p>
+        <p className="security-footnote">These are potential asset categories only. No receiving wallet, token contract, or donation network is active or published.</p>
       </section>
 
       <section className="security-section fund-section">
-        <div className="security-section-heading"><div><span className="section-index">02 / ACCOUNTING</span><h2>Fund position</h2></div><span className="section-aside">VERIFIED RECORDS ONLY</span></div>
+        <div className="security-section-heading"><div><span className="section-index">03 / HOW THE FUND IS MANAGED</span><h2>Clear purpose. Careful accounting.</h2></div><span className="section-aside">PERSONALLY MANAGED</span></div>
         <div className="fund-account-grid">
           <article><span>Total received</span><strong>Not available yet</strong><small>Confirmed donations only</small></article>
-          <article><span>Research spending</span><strong>Not available yet</strong><small>Published after receipt review</small></article>
+          <article><span>Research spending</span><strong>Not available yet</strong><small>Published after record review</small></article>
           <article><span>Remaining fund</span><strong>Not available yet</strong><small>Reconciled accounting balance</small></article>
           <article><span>Last reconciliation</span><strong>Not started</strong><small>No live wallet integration</small></article>
         </div>
-        <p className="security-footnote">Wallet balances and donation totals will be reported separately. Transfers between wallets controlled by the owner will not be counted as donations. Each supported asset will be displayed in its own unit; any fiat estimate will be clearly labeled with its source and valuation time.</p>
+        <p className="security-footnote">Wallet balances, confirmed receipts, expenses, and internal transfers will be reported separately. Owner-managed spending is not an independent audit. Any fiat estimate will include its currency, rate source, and valuation time.</p>
       </section>
 
-      <section className="security-section fund-section">
-        <div className="security-section-heading"><div><span className="section-index">03 / TRANSACTION HISTORY</span><h2>Public donation ledger</h2></div><span className="section-aside">APPEND-ONLY RECORD</span></div>
+      <section className="security-section fund-section fund-ledger-section">
+        <div className="security-section-heading"><div><span className="section-index">04 / PUBLIC DONATION LEDGER</span><h2>A record you can check.</h2></div><span className="section-aside">APPEND-ONLY · READ ONLY</span></div>
         <div className="fund-ledger-empty">
+          <span className="fund-ledger-icon">⌁</span>
           <strong>No verified transactions to display.</strong>
-          <p>When donations are enabled, each eligible entry will show the asset, network, amount, transaction hash, confirmation state, and block time. Pending transfers will be clearly separated and excluded from confirmed totals.</p>
-          <p lang="my">အလှူလက်ခံမှု စတင်ပြီးနောက် အတည်ပြုထားသော Transaction တစ်ခုချင်းစီ၏ Coin အမျိုးအစား၊ Network၊ ပမာဏ၊ Transaction Hash၊ အတည်ပြုမှုအခြေအနေနှင့် Block အချိန်တို့ကို ဖော်ပြပါမယ်။ Pending ဖြစ်နေသေးသော ငွေများကို သီးခြားပြပြီး အတည်ပြုပြီး စုစုပေါင်းထဲ မထည့်ပါ။</p>
+          <p>When contributions are enabled, eligible entries will show the asset, exact network, amount, transaction hash, confirmation state, and block time. Pending transfers will be clearly separated.</p>
+          <p lang="my">အလှူလက်ခံမှု စတင်ပြီး အတည်ပြုထားတဲ့ Transaction များရှိလာမှသာ Coin အမျိုးအစား၊ Network၊ ပမာဏ၊ Transaction Hash နဲ့ အတည်ပြုမှုအခြေအနေတို့ကို ဒီနေရာမှာ ဖော်ပြပါမယ်။</p>
         </div>
       </section>
 
       <section className="security-section fund-section">
-        <div className="security-section-heading"><div><span className="section-index">04 / HOW FUNDS ARE USED</span><h2>Research expenditure</h2></div><span className="section-aside">OWNER-MANAGED</span></div>
-        <div className="security-module-grid">
-          <article className="security-module"><span className="module-number">01</span><h3>Research & experiments</h3><p>Controlled cybersecurity research, reproducible experiments, and technical validation.</p></article>
-          <article className="security-module"><span className="module-number">02</span><h3>Testing infrastructure</h3><p>Computing resources and isolated environments used for authorized testing.</p></article>
-          <article className="security-module"><span className="module-number">03</span><h3>Tools & publications</h3><p>Research tools, documentation, and English and Burmese educational publications.</p></article>
+        <div className="security-section-heading"><div><span className="section-index">05 / BEFORE CONTRIBUTING</span><h2>Make an informed choice.</h2></div><span className="section-aside">ALWAYS OPTIONAL</span></div>
+        <div className="fund-disclosure fund-final-disclosure">
+          <div>
+            <span className="fund-disclosure-kicker">PERSONAL PROJECT DISCLOSURE</span>
+            <h3>Your support helps the work continue — it does not buy a promise.</h3>
+            <p>This is a personally operated research project, not a registered charity or nonprofit organization. Contributions, if enabled, will be voluntary and personally received and managed by the project owner. They are not investments and provide no ownership, financial return, or guaranteed outcome.</p>
+            <p lang="my">ဤ Project သည် ပိုင်ရှင်ကိုယ်တိုင် စီမံခန့်ခွဲသော ကိုယ်ပိုင်သုတေသနလုပ်ငန်းဖြစ်ပြီး မှတ်ပုံတင်ထားသော အလှူအဖွဲ့အစည်း မဟုတ်ပါ။ လှူဒါန်းမှုသည် ဆန္ဒအလျောက်ဖြစ်ပြီး အမြတ်ငွေ၊ ပိုင်ဆိုင်ခွင့် သို့မဟုတ် အကျိုးအမြတ်တစ်စုံတစ်ရာကို အာမခံမပေးပါ။</p>
+          </div>
+          <div className="fund-risk-notes">
+            <strong>Before sending any cryptocurrency</strong>
+            <ul>
+              <li>Review applicable tax and legal requirements in your jurisdiction. No tax-deductible status or regulatory approval is claimed.</li>
+              <li>Crypto transfers are generally irreversible. A wrong asset or network can result in permanent loss.</li>
+              <li>Public blockchain activity can be traced. A transaction hash does not make a donor anonymous.</li>
+              <li>Never share a seed phrase, private key, or wallet recovery code with anyone.</li>
+            </ul>
+            <p lang="my">Crypto လွှဲပြောင်းမှုကို ပုံမှန်အားဖြင့် ပြန်ဖျက်၍မရပါ။ Network မှားပို့ခြင်းကြောင့် ဆုံးရှုံးနိုင်ပြီး Public Blockchain ပေါ်က လှုပ်ရှားမှုများကိုလည်း ခြေရာခံနိုင်ပါတယ်။ Seed Phrase နဲ့ Private Key ကို မည်သူ့ကိုမျှ မပေးပါနဲ့။</p>
+          </div>
+          <div className="fund-intake-state">
+            <span className="fund-intake-indicator"><i /> NOT OPEN</span>
+            <strong>Contribution details are not available yet.</strong>
+            <p>Wallet custody, exact network support, verification, and applicable legal/tax review must be completed before any address is published. Please do not send funds to addresses shared outside this official page.</p>
+          </div>
         </div>
-        <p className="security-footnote">Spending will be listed only when actually paid from this fund and supported by a reviewed record. Sensitive personal or vendor information will be redacted.</p>
       </section>
 
-      <section className="security-section fund-section">
-        <div className="security-section-heading"><div><span className="section-index">05 / BEFORE YOU CONTRIBUTE</span><h2>Please decide freely.</h2></div><span className="section-aside">NO OBLIGATION</span></div>
-        <div className="fund-disclosure">
-          <p>Only contribute if you understand that the funds are received and managed personally by the project owner. Please consider applicable tax and legal requirements in your jurisdiction. No tax-deductible status or regulatory approval is claimed.</p>
-          <p lang="my">အလှူငွေကို Project ပိုင်ရှင်ကိုယ်တိုင် လက်ခံပြီး စီမံခန့်ခွဲမည်ဆိုတာကို နားလည်သဘောပေါက်မှသာ လှူဒါန်းပါ။ သင့်နိုင်ငံနှင့် သက်ဆိုင်သော အခွန်နှင့် ဥပဒေဆိုင်ရာ သတ်မှတ်ချက်များကိုလည်း ထည့်သွင်းစဉ်းစားပါ။ အခွန်ကင်းလွတ်ခွင့် သို့မဟုတ် စည်းမျဉ်းဆိုင်ရာ ခွင့်ပြုချက်ရှိကြောင်း မကြေညာထားပါ။</p>
-          <p>Cryptocurrency transfers are generally irreversible. Sending an unsupported asset or using the wrong network may result in permanent loss. Public blockchain transactions can reveal wallet activity; displaying a transaction hash does not make a donor anonymous.</p>
-          <p lang="my">Cryptocurrency လွှဲပြောင်းမှုများကို ပုံမှန်အားဖြင့် ပြန်လည်ပယ်ဖျက်၍ မရပါ။ မထောက်ပံ့ထားသော Coin သို့မဟုတ် Network မှားယွင်းစွာ ပို့ပါက ငွေဆုံးရှုံးနိုင်သည်။ Blockchain ပေါ်ရှိ အများမြင်နိုင်သော Transaction များမှ Wallet လှုပ်ရှားမှုကို ခြေရာခံနိုင်သောကြောင့် Transaction Hash ကို ပြသခြင်းသည် အလှူရှင်၏ အမည်ဝှက်လုံခြုံမှုကို အာမမခံပါ။</p>
-          <strong>Donation addresses are not published yet.</strong>
-          <p>Wallet details will be displayed only after legal/tax review, dedicated-wallet custody planning, and transaction-verification testing are complete.</p>
-        </div>
+      <section className="fund-closing">
+        <span className="section-index">THANK YOU FOR CARING ABOUT OPEN SECURITY KNOWLEDGE</span>
+        <h2>Explore first.<br /><em>Support when ready.</em></h2>
+        <p>Whether you contribute or simply learn and share what you discover, you are welcome here.</p>
+        <Link href="/security">Visit the public security lab ↗</Link>
       </section>
 
       <footer className="security-footer">
