@@ -1457,3 +1457,98 @@ footer { margin-top: 42px; color: #71809a; font-size: 11px; line-height: 1.7; le
   .museum-welcome h1 { font-size: clamp(37px, 9vw, 52px); }
   .museum-welcome-copy > p { font-size: 12px; }
 }
+
+
+/* Shared motion language: architectural transitions, never fabricated activity */
+.museum-shell::before { animation: vault-ambient-shift 30s ease-in-out infinite alternate; }
+.museum-header { animation: vault-header-arrive .65s cubic-bezier(.2,.75,.25,1) both; }
+.museum-welcome { animation: vault-content-arrive .8s cubic-bezier(.2,.8,.2,1) .06s both; }
+.museum-collection { animation: vault-content-arrive .8s cubic-bezier(.2,.8,.2,1) .12s both; }
+.museum-collection-heading { transition: opacity .25s ease, transform .25s ease; }
+.museum-gallery-toolbar { animation: vault-toolbar-arrive .55s cubic-bezier(.2,.8,.2,1) .18s both; }
+.museum-asset-card {
+  transform: translateZ(0);
+  transform-origin: 50% 58%;
+  animation: vault-card-arrive .58s cubic-bezier(.2,.8,.2,1) both;
+  transition: transform .34s cubic-bezier(.2,.8,.2,1), border-color .3s ease, box-shadow .34s ease, background .3s ease;
+}
+.museum-asset-card:nth-child(1) { animation-delay: .04s; }
+.museum-asset-card:nth-child(2) { animation-delay: .09s; }
+.museum-asset-card:nth-child(3) { animation-delay: .14s; }
+.museum-asset-card:nth-child(4) { animation-delay: .19s; }
+.museum-asset-card:nth-child(5) { animation-delay: .24s; }
+.museum-asset-card:nth-child(6) { animation-delay: .29s; }
+.museum-asset-card:focus-visible { outline: 2px solid #8de9cc; outline-offset: 4px; }
+.museum-artwork-mark { transition: transform .45s cubic-bezier(.2,.8,.2,1), box-shadow .4s ease; }
+.museum-asset-card:hover .museum-artwork-mark,
+.museum-asset-card:focus-visible .museum-artwork-mark { transform: scale(1.07) rotate(-3deg); }
+.museum-artwork-orbit { transition: transform .8s cubic-bezier(.2,.8,.2,1), opacity .35s ease; }
+.museum-asset-card:hover .museum-orbit-one { transform: rotate(22deg) scale(1.08); }
+.museum-asset-card:hover .museum-orbit-two { transform: rotate(-18deg) scale(.94); }
+.museum-record-form { transform-origin: top center; animation: vault-form-arrive .42s cubic-bezier(.2,.8,.2,1) both; }
+.museum-feedback { animation: vault-feedback-arrive .32s cubic-bezier(.2,.8,.2,1) both; }
+.museum-inspector[open] { animation: vault-inspector-arrive .36s cubic-bezier(.2,.8,.2,1) both; }
+.museum-inspector[open]::backdrop { animation: vault-backdrop-arrive .28s ease both; }
+.museum-inspector-content > * { animation: vault-detail-arrive .4s cubic-bezier(.2,.8,.2,1) both; }
+.museum-inspector-content > *:nth-child(2) { animation-delay: .04s; }
+.museum-inspector-content > *:nth-child(3) { animation-delay: .09s; }
+.museum-inspector-content > *:nth-child(4) { animation-delay: .14s; }
+.museum-inspector-content > *:nth-child(5) { animation-delay: .19s; }
+.museum-add-button,.museum-cancel-button,.museum-delete-button,.museum-close-button,.museum-inline-action,.museum-delete-link {
+  transition: transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .25s ease, background-color .22s ease, border-color .22s ease, color .22s ease;
+}
+.museum-add-button:active:not(:disabled),.museum-cancel-button:active:not(:disabled),.museum-delete-button:active:not(:disabled) { transform: translateY(1px) scale(.985); }
+.museum-search input { transition: color .2s ease; }
+.museum-search:focus-within { transition: border-color .25s ease, box-shadow .25s ease, background .25s ease; }
+.museum-sort select { transition: border-color .22s ease, box-shadow .22s ease; }
+.museum-loading-orbit { animation: vault-loading-turn 1.5s linear infinite; }
+.museum-empty-symbol { animation: vault-empty-breathe 4.5s ease-in-out infinite; transform-origin: center; }
+
+/* Public research / observability: only interface chrome moves by itself.
+   Event rows and measurements animate only when their real source data renders. */
+.security-nav { animation: vault-header-arrive .65s cubic-bezier(.2,.75,.25,1) both; }
+.security-hero-copy { animation: vault-content-arrive .8s cubic-bezier(.2,.8,.2,1) .06s both; }
+.security-signal { animation: vault-content-arrive .9s cubic-bezier(.2,.8,.2,1) .12s both; }
+.security-notice,.lab-console-section,.crypto-lab-section,.security-section { animation: vault-content-arrive .7s cubic-bezier(.2,.8,.2,1) both; }
+.security-evidence,.security-module,.surface-step,.operation-list > div,.crypto-learning-notes article {
+  transition: border-color .25s ease, background-color .25s ease, transform .28s cubic-bezier(.2,.8,.2,1), box-shadow .28s ease;
+}
+.security-evidence:hover,.security-module:hover,.surface-step:hover,.operation-list > div:hover,.crypto-learning-notes article:hover {
+  transform: translateY(-2px);
+}
+.lab-console,.crypto-lab { transition: border-color .3s ease, box-shadow .3s ease; }
+.lab-console:focus-within,.crypto-lab:focus-within { border-color: #4f9f89; box-shadow: 0 18px 60px #0003, 0 0 28px #65d6ad12; }
+.crypto-result { transition: border-color .25s ease, background .25s ease; }
+.crypto-result.is-ready { animation: vault-feedback-arrive .32s cubic-bezier(.2,.8,.2,1) both; }
+.crypto-digest span { animation: vault-digest-arrive .35s cubic-bezier(.2,.8,.2,1) both; }
+.crypto-digest span:nth-child(2n) { animation-delay: .035s; }
+.crypto-digest span:nth-child(3n) { animation-delay: .07s; }
+
+@keyframes vault-ambient-shift { from { background-position: 0 0, 0 0, 0 0; } to { background-position: 30px 16px, -16px 30px, 0 0; } }
+@keyframes vault-header-arrive { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+@keyframes vault-content-arrive { from { opacity:0; transform:translateY(13px); } to { opacity:1; transform:translateY(0); } }
+@keyframes vault-toolbar-arrive { from { opacity:0; transform:translateY(9px); } to { opacity:1; transform:translateY(0); } }
+@keyframes vault-card-arrive { from { opacity:0; transform:translateY(13px) scale(.985); filter:blur(3px); } to { opacity:1; transform:translateY(0) scale(1); filter:blur(0); } }
+@keyframes vault-form-arrive { from { opacity:0; transform:translateY(-9px) scale(.99); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes vault-feedback-arrive { from { opacity:0; transform:translateY(7px); } to { opacity:1; transform:translateY(0); } }
+@keyframes vault-inspector-arrive { from { opacity:0; transform:translateY(14px) scale(.99); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes vault-backdrop-arrive { from { opacity:0; } to { opacity:1; } }
+@keyframes vault-detail-arrive { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+@keyframes vault-loading-turn { to { transform:rotate(360deg); } }
+@keyframes vault-empty-breathe { 0%,100% { opacity:.72; transform:scale(.98) rotate(-4deg); } 50% { opacity:1; transform:scale(1.04) rotate(4deg); } }
+@keyframes vault-digest-arrive { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
+
+@media (hover:hover) and (pointer:fine) {
+  .museum-asset-card:hover { transform:translateY(-5px); }
+}
+@media(prefers-reduced-motion:reduce) {
+  .museum-shell::before,.museum-header,.museum-welcome,.museum-collection,.museum-gallery-toolbar,
+  .museum-asset-card,.museum-record-form,.museum-feedback,.museum-inspector[open],
+  .museum-inspector[open]::backdrop,.museum-inspector-content > *,
+  .museum-loading-orbit,.museum-empty-symbol,.security-nav,.security-hero-copy,.security-signal,
+  .security-notice,.lab-console-section,.crypto-lab-section,.security-section,.crypto-result.is-ready,
+  .crypto-digest span { animation:none !important; }
+  .museum-asset-card,.museum-add-button,.museum-cancel-button,.museum-delete-button,.museum-close-button,
+  .museum-inline-action,.museum-delete-link,.security-evidence,.security-module,.surface-step,
+  .operation-list > div,.crypto-learning-notes article,.lab-console,.crypto-lab { transition:none !important; }
+}
