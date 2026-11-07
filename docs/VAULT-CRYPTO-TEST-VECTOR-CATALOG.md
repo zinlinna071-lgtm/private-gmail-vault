@@ -281,3 +281,19 @@ This verifies the script's KAT and negative-test behavior in the local Node.js W
 The official GitHub Status page currently reports Actions as operational and lists no November 7 incident. Its history does list earlier November 5–6 Actions incidents, but those do not overlap this workflow's recorded start time (November 7, 2026 21:02 UTC). This public status check therefore does **not** establish a GitHub-wide outage as the cause. The job's empty step list and missing runner assignment remain an unresolved repository/run-specific execution failure; account billing, repository Actions policy, and runner provisioning details were not exposed by the available run logs.
 
 Reference: https://www.githubstatus.com/
+
+
+## 13. Cross-browser Web Crypto harness — implementation record (2026-11-08)
+
+A browser-specific test entry point and runner have been added without changing the root application dependency graph:
+
+- `tools/crypto-primitives-spike/browser-test-entry.js` runs RFC 5869 HKDF-SHA-256 Test Case 1 and the two AES-256-GCM vectors using the browser's native Web Crypto API.
+- `tools/argon2id-browser-spike/run-crypto-primitives-browser-test.mjs` bundles and serves the browser entry point using the existing isolated Playwright/esbuild tool package.
+- `.github/workflows/vault-crypto-primitives-browser.yml` installs Chromium, Firefox, and WebKit on an Ubuntu 24.04 hosted runner and executes the same test entry in each engine.
+- The new test workflow is branch-scoped to `design/cyber-visual-architecture`, and only runs when the isolated harness or its workflow changes, or when manually dispatched.
+
+The browser entry checks exact HKDF output, AES-GCM encryption and decryption, and rejection after mutations to ciphertext/tag, IV, authenticated data, and key. It uses public fixed test vectors only, does not import the Vault application, makes no Vault API calls, and does not use real credentials.
+
+**Status:** IMPLEMENTED IN SOURCE; HOSTED BROWSER EXECUTION NOT YET VERIFIED. The workflow must reach the test steps and complete all three engines before any Chromium/Firefox/WebKit PASS claim is made. A failure before checkout or before a test step is UNRESOLVED / NOT RUN.
+
+The existing isolated Argon2id Playwright package is reused; no Playwright, esbuild, or cryptographic dependency was added to the root application. Physical Android/iOS performance and memory verification remain separate and NOT RUN.
