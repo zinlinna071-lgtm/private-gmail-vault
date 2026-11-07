@@ -253,3 +253,10 @@ The harness uses Node.js Web Crypto only; it adds no root application dependency
 **Not yet verified:** the committed `test-primitives.mjs` full test run, the new GitHub Actions workflow, Chromium/Firefox/WebKit execution of these HKDF/AES-GCM vectors, and physical mobile behavior. Do not mark those checks passed until a run URL and logs are inspected.
 
 The workflow is scoped to pushes on `design/cyber-visual-architecture` that touch this isolated harness or its workflow file. It is not a production build, preview, deployment, or Vault integration.
+
+
+### GitHub Actions runner investigation (2026-11-08)
+
+The new workflow was triggered by push and produced run [42413906114](https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42413906114). Its first attempt failed; a single retry also failed immediately. Both job records reported an empty step list and `runner_id: 0` / no runner name. The job-log endpoint returned no available log artifact. Therefore the failure cannot currently be attributed to the test script, Node.js, HKDF, or AES-GCM vectors.
+
+**Status:** workflow execution blocked/unresolved before any test-step evidence was exposed. Do not label the committed harness passed or failed cryptographically on this basis. The independent local Node.js v22.16.0 primitive spot-check remains the only new execution evidence for these three vector outputs. Investigate GitHub Actions runner/repository execution availability before changing the test code or claiming a CI result.
