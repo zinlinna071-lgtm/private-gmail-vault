@@ -299,3 +299,81 @@ a { transition:color .2s ease,text-shadow .2s ease; }
 @media(prefers-reduced-motion:reduce) {
   .vault-connection.is-loading i { animation:none !important; }
 }
+
+
+/* Design language v1 — editorial precision meets an instrument-grade interface */
+:root {
+  --vault-font-ui: "Inter", "SF Pro Display", "Segoe UI", sans-serif;
+  --vault-font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --vault-ease-out: cubic-bezier(.16,1,.3,1);
+  --vault-ease-standard: cubic-bezier(.2,.75,.25,1);
+  --vault-radius-card: 18px;
+  --vault-radius-control: 10px;
+  --vault-focus-ring: 0 0 0 3px #72e7c52b, 0 0 0 1px #72e7c5;
+}
+html { scroll-behavior:smooth; scroll-padding-top:28px; }
+body {
+  font-family:var(--vault-font-ui);
+  font-optical-sizing:auto;
+  font-kerning:normal;
+  text-rendering:optimizeLegibility;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+::selection { color:#061c19; background:#8ce8d0; }
+:where(a,button,input,textarea,select,[tabindex]):focus-visible {
+  outline:2px solid #8ce8d0;
+  outline-offset:3px;
+}
+:where(button,a) { -webkit-tap-highlight-color:transparent; }
+:where(button) { font:inherit; }
+:where(code,pre,kbd,samp) { font-family:var(--vault-font-mono); font-variant-ligatures:none; }
+:where(time,.vault-stat-grid strong,.lab-source-foot strong) { font-variant-numeric:tabular-nums; }
+.entry-shell,.security-shell { font-family:var(--vault-font-ui); }
+.entry-nav,.security-nav { backdrop-filter:blur(18px); }
+.entry-nav { position:relative; }
+.entry-nav::after,.security-nav::after {
+  content:""; position:absolute; left:0; right:0; bottom:-1px; height:1px;
+  background:linear-gradient(90deg,transparent,#65d6ad55 18%,#65d6ad55 82%,transparent);
+  pointer-events:none;
+}
+.entry-brand-mark,.security-brand-mark { transition:transform .35s var(--vault-ease-out),box-shadow .35s ease; }
+.entry-brand:hover .entry-brand-mark,.security-brand:hover .security-brand-mark {
+  transform:translateY(-2px) rotate(-4deg);
+  box-shadow:0 0 28px #3de0b538,inset 0 0 14px #3de0b51a;
+}
+.auth-card,.vault-workspace-overview,.security-signal,.lab-console,.research-publication-card {
+  backdrop-filter:blur(16px);
+}
+.auth-card,.vault-workspace-overview,.security-evidence,.security-module,.surface-step,.research-publication-card {
+  box-shadow:0 22px 64px #0003,inset 0 1px #c8fff20b;
+}
+.entry-shell :where(input,textarea),.security-shell :where(input,textarea) {
+  transition:border-color .2s ease,box-shadow .2s ease,background .2s ease;
+}
+.entry-shell :where(input,textarea):focus,.security-shell :where(input,textarea):focus {
+  box-shadow:var(--vault-focus-ring);
+}
+.entry-shell :where(button,a),.security-shell :where(button,a) {
+  transition:color .2s ease,background .2s ease,border-color .2s ease,box-shadow .25s ease,transform .25s var(--vault-ease-out);
+}
+.entry-shell :where(button:not(:disabled)):active,.security-shell :where(button:not(:disabled)):active {
+  transform:translateY(1px) scale(.99);
+}
+.security-hero-copy { position:relative; }
+.security-hero h1 { text-wrap:balance; }
+.security-lead { text-wrap:pretty; }
+.security-section-heading h2,.security-method h2 { text-wrap:balance; }
+.lab-console { border-radius:var(--vault-radius-card); }
+.lab-console-topbar,.lab-panel-label,.lab-network-legend,.lab-source-foot,.lab-console-disclaimer>span {
+  font-family:var(--vault-font-mono);
+  font-variant-numeric:tabular-nums;
+}
+@media(max-width:760px) {
+  html { scroll-padding-top:16px; }
+  .entry-nav,.security-nav { min-height:68px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  html { scroll-behavior:auto; }
+  .entry-brand-mark,.security-brand-mark { transition:none; }
+}
