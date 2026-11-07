@@ -1,3 +1,26 @@
+export async function GET(_request: Request, context: Context) {
+  const actor = await getResearchActor();
+  if (!actor || (!actor.isOwner && !actor.isReviewer)) return reply({ error: "Research review access required." }, 401);
+  const { id } = await context.params;
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return reply({ error: "Invalid draft ID." }, 400);
+  try {
+    const admin = createSupabaseAdminClient();
+    const { data, error } = await admin.from("security_research_drafts")
+      .select("id,owner_user_id,title_en,title_my,category,workflow_state,content,reviews,created_at,updated_at,ready_at")
+      .eq("id", id).maybeSingle();
+    if (error || !data) return reply({ error: "Draft not found." }, 404);
+    if (!actor.isOwner) {
+      const expected = ["DRAFT", "SECURITY_PRIVACY_REVIEW", "BILINGUAL_REVIEW"];
+      if (!actor.isReviewer || !expected.includes(data.workflow_state)) return reply({ error: "This draft is not assigned for your review." }, 403);
+      if (data.owner_user_id === actor.id) return reply({ error: "Authors cannot review their own draft." }, 403);
+    }
+    const { owner_user_id: _ownerId, ...safe } = data;
+    return reply({ draft: safe });
+  } catch {
+    return reply({ error: "Could not load the research draft." }, 503);
+  }
+}
+
 import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { isSameOriginRequest } from "@/lib/auth/vault";
