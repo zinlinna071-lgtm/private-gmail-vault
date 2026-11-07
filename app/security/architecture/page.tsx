@@ -14,10 +14,10 @@ export const metadata: Metadata = {
 
 const stack = [
   { name: "Next.js", version: "15.5.29", role: "Application routing, server-rendered pages, metadata, and route-level composition.", state: "IMPLEMENTED" },
-  { name: "React", version: "19.1.1", role: "Interactive client components, local interface state, and reusable UI composition.", state: "IMPLEMENTED" },
-  { name: "TypeScript", version: "5.9.2", role: "Typed application components, data contracts, and safer refactoring.", state: "IMPLEMENTED" },
+  { name: "React", version: "^19.1.1 (declared range)", role: "Interactive client components, local interface state, and reusable UI composition.", state: "IMPLEMENTED" },
+  { name: "TypeScript", version: "^5.9.2 (declared range)", role: "Typed application components, data contracts, and safer refactoring.", state: "IMPLEMENTED" },
   { name: "CSS", version: "Custom stylesheets", role: "Design tokens, responsive layouts, layered surfaces, focus states, and motion rules.", state: "IMPLEMENTED" },
-  { name: "Browser APIs", version: "Native platform APIs", role: "Fetch for existing requests, Clipboard API for explicit copy actions, and timed navigation transitions.", state: "IMPLEMENTED · LIMITED SCOPE" }
+  { name: "Browser APIs", version: "Native platform APIs", role: "Feature-scoped Fetch requests, explicit Clipboard API copy actions, and Web Crypto SHA-256 in the local learning lab.", state: "IMPLEMENTED · FEATURE-SCOPED" }
 ];
 
 const principles = [
@@ -36,7 +36,11 @@ const tokens = [
   ["Teal accent", "--vault-teal", "#76e3c3"],
   ["Mint highlight", "--vault-mint", "#b8ffeb"],
   ["Card radius", "--vault-radius-card", "18px"],
-  ["Control radius", "--vault-radius-control", "10px"]
+  ["Control radius", "--vault-radius-control", "10px"],
+  ["UI font stack", "--vault-font-ui", "\"Inter\", \"SF Pro Display\", \"Segoe UI\", sans-serif"],
+  ["Monospace stack", "--vault-font-mono", "\"SFMono-Regular\", Consolas, monospace"],
+  ["Standard easing", "--vault-ease-standard", "cubic-bezier(.2,.75,.25,1)"],
+  ["Focus ring", "--vault-focus-ring", "3px teal halo + 1px outline"]
 ];
 
 const motion = [
@@ -47,10 +51,13 @@ const motion = [
 ];
 
 const responsive = [
-  ["760px and below", "The lab's two-column console becomes one column; navigation and panel spacing are adjusted for smaller screens."],
-  ["560px and below", "Vault overview statistics change to a compact two-column layout, with the final item spanning the row."],
-  ["480px and below", "The lab topology, nodes, top bar, and disclaimer reduce spacing and dimensions for narrow screens."],
-  ["680px and below", "The cryptography learning notes stack vertically and controls become full-width."]
+  ["900px and below", "The support-page hero and impact layout tighten from their wide desktop composition."],
+  ["760px and below", "The security lab console and private research workbench become single-column layouts; navigation spacing also changes."],
+  ["680px and below", "Cryptography learning notes and the support-page hero stack vertically; primary learning controls become full-width."],
+  ["640px and below", "Research article toolbars and provenance details stack for narrow reading layouts."],
+  ["560px and below", "Vault overview statistics become a compact two-column layout, with the final item spanning the row."],
+  ["480px and below", "The security lab topology, nodes, top bar, and disclaimer reduce spacing and dimensions."],
+  ["420px and below", "Support-page impact values and hero typography use a tighter narrow-screen treatment."]
 ];
 
 const sources = [
@@ -117,7 +124,7 @@ export default function SecurityArchitecturePage() {
         <div className="security-module-grid">
           {stack.map((item) => <article className="security-module" key={item.name}><span className="module-status">{item.state}</span><h3>{item.name} <small>{item.version}</small></h3><p>{item.role}</p></article>)}
         </div>
-        <p className="security-footnote">Versions are taken from the repository package manifest. “Implemented” describes presence in the application source; it does not imply an independent security or performance certification.</p>
+        <p className="security-footnote">Next.js is pinned in the manifest; React and TypeScript use the declared semver ranges shown above. “Implemented” describes source-observed use, not an independent security, accessibility, or performance certification.</p>
       </section>
 
       <section className="security-section">
@@ -126,6 +133,12 @@ export default function SecurityArchitecturePage() {
         <div className="security-module-grid">
           {tokens.map(([label, token, value]) => <article className="security-module" key={token}><span className="module-number">{label}</span><h3>{value}</h3><p><code>{token}</code></p></article>)}
         </div>
+        <div className="security-module-grid">
+          <article className="security-module"><span className="module-number">18.48 : 1</span><h3>Primary text / page background</h3><p><code>#eafff9</code> on <code>#070f19</code> · calculated contrast ratio</p></article>
+          <article className="security-module"><span className="module-number">9.00 : 1</span><h3>Muted text / page background</h3><p><code>#9ab6bf</code> on <code>#070f19</code> · calculated contrast ratio</p></article>
+          <article className="security-module"><span className="module-number">12.41 : 1</span><h3>Teal accent / page background</h3><p><code>#76e3c3</code> on <code>#070f19</code> · calculated contrast ratio</p></article>
+        </div>
+        <p className="security-footnote">These ratios are calculated from the listed opaque hex-color pairs using WCAG relative-luminance contrast math. They are palette samples only: translucent surfaces, gradients, images, small labels, and every rendered component still require measured contrast testing. This is not an accessibility conformance claim.</p>
       </section>
 
       <section className="security-section">
