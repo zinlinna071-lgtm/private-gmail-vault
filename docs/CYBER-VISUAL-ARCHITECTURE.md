@@ -67,7 +67,7 @@ When no real data is available, show an explicit empty/unavailable state. Demons
 
 ### Phase B — dashboard composition
 - [ ] Establish a consistent operations shell, navigation, status language, and responsive grid.
-- [ ] Distinguish live telemetry, historical evidence, test fixtures, and decorative visuals.
+- [x] Distinguish live telemetry, historical evidence, test fixtures, and decorative visuals in the public Security Operations page.\n- [x] Add source-verified timestamps and commit provenance to the published historical CI evidence cards.
 - [ ] Build accessible event and metric transitions driven by actual data changes.
 
 ### Phase C — research publication experience
@@ -79,7 +79,7 @@ When no real data is available, show an explicit empty/unavailable state. Demons
 
 ### Phase D — system-wide refinement
 - [x] Refine research publication cards, empty state, provenance strip, and mobile reading layout.
-- [ ] System-wide typography, spacing, iconography, empty/loading/error states, and responsive QA.
+- [ ] System-wide typography, spacing, iconography, empty/loading/error states, and responsive QA.\n- [x] Add a credential-free, fictional, read-only Vault UI preview route without creating an auth session or calling Vault APIs.
 - [ ] Performance and reduced-motion QA.
 - [ ] Document design decisions and implementation evidence for public learning.
 
