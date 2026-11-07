@@ -71,6 +71,14 @@ Documentation rules:
 
 Current public documentation is an initial source-based edition. Cross-device visual QA, a full accessibility audit, and measured performance profiling remain outstanding.
 
+Source-review refinements:
+- The public page now shows the actual font stacks, easing, focus-ring, radius, and color tokens declared in the shared stylesheet.
+- Package versions distinguish the exact Next.js pin from the React and TypeScript semver ranges in `package.json`.
+- Responsive rules are documented by their actual CSS breakpoints and affected surfaces (900, 760, 680, 640, 560, 480, and 420 CSS pixels).
+- Opaque palette sample contrast ratios against `#070f19` were calculated using WCAG relative-luminance math: primary text `#eafff9` = 18.48:1; muted text `#9ab6bf` = 9.00:1; teal `#76e3c3` = 12.41:1. These are color-pair calculations only, not a rendered-component audit or conformance claim.
+- The public page defines a planned QA protocol for viewport sweeps, keyboard-only navigation, reduced motion, assistive technology, rendered contrast, and performance traces. No browser-run results are claimed yet.
+
+
 ## Roadmap
 
 ### Phase A — shared motion foundation
