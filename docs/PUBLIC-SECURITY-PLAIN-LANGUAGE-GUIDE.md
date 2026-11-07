@@ -124,3 +124,29 @@ A paper should identify its objective, scope, safe methodology, isolated environ
 - Cryptographic vector catalog: docs/VAULT-CRYPTO-TEST-VECTOR-CATALOG.md
 
 Update this guide when the implementation or verification status changes. Never change a status label merely because a test was scheduled or a workflow was triggered.
+
+
+## Visual teaching system
+
+The beginner page is not intended to be text-only. It uses several complementary ways to explain one idea:
+
+1. **Short plain-language explanation** before introducing the technical term.
+2. **Bilingual support** for the most important ideas, with English as the primary interface language.
+3. **Process diagrams** showing readable information → encryption process and key → protected data.
+4. **Before/after comparison** showing the conceptual difference between unchanged and altered protected data during an integrity check.
+5. **Evidence ladder** distinguishing source review, local test, hosted browser/CI, and physical-device testing.
+6. **Status labels and glossary** for readers who want to inspect the technical terms and test boundaries.
+
+All teaching diagrams are explicitly marked **CONCEPT ONLY** or **HOW TO READ**. Their sample data blocks are illustrative placeholders. They do not execute cryptography, show actual Vault payloads, or represent live telemetry. The evidence ladder explains categories of evidence; it is not a claim that all four levels have passed.
+
+### Visual design principles
+
+- Use a small number of steps and familiar language.
+- Keep one idea per diagram.
+- Use labels and captions in addition to color, so meaning is not color-only.
+- Keep diagrams responsive and readable on narrow mobile screens.
+- Respect reduced-motion preferences; the diagrams do not depend on animation.
+- Do not use charts for fabricated or unavailable measurements.
+- If future interactive learning demonstrations are added, keep them isolated from the real Vault and label them as simulations or local demonstrations.
+
+Update this section whenever the public learning visuals change.
