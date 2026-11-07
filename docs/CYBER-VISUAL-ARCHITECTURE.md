@@ -57,6 +57,20 @@ When no real data is available, show an explicit empty/unavailable state. Demons
 - The authentication flow retains its existing API behavior. This phase changes presentation only.
 - No new telemetry source or fabricated data stream is introduced.
 
+## Public UI/UX engineering documentation
+
+The public engineering notes are available at `/security/architecture`. The page documents the source-observed stack, design philosophy, shared visual tokens, motion timings, responsive breakpoints, accessibility techniques, implementation references, and outstanding verification work.
+
+Documentation rules:
+- Report framework and library versions from the package manifest, not assumptions.
+- Link design claims to their implementation files.
+- Distinguish **IMPLEMENTED**, **TESTED**, **VERIFIED**, **PLANNED**, and **NOT VERIFIED**.
+- Treat source inspection as source review only; do not describe it as browser QA, accessibility certification, performance profiling, or security audit.
+- Keep public examples free of credentials, private identifiers, secrets, and exploit-enabling material.
+- Update the public page when tokens, architecture, implementation status, or verification evidence changes.
+
+Current public documentation is an initial source-based edition. Cross-device visual QA, a full accessibility audit, and measured performance profiling remain outstanding.
+
 ## Roadmap
 
 ### Phase A — shared motion foundation
@@ -84,7 +98,7 @@ When no real data is available, show an explicit empty/unavailable state. Demons
 - [ ] System-wide typography, spacing, iconography, empty/loading/error states, and responsive QA.
 - [x] Add a credential-free, fictional, read-only Vault UI preview route without creating an auth session or calling Vault APIs.
 - [ ] Performance and reduced-motion QA.
-- [ ] Document design decisions and implementation evidence for public learning.
+- [x] Publish source-based UI/UX engineering notes with stack, design tokens, motion, responsive rules, accessibility techniques, source links, and explicit verification status.\n- [ ] Add browser-based visual, accessibility, and performance evidence to the public engineering notes.
 
 ## Release boundary
 
