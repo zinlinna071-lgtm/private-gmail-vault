@@ -297,3 +297,22 @@ The browser entry checks exact HKDF output, AES-GCM encryption and decryption, a
 **Status:** IMPLEMENTED IN SOURCE; HOSTED BROWSER EXECUTION NOT YET VERIFIED. The workflow must reach the test steps and complete all three engines before any Chromium/Firefox/WebKit PASS claim is made. A failure before checkout or before a test step is UNRESOLVED / NOT RUN.
 
 The existing isolated Argon2id Playwright package is reused; no Playwright, esbuild, or cryptographic dependency was added to the root application. Physical Android/iOS performance and memory verification remain separate and NOT RUN.
+
+
+## 14. GitHub Actions browser-runner status — 2026-11-08
+
+The new browser-matrix workflow has three recorded push-triggered attempts:
+
+| Run | Commit | Result | Execution evidence |
+|---|---|---|---|
+| [42414589622](https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42414589622) | `77293bf3fd08f794fb99c3392753e88fa2c992a9` | FAILURE | Job started and ended in about 2 seconds; `runner_id=0`; `steps=[]`; no runner name or logs |
+| [42414724186](https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42414724186) | `9b1aede520b0764574bfd8103afb97ce56301b67` | FAILURE | Job started and ended in about 2 seconds; `runner_id=0`; `steps=[]`; no runner name or logs |
+| [42414737534](https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42414737534) | `340ef29908e2916a0666e793216237e3f5b0fb6f` | FAILURE | Job started and ended in about 2 seconds; `runner_id=0`; `steps=[]`; no runner name or logs |
+
+The job-details endpoint independently confirms the empty step arrays and missing runner assignment for all three attempts. The job-log download for run 42414737534 returned a missing-blob response. No checkout, dependency installation, browser installation, or test-step evidence is present.
+
+**Interpretation:** the browser test suite did not execute in these hosted runs. This is **UNRESOLVED / NOT RUN**, not a cryptographic test failure and not a pass. The available GitHub run metadata does not expose the root cause. The public GitHub Status page showed Actions operational during the status cross-check; that does not rule out a repository- or run-specific execution problem.
+
+Do not keep retrying blindly, change runner images without evidence, or attribute the failures to HKDF/AES-GCM. Repository Actions settings and billing-level diagnostics were not available through the inspected endpoints.
+
+The local Node.js v22.16.0 harness result recorded earlier remains separate evidence. Browser-engine results and physical Android/iOS memory/performance measurements remain **NOT RUN**.
