@@ -198,8 +198,8 @@ export default function AuthPanel() {
       {enteringVault && (
         <div className="vault-entry-transition" role="status" aria-live="assertive">
           <div className="vault-entry-orbit" aria-hidden="true"><span /><span /><span /><b>V</b></div>
-          <strong>ACCESS VERIFIED</strong>
-          <p>Opening your private Vault…</p>
+          <strong>{demoEntry ? "DEMO PREVIEW" : "ACCESS VERIFIED"}</strong>
+          <p>{demoEntry ? "Opening a read-only sample Vault…" : "Opening your private Vault…"}</p>
           <div className="vault-entry-progress" aria-hidden="true"><i /></div>
         </div>
       )}
