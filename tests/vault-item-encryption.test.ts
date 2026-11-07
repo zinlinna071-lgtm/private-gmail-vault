@@ -6,15 +6,15 @@ const userId = "11111111-1111-4111-8111-111111111111";
 const itemId = "22222222-2222-4222-8222-222222222222";
 
 describe("Vault item encryption", () => {
-  const previousKey = process.env.VAULT_DATA_ENCRYPTION_KEY;
+  const previousKey = process.env.VAULT_ENCRYPTION_KEY;
 
   beforeEach(() => {
-    process.env.VAULT_DATA_ENCRYPTION_KEY = key;
+    process.env.VAULT_ENCRYPTION_KEY = key;
   });
 
   afterEach(() => {
-    if (previousKey === undefined) delete process.env.VAULT_DATA_ENCRYPTION_KEY;
-    else process.env.VAULT_DATA_ENCRYPTION_KEY = previousKey;
+    if (previousKey === undefined) delete process.env.VAULT_ENCRYPTION_KEY;
+    else process.env.VAULT_ENCRYPTION_KEY = previousKey;
   });
 
   it("encrypts and decrypts an account entry", () => {
@@ -46,9 +46,9 @@ describe("Vault item encryption", () => {
   });
 
   it("fails closed when the encryption key is missing or malformed", () => {
-    delete process.env.VAULT_DATA_ENCRYPTION_KEY;
+    delete process.env.VAULT_ENCRYPTION_KEY;
     expect(() => encryptVaultItem("secret", userId, itemId)).toThrow(/not configured/i);
-    process.env.VAULT_DATA_ENCRYPTION_KEY = "not-a-key";
+    process.env.VAULT_ENCRYPTION_KEY = "not-a-key";
     expect(() => encryptVaultItem("secret", userId, itemId)).toThrow(/not configured/i);
   });
 });
