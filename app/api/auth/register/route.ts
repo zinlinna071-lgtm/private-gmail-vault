@@ -4,7 +4,7 @@ import { isJsonContentType } from "@/lib/auth/content-type";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { allowAuthAttempt } from "@/lib/auth/rate-limit";
+import { allowAuthAttempt, AuthRateLimitError } from "@/lib/auth/rate-limit";
 import { encryptPendingRecoveryCode } from "@/lib/auth/recovery-encryption";
 import { authEmailForLoginId, createRecoveryCode, hashRecoveryCode, isSameOriginRequest, normalizeLoginId, validatePassword } from "@/lib/auth/vault";
 
@@ -33,6 +33,7 @@ function noStoreJson(body: unknown, init?: ResponseInit) {
 export async function POST(request: Request) {
   if (!isSameOriginRequest(request)) return noStoreJson({ error: "Invalid request origin." }, { status: 403 });
   let createdUserId: string | undefined;
+  let failureStage = "request-validation";
   try {
     if (!isJsonContentType(request.headers.get("content-type"))) {
       return noStoreJson({ error: "Content-Type must be application/json." }, { status: 415 });
@@ -54,6 +55,7 @@ export async function POST(request: Request) {
     } catch {
       return noStoreJson({ error: "Invalid Login ID." }, { status: 400 });
     }
+    failureStage = "rate-limit";
     if (!await allowAuthAttempt(request, "register", loginId, 5)) {
       return noStoreJson({ error: "Too many account creation attempts. Try again later." }, { status: 429 });
     }
@@ -64,12 +66,14 @@ export async function POST(request: Request) {
       return noStoreJson({ error: "Master Password must be 12–128 characters." }, { status: 400 });
     }
 
+    failureStage = "recovery-code-generation";
     const recoveryCode = createRecoveryCode();
     const { hash, salt } = hashRecoveryCode(recoveryCode);
     const encrypted = encryptPendingRecoveryCode(recoveryCode);
     // Initial Recovery Code remains pending until the user confirms it was saved.
     // No expiry avoids permanently losing recovery if the first response is missed.
     const pendingExpiresAt = null;
+    failureStage = "supabase-admin-account-create";
     const admin = createSupabaseAdminClient();
     const { data, error } = await admin.auth.admin.createUser({
       email: authEmailForLoginId(loginId), password, email_confirm: true,
@@ -80,6 +84,7 @@ export async function POST(request: Request) {
     }
     createdUserId = data.user.id;
 
+    failureStage = "vault-profile-create";
     const { error: profileError } = await admin.from("vault_profiles").insert({
       user_id: data.user.id, display_name: loginId, login_id: loginId,
       pending_recovery_code_hash: hash,
@@ -97,6 +102,7 @@ export async function POST(request: Request) {
 
     // If this response is lost, a later successful sign-in can retrieve the
     // same encrypted pending code until it is explicitly acknowledged.
+    failureStage = "supabase-auth";
     const { error: signInError } = await signIn(loginId, password);
     return noStoreJson({
       success: true,
@@ -108,6 +114,12 @@ export async function POST(request: Request) {
     if (createdUserId) {
       try { await createSupabaseAdminClient().auth.admin.deleteUser(createdUserId); } catch {}
     }
-    return noStoreJson({ error: "Unable to create the Vault account. Please try again." }, { status: 500 });
+    const diagnosticCode = error instanceof AuthRateLimitError ? error.code
+      : failureStage === "supabase-admin-account-create" ? "AUTH_ADMIN_ACCOUNT_CREATE_FAILED"
+      : failureStage === "vault-profile-create" ? "VAULT_PROFILE_CREATE_FAILED"
+      : failureStage === "supabase-auth" ? "AUTH_PROVIDER_UNAVAILABLE"
+      : "AUTH_REGISTER_UNEXPECTED_FAILURE";
+    console.error("[vault-auth] registration failed", { stage: failureStage, code: diagnosticCode, errorType: error instanceof Error ? error.name : "unknown" });
+    return noStoreJson({ error: "Unable to create the Vault account. Please try again.", code: diagnosticCode }, { status: 500 });
   }
 }
