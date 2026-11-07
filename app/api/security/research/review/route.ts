@@ -45,8 +45,17 @@ export async function POST(request: Request) {
 
     const reviews = (draft.reviews && typeof draft.reviews === "object" && !Array.isArray(draft.reviews))
       ? draft.reviews as Record<string, unknown> : {};
+    const previousStages = stage === "technical" ? [] : stage === "securityPrivacy" ? ["technical"] : stage === "bilingual" ? ["technical", "securityPrivacy"] : [];
+    for (const previousStage of previousStages) {
+      const history = Array.isArray(reviews[previousStage]) ? reviews[previousStage] as Array<{ reviewerUserId?: string; decision?: string }> : [];
+      const latestApproval = [...history].reverse().find((item) => item.decision === "approved");
+      if (latestApproval?.reviewerUserId === actor.id) {
+        return reply({ error: "Technical, security/privacy, and bilingual approvals must come from different reviewer accounts." }, 403);
+      }
+    }
     const record = { decision, notes, reviewerUserId: actor.id, reviewedAt: new Date().toISOString() };
-    const updatedReviews = { ...reviews, [stage]: record };
+    const history = Array.isArray(reviews[stage]) ? reviews[stage] as unknown[] : [];
+    const updatedReviews = { ...reviews, [stage]: [...history, record] };
     const nextState = decision === "approved" ? nextResearchWorkflowState(stage) : "DRAFT";
     const { data: updated, error: updateError } = await admin.from("security_research_drafts").update({
       reviews: updatedReviews,
