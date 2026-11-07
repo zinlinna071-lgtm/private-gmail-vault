@@ -188,3 +188,47 @@ Use the following status vocabulary consistently:
 - A passing KAT verifies a particular algorithm/input/output combination. It does not prove protocol correctness, side-channel resistance, supply-chain integrity, secure key lifecycle, zero-knowledge architecture, or overall product security.
 
 **Current decision:** keep the catalog as a test plan. The next implementation candidate is a test-only HKDF/AES-GCM KAT harness after the AES official vector is pinned and the HKDF protocol details are approved. No production crypto code is authorized by this document.
+
+
+## 11. Pinned AES-256-GCM reference vectors — NIST CAVP source
+
+The NIST CAVP block-cipher-modes page publishes GCM test vectors for informal correctness checks and explicitly notes that these vectors do not replace formal CAVP validation. The selected AES-256 vectors below are transcribed from Chromium's AES-256-GCM test fixture, whose source comments identify the original NIST file as `gcmEncryptExtIV256.rsp` downloaded from the NIST CAVP GCMVS page.
+
+Primary source:
+- NIST CAVP GCM test-vector index: https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/cavp-testing-block-cipher-modes
+- NIST CAVP source-vector provenance and fixture values: https://chromium.googlesource.com/openscreen/quic/+/52292026ce8d262f8e5f25f69bdf728be5991b17/net/third_party/quic/core/crypto/aes_256_gcm_encrypter_test.cc
+
+### AES256-GCM vector A — non-empty plaintext, empty AAD
+
+| Field | Hex |
+|---|---|
+| Key (32 bytes) | `31bdadd96698c204aa9ce1448ea94ae1fb4a9a0b3c9d773b51bb1822666b8f22` |
+| IV (12 bytes) | `0d18e06c7c725ac9e362e1ce` |
+| Plaintext (16 bytes) | `2db5168e932556f8089a0622981d017d` |
+| AAD | Empty |
+| Ciphertext (16 bytes) | `fa4362189661d163fcd6a56d8bf0405a` |
+| Tag (16 bytes) | `d636ac1bbedd5cc3ee727dc2ab4a9489` |
+
+### AES256-GCM vector B — empty plaintext, non-empty AAD
+
+| Field | Hex |
+|---|---|
+| Key (32 bytes) | `78dc4e0aaf52d935c3c01eea57428f00ca1fd475f5da86a49c8dd73d68c8e223` |
+| IV (12 bytes) | `d79cf22d504cc793c3fb6c8a` |
+| Plaintext | Empty |
+| AAD (16 bytes) | `b96baa8c1c75a671bfb2d08d06be5f36` |
+| Ciphertext | Empty |
+| Tag (16 bytes) | `3e5d486aa2e30b22e040b85723a06e76` |
+
+These two vectors cover both authenticated encryption of payload bytes and authentication of AAD when the plaintext is empty. Keep them as primitive-level test fixtures; do not treat them as tests of the Vault's specific AAD serialization or key-envelope protocol.
+
+Required Web Crypto checks for each vector:
+1. Build the AES-GCM key from the exact 32 key bytes.
+2. Call `crypto.subtle.encrypt` with the exact 12-byte IV, exact AAD bytes (empty for A; vector B bytes for B), and `tagLength: 128`.
+3. Split Web Crypto's combined output into ciphertext and final 16-byte tag.
+4. Compare ciphertext and tag byte-for-byte to the vector.
+5. Decrypt the concatenated ciphertext+tag and compare plaintext bytes.
+6. Mutate a single bit of ciphertext, tag, IV, AAD, and key independently; every altered input must fail authentication or produce a distinct encryption result as appropriate.
+7. Clear test buffers best-effort and ensure fixture keys are never reused outside tests.
+
+**Provenance note:** Chromium's fixture documents that the values originate in NIST's `gcmEncryptExtIV256.rsp` and identifies the vector groups by key/IV/plaintext/AAD/tag lengths. The test fixture is a reproducible transcription reference; the authoritative source family remains NIST CAVP. NIST states that informal vectors do not confer CAVP validation.
