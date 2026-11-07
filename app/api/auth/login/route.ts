@@ -4,7 +4,7 @@ import { isJsonContentType } from "@/lib/auth/content-type";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { allowAuthAttempt } from "@/lib/auth/rate-limit";
+import { allowAuthAttempt, AuthRateLimitError } from "@/lib/auth/rate-limit";
 import { decryptPendingRecoveryCode } from "@/lib/auth/recovery-encryption";
 import { authEmailForLoginId, isSameOriginRequest, normalizeLoginId } from "@/lib/auth/vault";
 
@@ -95,14 +95,14 @@ export async function POST(request: Request) {
 
     return noStoreJson({ success: true });
   } catch (error) {
-    const diagnosticCode = failureStage === "rate-limit" ? "AUTH_RATE_LIMIT_UNAVAILABLE"
+    const diagnosticCode = error instanceof AuthRateLimitError ? error.code
+      : failureStage === "rate-limit" ? "AUTH_RATE_LIMIT_UNAVAILABLE"
       : failureStage === "supabase-public-config" ? "AUTH_PUBLIC_CONFIG_MISSING"
       : failureStage === "supabase-auth" ? "AUTH_PROVIDER_UNAVAILABLE"
       : failureStage === "vault-profile-lookup" ? "VAULT_PROFILE_UNAVAILABLE"
       : failureStage === "pending-recovery-decryption" ? "RECOVERY_CODE_DECRYPTION_FAILED"
       : "AUTH_UNEXPECTED_FAILURE";
-    // Log only the stage and error class. Never log Login IDs, passwords, cookies,
-    // Recovery Codes, database values, or provider error messages.
+    // Log only the stage and a safe diagnostic code; never log user data or provider messages.
     console.error("[vault-auth] sign-in failed", { stage: failureStage, code: diagnosticCode, errorType: error instanceof Error ? error.name : "unknown" });
     return noStoreJson({ error: "Unable to complete sign-in. Please try again.", code: diagnosticCode }, { status: 500 });
   }
