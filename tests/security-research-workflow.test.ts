@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   createResearchDraftSchema,
+  hasPriorApprovalByActor,
   nextResearchWorkflowState,
   researchDraftContentSchema,
   reviewSubmissionSchema
@@ -94,5 +95,24 @@ describe("private research workflow", () => {
     expect(nextResearchWorkflowState("securityPrivacy")).toBe("BILINGUAL_REVIEW");
     expect(nextResearchWorkflowState("bilingual")).toBe("OWNER_APPROVAL");
     expect(nextResearchWorkflowState("owner")).toBe("READY_TO_PUBLISH");
+  });
+
+  it("prevents the same reviewer account from approving multiple stages", () => {
+    const reviews = {
+      technical: [{ decision: "approved", reviewerUserId: "reviewer-a" }],
+      securityPrivacy: [{ decision: "changes-requested", reviewerUserId: "reviewer-b" }]
+    };
+    expect(hasPriorApprovalByActor(reviews, ["technical"], "reviewer-a")).toBe(true);
+    expect(hasPriorApprovalByActor(reviews, ["technical"], "reviewer-b")).toBe(false);
+  });
+
+  it("requires final owner approval to be independent of reviewer approvals", () => {
+    const reviews = {
+      technical: [{ decision: "approved", reviewerUserId: "owner-a" }],
+      securityPrivacy: [{ decision: "approved", reviewerUserId: "reviewer-b" }],
+      bilingual: [{ decision: "approved", reviewerUserId: "reviewer-c" }]
+    };
+    expect(hasPriorApprovalByActor(reviews, ["technical", "securityPrivacy", "bilingual"], "owner-a")).toBe(true);
+    expect(hasPriorApprovalByActor(reviews, ["technical", "securityPrivacy", "bilingual"], "owner-z")).toBe(false);
   });
 });
