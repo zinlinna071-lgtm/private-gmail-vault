@@ -156,7 +156,7 @@ export default function SecurityPage() {
       </section>
 
       <section className="security-section">
-        <div className="security-section-heading"><div><span className="section-index">04 / RESEARCH MATRIX</span><h2>What is tested — and what is not.</h2></div><span className="section-aside">REVIEW STATUS</span></div>
+        <div className="security-section-heading"><div><span className="section-index">03 / RESEARCH MATRIX</span><h2>What is tested — and what is not.</h2></div><span className="section-aside">REVIEW STATUS</span></div>
         <div className="security-module-grid">
           {modules.map(([number, title, description, status]) => (
             <article className="security-module" key={number}>
@@ -169,7 +169,7 @@ export default function SecurityPage() {
       </section>
 
       <section className="security-section security-operations">
-        <div><span className="section-index">05 / PRIVATE LAB OPERATIONS</span><h2>Controlled tests. Verifiable outcomes.</h2><p className="security-lead">Security testing is performed privately against isolated test systems. Public visitors can inspect approved outcomes, but cannot launch scans, submit payloads, or access the lab.</p></div>
+        <div><span className="section-index">04 / PRIVATE LAB OPERATIONS</span><h2>Controlled tests. Verifiable outcomes.</h2><p className="security-lead">Security testing is performed privately against isolated test systems. Public visitors can inspect approved outcomes, but cannot launch scans, submit payloads, or access the lab.</p></div>
         <div className="operation-list">
           <div><b>01</b><span><strong>Authorize & isolate</strong><small>Confirm ownership, written scope, test accounts, and non-production fixtures.</small></span><em>REQUIRED</em></div>
           <div><b>02</b><span><strong>Execute & capture</strong><small>Run controlled checks and retain test IDs, commit, runtime, and evidence.</small></span><em>PRIVATE</em></div>
@@ -179,7 +179,7 @@ export default function SecurityPage() {
       </section>
 
       <section className="security-section security-method">
-        <div><span className="section-index">06 / RESEARCH PUBLICATIONS</span><h2>Evidence becomes knowledge.</h2><p className="security-lead">Approved papers document objectives, safe methodology, isolated environment, findings, remediation, retest results, limitations, and references in English and Burmese.</p><Link href="/security/research">Open the bilingual research library ↗</Link><p className="security-footnote" style={{ marginTop: 16 }}>Authentication testing plan: <a href="https://github.com/zinlinna071-lgtm/private-gmail-vault/blob/feature/vault-authentication/docs/SECURITY-LOGIN-TEST-PLAN.md" target="_blank" rel="noreferrer">review the Vault Login Security Test Plan ↗</a></p>
+        <div><span className="section-index">05 / RESEARCH PUBLICATIONS</span><h2>Evidence becomes knowledge.</h2><p className="security-lead">Approved papers document objectives, safe methodology, isolated environment, findings, remediation, retest results, limitations, and references in English and Burmese.</p><Link href="/security/research">Open the bilingual research library ↗</Link><p className="security-footnote" style={{ marginTop: 16 }}>Authentication testing plan: <a href="https://github.com/zinlinna071-lgtm/private-gmail-vault/blob/feature/vault-authentication/docs/SECURITY-LOGIN-TEST-PLAN.md" target="_blank" rel="noreferrer">review the Vault Login Security Test Plan ↗</a></p>
           <p className="security-footnote">Preliminary source review: <a href="https://github.com/zinlinna071-lgtm/private-gmail-vault/blob/feature/vault-authentication/docs/SECURITY-LOGIN-STATIC-REVIEW.md" target="_blank" rel="noreferrer">read the Vault Login Static Review ↗</a> <span>· Static inspection only; no penetration test has been claimed.</span></p></div>
         <div className="method-steps">
           <div><b>01</b><span><strong>Draft from verified evidence</strong><small>No invented findings, fabricated telemetry, or synthetic publications.</small></span></div>
