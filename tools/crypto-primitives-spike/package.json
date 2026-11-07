@@ -1,0 +1,8 @@
+{
+  "name": "private-vault-crypto-primitives-spike",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node test-primitives.mjs"
+  }
+}
