@@ -56,6 +56,7 @@ export async function GET() {
     const { data, error } = await admin.from("vault_items")
       .select("id,ciphertext,iv,auth_tag,created_at,updated_at")
       .eq("user_id", user.id)
+      .eq("encryption_scheme", "legacy-server-v1")
       .order("updated_at", { ascending: false });
     if (error) throw error;
 
