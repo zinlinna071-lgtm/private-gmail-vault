@@ -33,12 +33,39 @@ CREATE TABLE IF NOT EXISTS public.vault_items (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+GRANT ALL ON TABLE public.vault_profiles, public.vault_items TO service_role;
 SQL
 
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$MIGRATION"
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$SQL_TEST"
 
 tmp_dir="$(mktemp -d)"
+# The application service role may create normal Secondary profiles, but it
+# must not promote or demote the privileged account tier.
+if psql "$DATABASE_URL" -v ON_ERROR_STOP=1 \
+  -c "SET ROLE service_role; UPDATE public.vault_profiles SET account_type = 'owner' WHERE user_id = '10000000-0000-4000-8000-000000000001';" \
+  > "$tmp_dir/promote.log" 2>&1; then
+  echo "service_role unexpectedly promoted a Secondary profile to Owner" >&2
+  exit 1
+fi
+if ! grep -q "OWNER_ROLE_PROVISIONING_REQUIRES_DATABASE_OWNER" "$tmp_dir/promote.log"; then
+  cat "$tmp_dir/promote.log" >&2
+  echo "Owner promotion was blocked for an unexpected reason" >&2
+  exit 1
+fi
+
+if psql "$DATABASE_URL" -v ON_ERROR_STOP=1 \
+  -c "SET ROLE service_role; UPDATE public.vault_profiles SET account_type = 'secondary' WHERE user_id = '10000000-0000-4000-8000-000000000003';" \
+  > "$tmp_dir/demote.log" 2>&1; then
+  echo "service_role unexpectedly changed the Owner tier" >&2
+  exit 1
+fi
+if ! grep -q "OWNER_ROLE_PROVISIONING_REQUIRES_DATABASE_OWNER" "$tmp_dir/demote.log"; then
+  cat "$tmp_dir/demote.log" >&2
+  echo "Owner demotion was blocked for an unexpected reason" >&2
+  exit 1
+fi
+
 trap 'rm -rf "$tmp_dir"' EXIT
 
 psql "$DATABASE_URL" -X -A -t -v ON_ERROR_STOP=1 \
