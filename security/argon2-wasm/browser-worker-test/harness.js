@@ -99,8 +99,15 @@ async function testApplicationWorker() {
     assert(decrypted.type === "DECRYPTED_RECORD" && decrypted.plaintext === plaintext,
       "Application Worker round-trip did not preserve the test record.");
 
-    const locked = await appRequest(appWorker, "LOCK");
+    const pendingEncryption = appRequest(appWorker, "ENCRYPT_RECORD", {
+      recordId: "33333333-3333-4333-8333-333333333333",
+      plaintext: JSON.stringify({ accountName: "Pending lock test", notes: "x".repeat(12_000) })
+    });
+    const lockedPromise = appRequest(appWorker, "LOCK");
+    const [pendingResult, locked] = await Promise.all([pendingEncryption, lockedPromise]);
     assert(locked.type === "LOCKED", "Application Worker did not lock.");
+    assert(pendingResult.type === "ERROR" && pendingResult.code === "LOCKED",
+      "In-flight encryption response was not invalidated by LOCK.");
     const denied = await appRequest(appWorker, "DECRYPT_RECORD", {
       recordId,
       envelope: encrypted.envelope
