@@ -50,6 +50,21 @@ begin
     update public.vault_profiles
        set client_crypto_version = 1,
            client_kdf_algorithm = 'argon2id-v1.3',
+           client_kdf_profile = 1,
+           client_kdf_salt = null,
+           client_wrapped_dek_iv = 'AAAAAAAAAAAAAAAA',
+           client_wrapped_dek = repeat('A', 64),
+           client_key_created_at = now()
+     where user_id = '70000000-0000-4000-8000-000000000001';
+    raise exception 'Partial client key metadata should have been rejected';
+  exception when check_violation then
+    null;
+  end;
+
+  begin
+    update public.vault_profiles
+       set client_crypto_version = 1,
+           client_kdf_algorithm = 'argon2id-v1.3',
            client_kdf_profile = 9,
            client_kdf_salt = 'AAAAAAAAAAAAAAAAAAAAAA==',
            client_wrapped_dek_iv = 'AAAAAAAAAAAAAAAA',
