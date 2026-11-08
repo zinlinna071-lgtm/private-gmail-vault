@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
-type Option = { id: string; label: string };
+type Option = { id: string; label: string; myLabel: string };
 type Puzzle = {
   id: string;
   category: string;
@@ -25,9 +25,9 @@ const puzzles: Puzzle[] = [
     prompt: "Two records are encrypted with the same AES-GCM key. The second operation is about to reuse the exact 96-bit nonce from the first. What should the system do?",
     myPrompt: "AES-GCM Key တစ်ခုတည်းနဲ့ Record နှစ်ခုကို စာဝှက်ရာမှာ ဒုတိယအကြိမ်က ပထမ Nonce အဟောင်းကို ပြန်သုံးတော့မယ်။ System က ဘာလုပ်သင့်သလဲ။",
     options: [
-      { id: "reuse", label: "Continue. A nonce is public, so reuse is harmless." },
-      { id: "stop", label: "Reject the reuse and obtain a fresh unique nonce." },
-      { id: "hide", label: "Keep the repeated nonce secret from the user." }
+      { id: "reuse", label: "Continue. A nonce is public, so reuse is harmless.", myLabel: "Nonce က Public ဖြစ်လို့ ပြန်သုံးလည်း ပြဿနာမရှိဘူး။" },
+      { id: "stop", label: "Reject the reuse and obtain a fresh unique nonce.", myLabel: "ပြန်သုံးခြင်းကို ပယ်ချပြီး မတူညီတဲ့ Nonce အသစ် ရယူပါ။" },
+      { id: "hide", label: "Keep the repeated nonce secret from the user.", myLabel: "Nonce အဟောင်းကို User ဆီက လျှို့ဝှက်ထားပါ။" }
     ],
     answer: "stop",
     explanation: "Correct: stop the operation and obtain a nonce that has not been used with this key. AES-GCM nonce uniqueness is a per-key requirement; secrecy is not the protection.",
@@ -41,9 +41,9 @@ const puzzles: Puzzle[] = [
     prompt: "A stored AES-GCM ciphertext is changed by one bit before decryption. The authentication check fails. What is the safest application behavior?",
     myPrompt: "သိမ်းထားတဲ့ AES-GCM Ciphertext ကို Decrypt မလုပ်ခင် Bit တစ်ခု ပြောင်းထားပြီး Authentication စစ်ဆေးမှု မအောင်မြင်ဘူး။ Application က ဘာလုပ်သင့်သလဲ။",
     options: [
-      { id: "show", label: "Show partially decrypted text and continue." },
-      { id: "ignore", label: "Ignore the tag error because the record still exists." },
-      { id: "reject", label: "Reject the record and surface a safe integrity error." }
+      { id: "show", label: "Show partially decrypted text and continue.", myLabel: "တစ်စိတ်တစ်ပိုင်း Decrypt ဖြစ်တဲ့ စာသားကို ပြပြီး ဆက်လုပ်ပါ။" },
+      { id: "ignore", label: "Ignore the tag error because the record still exists.", myLabel: "Record ရှိနေသေးတာကြောင့် Tag Error ကို လျစ်လျူရှုပါ။" },
+      { id: "reject", label: "Reject the record and surface a safe integrity error.", myLabel: "Record ကို ပယ်ချပြီး လုံခြုံတဲ့ Integrity Error ကို ပြပါ။" }
     ],
     answer: "reject",
     explanation: "Correct: authenticated decryption must fail closed. Do not release unauthenticated plaintext or silently ignore the error. Preserve safe diagnostic context without exposing secrets.",
@@ -57,9 +57,9 @@ const puzzles: Puzzle[] = [
     prompt: "A service stores password verifiers using a password-based KDF. A developer proposes one fixed salt for every account. Which design is better?",
     myPrompt: "Password Verifier တွေ သိမ်းဖို့ Password-based KDF သုံးနေတယ်။ Developer က Account အားလုံးအတွက် Salt တစ်ခုတည်းကို သုံးဖို့ အကြံပြုတယ်။ ဘယ် Design က ပိုကောင်းသလဲ။",
     options: [
-      { id: "unique", label: "Generate a unique random salt for each password record." },
-      { id: "fixed", label: "Use one global salt so every record is consistent." },
-      { id: "secret", label: "Use the username as a secret salt." }
+      { id: "unique", label: "Generate a unique random salt for each password record.", myLabel: "Password Record တစ်ခုစီအတွက် Random Salt သီးခြားထုတ်ပါ။" },
+      { id: "fixed", label: "Use one global salt so every record is consistent.", myLabel: "Record အားလုံးအတွက် Global Salt တစ်ခုတည်း သုံးပါ။" },
+      { id: "secret", label: "Use the username as a secret salt.", myLabel: "Username ကို လျှို့ဝှက် Salt အဖြစ် သုံးပါ။" }
     ],
     answer: "unique",
     explanation: "Correct: generate a cryptographically random, unique salt for each password record and store it alongside the verifier. The salt is not a password and does not need to be secret.",
@@ -73,9 +73,9 @@ const puzzles: Puzzle[] = [
     prompt: "An encrypted record was created with authenticated additional data (AAD) containing Vault ID A and Record ID 17. Someone copies the ciphertext into Record ID 42. During decryption, which context should the application supply?",
     myPrompt: "Encrypted Record တစ်ခုကို Vault ID A နဲ့ Record ID 17 ပါတဲ့ AAD ဖြင့် ဖန်တီးထားတယ်။ တစ်ယောက်ယောက်က Ciphertext ကို Record ID 42 ထဲ ကူးထည့်လိုက်တယ်။ Decrypt လုပ်တဲ့အခါ ဘယ် Context ကို အသုံးပြုသင့်သလဲ။",
     options: [
-      { id: "original", label: "Use the original bound context and verify the record identity." },
-      { id: "new", label: "Use Record ID 42 and accept the ciphertext if it decrypts." },
-      { id: "none", label: "Omit AAD so records can be moved freely." }
+      { id: "original", label: "Use the original bound context and verify the record identity.", myLabel: "မူလချိတ်ဆက်ထားတဲ့ Context ကိုသုံးပြီး Record Identity ကို စစ်ဆေးပါ။" },
+      { id: "new", label: "Use Record ID 42 and accept the ciphertext if it decrypts.", myLabel: "Record ID 42 ကိုသုံးပြီး Decrypt ဖြစ်ရင် လက်ခံပါ။" },
+      { id: "none", label: "Omit AAD so records can be moved freely.", myLabel: "Record တွေကို လွယ်လွယ်ကူကူ ရွှေ့နိုင်ဖို့ AAD ကို မသုံးပါနဲ့။" }
     ],
     answer: "original",
     explanation: "Correct: reconstruct the expected AAD from the trusted record context and require authentication to pass. A ciphertext copied into a different record context should fail authentication. AAD does not encrypt its contents; it binds context to the authenticated operation.",
@@ -89,9 +89,9 @@ const puzzles: Puzzle[] = [
     prompt: "A password-derived key is needed again months later. The verifier metadata stores only the salt, not the KDF algorithm or cost parameters. What should a robust design do?",
     myPrompt: "လအနည်းငယ်ကြာပြီးနောက် Password ကနေ Key ပြန်ထုတ်ဖို့ လိုလာတယ်။ သိမ်းထားတဲ့ Metadata မှာ Salt ပဲရှိပြီး KDF Algorithm နဲ့ Cost Parameters မပါဘူး။ ကောင်းမွန်တဲ့ Design က ဘာလုပ်သင့်သလဲ။",
     options: [
-      { id: "guess", label: "Guess the original algorithm and parameters from the output." },
-      { id: "store", label: "Store a versioned KDF identifier and its parameters with the salt." },
-      { id: "default", label: "Always use whatever parameters the newest release defaults to." }
+      { id: "guess", label: "Guess the original algorithm and parameters from the output.", myLabel: "Output ကိုကြည့်ပြီး မူလ Algorithm နဲ့ Parameters ကို ခန့်မှန်းပါ။" },
+      { id: "store", label: "Store a versioned KDF identifier and its parameters with the salt.", myLabel: "Salt နဲ့အတူ Version ပါတဲ့ KDF Identifier နဲ့ Parameters တွေကို သိမ်းပါ။" },
+      { id: "default", label: "Always use whatever parameters the newest release defaults to.", myLabel: "Release အသစ်ရဲ့ Default Parameters ကို အမြဲသုံးပါ။" }
     ],
     answer: "store",
     explanation: "Correct: persist a versioned algorithm identifier and the parameters required to reproduce derivation, alongside the salt. Review and migrate parameters deliberately as hardware and threat models change; do not silently reinterpret old records.",
@@ -184,7 +184,7 @@ export default function SecurityPuzzleArenaPage() {
               const isCorrect = option.id === current.answer;
               return (
                 <button key={option.id} type="button" onClick={() => choose(option.id)} disabled={answered} className={"puzzle-option" + (selected ? " selected" : "") + (answered && isCorrect ? " correct" : "") + (selected && !isCorrect ? " incorrect" : "")}>
-                  <b>{String.fromCharCode(65 + index)}</b><span>{option.label}</span>
+                  <b>{String.fromCharCode(65 + index)}</b><span className="puzzle-option-copy"><span>{option.label}</span><small lang="my">{option.myLabel}</small></span>
                   {answered && isCorrect && <small>SAFE CHOICE</small>}
                   {selected && !isCorrect && <small>YOUR CHOICE</small>}
                 </button>
@@ -249,7 +249,7 @@ export default function SecurityPuzzleArenaPage() {
         .puzzle-option{display:flex;align-items:center;gap:13px;width:100%;min-height:60px;padding:12px;text-align:left;border:1px solid #2d4a57;border-radius:8px;background:#0d202c;color:#d9e8ec;cursor:pointer}
         .puzzle-option:focus-visible,.puzzle-tab:focus-visible,.puzzle-reset:focus-visible,.puzzle-hint-button:focus-visible,.puzzle-controls button:focus-visible{outline:2px solid #9cebd0;outline-offset:3px}
         .puzzle-option>b{display:grid;place-items:center;flex:0 0 30px;height:30px;border:1px solid #42616a;border-radius:6px;color:#9dd8c7}
-        .puzzle-option span{font-size:12px;line-height:1.6}
+        .puzzle-option-copy{display:grid;gap:5px;min-width:0}.puzzle-option-copy>span{font-size:12px;line-height:1.6}.puzzle-option-copy>small{margin:0;color:#91a8b4;font-size:11px;line-height:1.6;letter-spacing:0;font-weight:500}.puzzle-option>small{margin-left:auto;color:#9cebd0;font-size:8px;font-weight:900;letter-spacing:.08em}
         .puzzle-option small{margin-left:auto;color:#9cebd0;font-size:8px;font-weight:900;letter-spacing:.08em}
         .puzzle-option:disabled{cursor:default;opacity:.85}
         .puzzle-option.correct{border-color:#4b9c7c;background:#102d2b}
