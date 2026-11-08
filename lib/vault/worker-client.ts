@@ -201,8 +201,9 @@ export class VaultCryptoWorkerClient {
         [secretBuffer, saltBuffer]
       );
     } catch (error) {
-      new Uint8Array(secretBuffer).fill(0);
-      new Uint8Array(saltBuffer).fill(0);
+      // Transferred ArrayBuffers are detached on this thread; the Worker owns and clears them.
+      try { new Uint8Array(secretBuffer).fill(0); } catch { /* already transferred */ }
+      try { new Uint8Array(saltBuffer).fill(0); } catch { /* already transferred */ }
       throw error;
     }
   }
