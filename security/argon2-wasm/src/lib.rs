@@ -38,6 +38,26 @@ fn validate_inputs(password: &[u8], salt: &[u8]) -> Result<(), &'static str> {
     Ok(())
 }
 
+fn derive_key_bytes(
+    password: &[u8],
+    salt: &[u8],
+    profile_id: u8,
+) -> Result<[u8; OUTPUT_BYTES], &'static str> {
+    validate_inputs(password, salt)?;
+    let params = profile_params(profile_id)?;
+    let argon2 = Argon2::new(Algorithm::Argon2id, Version::V0x13, params);
+
+    let mut output = [0u8; OUTPUT_BYTES];
+    if argon2
+        .hash_password_into(password, salt, &mut output)
+        .is_err()
+    {
+        output.zeroize();
+        return Err("Argon2id derivation failed");
+    }
+    Ok(output)
+}
+
 /// Derive a 32-byte key using a compiled-in Argon2id v1.3 profile.
 ///
 /// The password is supplied as UTF-8 bytes by the caller. The salt must be a
@@ -52,19 +72,8 @@ pub fn derive_key(
     salt: &[u8],
     profile_id: u8,
 ) -> Result<Uint8Array, JsValue> {
-    validate_inputs(password, salt).map_err(JsValue::from_str)?;
-    let params = profile_params(profile_id).map_err(JsValue::from_str)?;
-    let argon2 = Argon2::new(Algorithm::Argon2id, Version::V0x13, params);
-
-    let mut output = [0u8; OUTPUT_BYTES];
-    if argon2
-        .hash_password_into(password, salt, &mut output)
-        .is_err()
-    {
-        output.zeroize();
-        return Err(JsValue::from_str("Argon2id derivation failed"));
-    }
-
+    let mut output = derive_key_bytes(password, salt, profile_id)
+        .map_err(JsValue::from_str)?;
     let result = Uint8Array::from(output.as_slice());
     output.zeroize();
     Ok(result)
@@ -99,6 +108,39 @@ mod tests {
         assert!(validate_inputs(&[0x41; MAX_PASSWORD_BYTES + 1], &salt).is_err());
         assert!(validate_inputs(b"unlock secret", &[0x02; 15]).is_err());
         assert!(validate_inputs(b"unlock secret", &[0x02; 17]).is_err());
+    }
+
+    #[test]
+    fn fixed_profile_derivation_is_deterministic_and_salt_bound() {
+        let password = b"test-only unlock secret";
+        let salt_a = [0x11; SALT_BYTES];
+        let salt_b = [0x12; SALT_BYTES];
+
+        let mut first = derive_key_bytes(
+            password,
+            &salt_a,
+            PROFILE_POC_OWASP_BASELINE,
+        )
+        .expect("first derivation");
+        let mut repeated = derive_key_bytes(
+            password,
+            &salt_a,
+            PROFILE_POC_OWASP_BASELINE,
+        )
+        .expect("repeated derivation");
+        let mut other_salt = derive_key_bytes(
+            password,
+            &salt_b,
+            PROFILE_POC_OWASP_BASELINE,
+        )
+        .expect("different-salt derivation");
+
+        assert_eq!(first, repeated);
+        assert_ne!(first, other_salt);
+
+        first.zeroize();
+        repeated.zeroize();
+        other_salt.zeroize();
     }
 
     #[test]
