@@ -15,7 +15,7 @@
 
 ## Required database setup
 
-Apply `supabase/migrations/202611080001_curator_registration_claims.sql` to the project's Supabase database before enabling this flow. The migration has **not** been applied to any Supabase database. It creates the challenge and registration-claim tables with RLS enabled and no anon/authenticated grants, plus service-role-only atomic consume functions. A disposable PostgreSQL test runner has been added to CI; it does not connect to or mutate the project's Supabase instance.
+Apply `supabase/migrations/202611080005_curator_registration_claims.sql` to the project's Supabase database before enabling this flow. The migration has **not** been applied to any Supabase database. It creates the challenge and registration-claim tables with RLS enabled and no anon/authenticated grants, plus service-role-only atomic consume functions. A disposable PostgreSQL test runner has been added to CI; it does not connect to or mutate the project's Supabase instance.
 
 Do not run this migration against production without the owner's explicit approval. Until it is applied to the intended environment, challenge persistence/verification cannot complete because the required table or function is unavailable.
 
