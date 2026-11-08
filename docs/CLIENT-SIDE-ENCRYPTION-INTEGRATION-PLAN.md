@@ -146,3 +146,18 @@ The application currently builds with Next.js 15 and OpenNext Cloudflare. The Po
 Before importing the PoC into a production Worker, choose and verify a reproducible asset strategy that works in both the repository's production build and OpenNext Cloudflare output. The strategy must pin Rust, wasm-bindgen, and generated artifact hashes; avoid runtime CDN or untrusted remote WASM loading; and have a production-build test that proves the Worker JavaScript and WASM binary are present at the exact paths used by the browser. A CI-only artifact is not a production packaging solution.
 
 Do not create an application Worker that references a missing generated module, add a server-side KDF fallback, or switch the CRUD API before the asset strategy and matching browser client are verified. Keep the current server-readable disclosure active. No live migration or deployment is authorized by this checkpoint.
+
+
+## 10. Reproducible browser-WASM asset packaging gate
+
+Commit `087054f8f1c44d1a78f7c09d3c244ee216ecc37e` adds `scripts/package-argon2-wasm-assets.mjs` and a CI step that:
+
+1. Generates the browser-target bindings from the pinned Rust/WASM toolchain.
+2. Copies only the expected generated JavaScript glue, WASM binary, and TypeScript declaration into the ignored `public/crypto/argon2/` build directory.
+3. Writes a manifest containing byte lengths and SHA-256 digests for those three generated files.
+4. Runs the OpenNext Cloudflare build and checks that the generated files and manifest appear under `.open-next/assets/crypto/argon2/`.
+5. Retains the generated assets as a short-lived CI artifact for inspection.
+
+The generated directory is intentionally ignored by Git and is rebuilt from source in CI. It contains no user data or credentials.
+
+This is a packaging verification gate only. The application does not yet load this WASM module, and the current test-only Worker remains separate from the future application Worker. A passing OpenNext packaging check will prove asset inclusion, not production crypto integration or safe client-side Vault behavior. The production deployment pipeline must use the same pinned build step before any future Worker import is enabled.
