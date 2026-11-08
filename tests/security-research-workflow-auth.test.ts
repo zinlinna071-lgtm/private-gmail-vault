@@ -15,6 +15,8 @@ import { getResearchActor } from "@/lib/security-research/workflow-auth";
 const ownerId = "11111111-1111-4111-8111-111111111111";
 const secondaryId = "22222222-2222-4222-8222-222222222222";
 const reviewerId = "33333333-3333-4333-8333-333333333333";
+const originalOwnerId = process.env.SECURITY_RESEARCH_OWNER_USER_ID;
+const originalReviewerIds = process.env.SECURITY_RESEARCH_REVIEWER_USER_IDS;
 
 describe("private research role boundary", () => {
   beforeEach(() => {
@@ -28,8 +30,10 @@ describe("private research role boundary", () => {
   });
 
   afterEach(() => {
-    delete process.env.SECURITY_RESEARCH_OWNER_USER_ID;
-    delete process.env.SECURITY_RESEARCH_REVIEWER_USER_IDS;
+    if (originalOwnerId === undefined) delete process.env.SECURITY_RESEARCH_OWNER_USER_ID;
+    else process.env.SECURITY_RESEARCH_OWNER_USER_ID = originalOwnerId;
+    if (originalReviewerIds === undefined) delete process.env.SECURITY_RESEARCH_REVIEWER_USER_IDS;
+    else process.env.SECURITY_RESEARCH_REVIEWER_USER_IDS = originalReviewerIds;
   });
 
   it("recognizes only the configured Master/Owner account as Owner", async () => {
