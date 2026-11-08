@@ -68,6 +68,9 @@ jobs:
       - name: PostgreSQL webhook migration tests
         id: postgres_migration_tests
         run: bash scripts/test-github-webhook-migration.sh
+      - name: Curator registration PostgreSQL migration tests
+        id: curator_postgres_migration_tests
+        run: bash scripts/test-curator-registration-migration.sh
       - name: Production build
         id: production_build
         run: npm run build
@@ -84,6 +87,7 @@ jobs:
           TESTS_OUTCOME: ${{ steps.automated_tests.outcome || 'not-run' }}
           TYPECHECK_OUTCOME: ${{ steps.type_check.outcome || 'not-run' }}
           POSTGRES_TESTS_OUTCOME: ${{ steps.postgres_migration_tests.outcome || 'not-run' }}
+          CURATOR_POSTGRES_OUTCOME: ${{ steps.curator_postgres_migration_tests.outcome || 'not-run' }}
           BUILD_OUTCOME: ${{ steps.production_build.outcome || 'not-run' }}
         run: |
           {
@@ -101,6 +105,7 @@ jobs:
             echo "| Automated tests | $TESTS_OUTCOME |"
             echo "| Type check | $TYPECHECK_OUTCOME |"
             echo "| PostgreSQL migration tests | $POSTGRES_TESTS_OUTCOME |"
+            echo "| Curator PostgreSQL migration tests | $CURATOR_POSTGRES_OUTCOME |"
             echo "| Production build | $BUILD_OUTCOME |"
           } | tee ci-diagnostics.md
           cat ci-diagnostics.md >> "$GITHUB_STEP_SUMMARY"
