@@ -45,6 +45,8 @@ export function ResearchWorkbench({ isOwner, isReviewer }: { isOwner: boolean; i
   const [category, setCategory] = useState("Authentication");
   const [contentText, setContentText] = useState(JSON.stringify(contentTemplate, null, 2));
   const [reviewNotes, setReviewNotes] = useState("");
+  const [reviewerUserId, setReviewerUserId] = useState("");
+  const [assignmentDays, setAssignmentDays] = useState("7");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -115,6 +117,34 @@ export function ResearchWorkbench({ isOwner, isReviewer }: { isOwner: boolean; i
     } finally { setBusy(false); }
   }
 
+  async function assignReviewer() {
+    if (!selected || !currentStage || currentStage === "owner") return;
+    const days = Number(assignmentDays);
+    if (!Number.isInteger(days) || days < 1 || days > 30) {
+      setMessage("Choose an assignment duration from 1 to 30 days.");
+      return;
+    }
+    setBusy(true); setMessage("");
+    try {
+      const stage = currentStage === "securityPrivacy" ? "security_privacy" : currentStage;
+      const response = await fetch("/api/security/research/assignments", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          draftId: selected.id,
+          reviewerUserId: reviewerUserId.trim(),
+          stage,
+          expiresAt: new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString()
+        })
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error ?? "Reviewer assignment could not be created.");
+      setReviewerUserId("");
+      setMessage("Reviewer assigned to this draft and stage. The grant expires automatically.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Reviewer assignment could not be created.");
+    } finally { setBusy(false); }
+  }
+
   async function submitReview(decision: "approved" | "changes-requested") {
     if (!selected || !currentStage) return;
     setBusy(true); setMessage("");
@@ -175,6 +205,17 @@ export function ResearchWorkbench({ isOwner, isReviewer }: { isOwner: boolean; i
               <p lang="my">{selected.title_my}</p>
               <p>Category: {selected.category}</p>
               <p>Review stages with records: {Object.keys(selected.reviews ?? {}).length} / 4</p>
+              {isOwner && currentStage && currentStage !== "owner" && (
+                <div className="research-workbench-form">
+                  <h4>Assign an independent reviewer</h4>
+                  <label>Reviewer account UUID<input value={reviewerUserId} onChange={(event) => setReviewerUserId(event.target.value)} autoComplete="off" spellCheck={false} /></label>
+                  <label>Assignment validity (days)<input type="number" min={1} max={30} value={assignmentDays} onChange={(event) => setAssignmentDays(event.target.value)} /></label>
+                  <p className="research-workbench-hint">Only accounts already present in the server-side reviewer allowlist can be assigned. This grant applies only to the selected draft and its current review stage.</p>
+                  <div className="research-workbench-actions">
+                    <button disabled={busy || !reviewerUserId.trim()} onClick={assignReviewer}>ASSIGN TO CURRENT STAGE</button>
+                  </div>
+                </div>
+              )}
               {Object.entries(selected.reviews ?? {}).flatMap(([stage, history]) =>
                 (Array.isArray(history) ? history : []).map((review, index) => (
                   <div className="research-workbench-review-record" key={`${stage}-${index}`}>
