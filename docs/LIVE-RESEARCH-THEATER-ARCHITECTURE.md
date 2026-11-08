@@ -164,7 +164,7 @@ The public UI now includes a session-viewer shell and a legend defining LIVE, DE
 
 ### Stage 1 — truthful public experience
 - [x] Refine the public Security page into a coherent Research Theater entry point.
-- [ ] Add explicit navigation to Research Stories, Learning Lab, Puzzle Arena, and Research Archive.
+- [ ] Add explicit navigation to Research Stories, Learning Lab, Puzzle Arena, and Research Archive. (Puzzle Arena is now linked from the Research Library; global navigation remains planned.)
 - [x] Define display labels for live, delayed, recorded, illustrative, simulated, and unavailable content.
 - [x] Improve the inactive-lab empty state with a public session-viewer placeholder and event provenance contract.
 - [ ] Preserve all current evidence and limitation disclosures.
