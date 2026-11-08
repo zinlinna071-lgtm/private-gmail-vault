@@ -2,7 +2,7 @@
 
 **Review date:** 2026-11-08  
 **Branch:** `design/cyber-visual-architecture`  
-**Decision:** RustCrypto Argon2 0.6.0 is the preferred implementation candidate for a browser-WASM proof of concept, but it is **not yet approved, integrated, or pinned**.  
+**Decision:** RustCrypto Argon2 0.6.0 is the preferred implementation candidate for an isolated browser-WASM proof of concept. Exact direct dependency versions are pinned in that PoC only; it is **not approved or integrated into the application**.  
 **Production impact:** None. This is a research record only.
 
 ## 1. Required properties
