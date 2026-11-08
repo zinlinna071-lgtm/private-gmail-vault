@@ -1,6 +1,6 @@
 # The Curator's Signal — Backend Integration
 
-**Status:** Server-side challenge and one-time registration-claim code is committed on `design/cyber-visual-architecture`; database migration and runtime verification are still pending.
+**Status (2026-11-09):** Server-side challenge and one-time registration-claim code is committed on `design/cyber-visual-architecture`. GitHub Actions CI passed for commit `52a5766db49e4387a038609bba668b0dcaa52c3d` (run `42507634930`), including the isolated PostgreSQL Curator migration tests, typecheck, automated tests, and production build. The migration has not been applied to the project's Supabase database, and the live challenge flow is not yet verified.
 
 ## Flow
 
@@ -17,7 +17,13 @@
 
 Apply `supabase/migrations/202611080001_curator_registration_claims.sql` to the project's Supabase database before enabling this flow. The migration has **not** been applied to any Supabase database. It creates the challenge and registration-claim tables with RLS enabled and no anon/authenticated grants, plus service-role-only atomic consume functions. A disposable PostgreSQL test runner has been added to CI; it does not connect to or mutate the project's Supabase instance.
 
-Do not run this migration against production without the owner's explicit approval. Until it is applied to the intended environment, challenge bootstrap or verification will return a temporary service error because the required table or function is unavailable.
+Do not run this migration against production without the owner's explicit approval. Until it is applied to the intended environment, challenge persistence/verification cannot complete because the required table or function is unavailable.
+
+### Observed preview failure (2026-11-09)
+
+The previously available Vercel preview returned HTTP 503 from `GET /api/curator/challenge`. Source inspection shows that this endpoint first calls the shared auth rate limiter, which itself requires the Supabase admin credentials and `consume_vault_auth_attempt` RPC; it then inserts into `curator_challenges`. The generic 503 response is therefore consistent with missing admin configuration or an unavailable rate-limit RPC, while a missing Curator table produces the endpoint's separate challenge-issuance error. The deployed function logs only a safe error code/type, so the exact runtime cause must be confirmed from deployment logs and environment-variable **presence metadata** (never reveal secret values).
+
+The linked Vercel environment inspection currently returns 403 Forbidden, so preview environment metadata and runtime logs have not yet been verified. The latest GitHub commit is CI-green, but Vercel's status check is failing due to the account's build-rate-limit restriction. Do not repeatedly attempt deployments while that restriction remains active.
 
 ## Security boundaries and limitations
 
@@ -78,4 +84,4 @@ Test files:
 - `tests/security-research-workflow-auth.test.ts`
 - updated `tests/auth-routes.test.ts`
 
-These tests and the isolated PostgreSQL runner have been added to the repository but have **not yet been executed in a confirmed CI or local test run**. The Vercel status check is currently failing because the linked Vercel account reports a build-rate-limit/upgrade restriction; that is not evidence of a GitHub Actions test failure. Do not describe the test suite as passing until a successful run is observed.
+These tests and the isolated PostgreSQL runner were executed successfully in GitHub Actions run `42507634930` for commit `52a5766db49e4387a038609bba668b0dcaa52c3d`. The Vercel status check is separate and currently failing because the linked Vercel account reports a build-rate-limit/upgrade restriction; that is not evidence of a GitHub Actions test failure. The successful isolated CI migration test does **not** mean the migration has been applied to the project's Supabase database.
