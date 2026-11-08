@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { CURATOR_CHALLENGE_COOKIE, CURATOR_CHALLENGE_TTL_SECONDS, CURATOR_SESSION_COOKIE, createOpaqueToken } from "@/lib/auth/curator-claim";
-import { isSameOriginRequest } from "@/lib/auth/vault";
 
 export const runtime = "nodejs";
 
 export async function GET(request: Request) {
-  if (!isSameOriginRequest(request)) {
+  const fetchSite = request.headers.get("sec-fetch-site");
+  if (fetchSite && fetchSite !== "same-origin" && fetchSite !== "none") {
     return NextResponse.json({ error: "Invalid request origin." }, { status: 403 });
   }
 
