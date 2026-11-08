@@ -1,0 +1,73 @@
+name: Argon2id WASM dedicated Worker compatibility
+
+on:
+  push:
+    branches:
+      - design/cyber-visual-architecture
+    paths:
+      - "security/argon2-wasm/**"
+      - "tools/argon2id-browser-spike/**"
+      - ".github/workflows/argon2-wasm-worker-browser.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rust-wasm-worker-browser:
+    name: Rust Argon2id WASM inside Chromium, Firefox, and WebKit Workers
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pinned Rust toolchain and WASM target
+        uses: dtolnay/rust-toolchain@1.86.0
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Check Rust formatting
+        run: cargo fmt --manifest-path security/argon2-wasm/Cargo.toml -- --check
+
+      - name: Run Rust unit tests and RFC 9106 vector
+        run: cargo test --manifest-path security/argon2-wasm/Cargo.toml
+
+      - name: Compile release WASM module
+        run: cargo build --manifest-path security/argon2-wasm/Cargo.toml --target wasm32-unknown-unknown --release
+
+      - name: Install pinned wasm-bindgen CLI
+        run: cargo install wasm-bindgen-cli --version 0.2.130 --locked
+
+      - name: Generate browser-target ES module bindings
+        run: |
+          wasm-bindgen \
+            --target web \
+            --out-dir security/argon2-wasm/pkg-web \
+            --out-name vault_argon2_wasm_poc \
+            security/argon2-wasm/target/wasm32-unknown-unknown/release/vault_argon2_wasm_poc.wasm
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install isolated Playwright dependencies
+        working-directory: tools/argon2id-browser-spike
+        run: npm install --ignore-scripts --no-audit --no-fund
+
+      - name: Install Chromium, Firefox, and WebKit
+        working-directory: tools/argon2id-browser-spike
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - name: Run Rust Argon2id WASM inside dedicated browser Workers
+        working-directory: tools/argon2id-browser-spike
+        run: node run-rust-wasm-worker-test.mjs
+
+      - name: Upload browser-target WASM and generated glue for inspection
+        uses: actions/upload-artifact@v4
+        with:
+          name: argon2id-web-worker-poc-${{ github.sha }}
+          path: security/argon2-wasm/pkg-web/
+          if-no-files-found: error
+          retention-days: 7
