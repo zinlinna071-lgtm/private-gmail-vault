@@ -120,7 +120,7 @@ describe("Curator verification API", () => {
     });
     expect(mocks.insert).toHaveBeenCalledWith(expect.objectContaining({
       claim_hash: "digest-18",
-      session_hash: "sha256-browser-session-token"
+      session_hash: "digest-21"
     }));
     expect(JSON.stringify(mocks.insert.mock.calls)).not.toContain("opaque-claim-token");
     expect(response.headers.get("set-cookie")).toContain("vault_curator_claim");
