@@ -1,4 +1,5 @@
 //! Isolated Argon2id v1.3 browser-WASM proof of concept.
+#![forbid(unsafe_code)]
 //!
 //! This crate is intentionally not imported by the application. Profile IDs are
 //! fixed here; callers cannot supply memory, time, or parallelism parameters.
