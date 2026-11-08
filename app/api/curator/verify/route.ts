@@ -6,6 +6,7 @@ import {
   CURATOR_SESSION_COOKIE, createOpaqueToken, hashOpaqueToken
 } from "@/lib/auth/curator-claim";
 import { isSameOriginRequest } from "@/lib/auth/vault";
+import { allowAuthAttempt, AuthRateLimitError } from "@/lib/auth/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -22,6 +23,16 @@ export async function POST(request: Request) {
   const challenge = store.get(CURATOR_CHALLENGE_COOKIE)?.value;
   if (!session || !challenge) {
     return NextResponse.json({ error: "Start a fresh Curator challenge first." }, { status: 428 });
+  }
+
+  try {
+    if (!await allowAuthAttempt(request, "curator", hashOpaqueToken(session), 5)) {
+      return NextResponse.json({ error: "Too many puzzle attempts. Please try again later." }, { status: 429 });
+    }
+  } catch (error) {
+    const code = error instanceof AuthRateLimitError ? error.code : "CURATOR_RATE_LIMIT_UNAVAILABLE";
+    console.error("[curator] rate limit unavailable", { code });
+    return NextResponse.json({ error: "Puzzle verification is temporarily unavailable." }, { status: 503 });
   }
 
   let body: unknown;
