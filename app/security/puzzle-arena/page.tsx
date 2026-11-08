@@ -65,7 +65,7 @@ const puzzles: Puzzle[] = [
     explanation: "Correct: generate a cryptographically random, unique salt for each password record and store it alongside the verifier. The salt is not a password and does not need to be secret.",
     myExplanation: "မှန်ပါတယ်။ Password Record တစ်ခုစီအတွက် Cryptographically Secure Random Salt အသစ် သုံးပြီး Verifier နဲ့အတူ သိမ်းပါ။ Salt ကို Password လို လျှို့ဝှက်ထားဖို့ မလိုပါဘူး။",
     hint: "A salt should prevent identical passwords from producing identical stored verifiers across accounts."
-  }
+  },
   {
     id: "aad",
     category: "CONTEXT BINDING",
