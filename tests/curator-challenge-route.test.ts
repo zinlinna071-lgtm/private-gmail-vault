@@ -2,7 +2,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   cookies: vi.fn(),
-  createOpaqueToken: vi.fn()
+  createOpaqueToken: vi.fn(),
+  createSupabaseAdminClient: vi.fn(),
+  allowAuthAttempt: vi.fn(),
+  insert: vi.fn()
 }));
 
 vi.mock("next/headers", () => ({
@@ -12,7 +15,15 @@ vi.mock("@/lib/auth/curator-claim", () => ({
   CURATOR_CHALLENGE_COOKIE: "vault_curator_challenge",
   CURATOR_CHALLENGE_TTL_SECONDS: 600,
   CURATOR_SESSION_COOKIE: "vault_curator_session",
-  createOpaqueToken: mocks.createOpaqueToken
+  createOpaqueToken: mocks.createOpaqueToken,
+  hashOpaqueToken: (value: string) => "sha256-" + value
+}));
+vi.mock("@/lib/supabase/admin", () => ({
+  createSupabaseAdminClient: mocks.createSupabaseAdminClient
+}));
+vi.mock("@/lib/auth/rate-limit", () => ({
+  allowAuthAttempt: mocks.allowAuthAttempt,
+  AuthRateLimitError: class AuthRateLimitError extends Error {}
 }));
 
 import { GET } from "@/app/api/curator/challenge/route";
@@ -25,6 +36,11 @@ describe("Curator challenge bootstrap API", () => {
       .mockReturnValueOnce("new-challenge-token");
     mocks.cookies.mockResolvedValue({
       get: () => undefined
+    });
+    mocks.allowAuthAttempt.mockResolvedValue(true);
+    mocks.insert.mockResolvedValue({ error: null });
+    mocks.createSupabaseAdminClient.mockReturnValue({
+      from: () => ({ insert: mocks.insert })
     });
     process.env.NODE_ENV = "test";
   });
@@ -39,7 +55,7 @@ describe("Curator challenge bootstrap API", () => {
     expect(mocks.createOpaqueToken).not.toHaveBeenCalled();
   });
 
-  it("issues no-store response and strict HttpOnly session/challenge cookies", async () => {
+  it("persists only challenge/session hashes before issuing strict HttpOnly cookies", async () => {
     const response = await GET(new Request("https://vault.example/api/curator/challenge", {
       headers: { "Sec-Fetch-Site": "same-origin" }
     }));
@@ -50,6 +66,11 @@ describe("Curator challenge bootstrap API", () => {
     expect(response.status).toBe(200);
     expect(body).toEqual({ success: true, challenge: "curator-fourfold-v1" });
     expect(response.headers.get("cache-control")).toContain("no-store");
+    expect(mocks.insert).toHaveBeenCalledWith(expect.objectContaining({
+      challenge_hash: "sha256-new-challenge-token",
+      session_hash: "sha256-new-session-token"
+    }));
+    expect(JSON.stringify(mocks.insert.mock.calls)).not.toContain("new-challenge-token");
     expect(sessionCookie?.value).toBe("new-session-token");
     expect(sessionCookie?.httpOnly).toBe(true);
     expect(sessionCookie?.sameSite).toBe("strict");
@@ -74,6 +95,18 @@ describe("Curator challenge bootstrap API", () => {
 
     expect(sessionCookie?.value).toBe("existing-session-token");
     expect(challengeCookie?.value).toBe("new-session-token");
+    expect(mocks.insert).toHaveBeenCalledWith(expect.objectContaining({
+      challenge_hash: "sha256-new-session-token",
+      session_hash: "sha256-existing-session-token"
+    }));
     expect(mocks.createOpaqueToken).toHaveBeenCalledOnce();
+  });
+
+  it("fails closed when the challenge cannot be persisted", async () => {
+    mocks.insert.mockResolvedValue({ error: new Error("database unavailable") });
+    const response = await GET(new Request("https://vault.example/api/curator/challenge"));
+
+    expect(response.status).toBe(503);
+    expect(response.headers.get("set-cookie")).toBeNull();
   });
 });
