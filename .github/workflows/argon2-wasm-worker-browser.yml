@@ -7,6 +7,11 @@ on:
     paths:
       - "security/argon2-wasm/**"
       - "tools/argon2id-browser-spike/**"
+      - "scripts/package-argon2-wasm-assets.mjs"
+      - "package.json"
+      - "package-lock.json"
+      - "next.config.*"
+      - "open-next.config.*"
       - ".github/workflows/argon2-wasm-worker-browser.yml"
   workflow_dispatch:
 
