@@ -83,8 +83,9 @@ export async function initializeClientVault(
   options: { fetcher?: FetchLike; workerFactory?: WorkerFactory } = {}
 ): Promise<VaultCryptoWorkerClient> {
   const client = createWorker(options.workerFactory);
+  const secretBytes = new TextEncoder().encode(unlockSecret);
   try {
-    const initialized = await client.initialize(vaultId, unlockSecret, profileId);
+    const initialized = await client.initialize(secretBytes, vaultId, profileId);
     const fetcher = options.fetcher ?? fetch;
     const response = await fetcher("/api/vault/key-metadata", {
       method: "PUT",
@@ -100,8 +101,10 @@ export async function initializeClientVault(
     await readJson(response);
     return client;
   } catch (error) {
-    client.close();
+    client.dispose();
     throw error;
+  } finally {
+    secretBytes.fill(0);
   }
 }
 
@@ -123,17 +126,20 @@ export async function unlockClientVault(
   const body = await readJson(response);
   const metadata = parsePublicMetadata(body.metadata);
   const client = createWorker(options.workerFactory);
+  const secretBytes = new TextEncoder().encode(unlockSecret);
   try {
     await client.unlock(
+      secretBytes,
       vaultId,
-      unlockSecret,
       metadata.salt,
       metadata.profileId,
       metadata.wrappedKeyEnvelope
     );
     return client;
   } catch (error) {
-    client.close();
+    client.dispose();
     throw error;
+  } finally {
+    secretBytes.fill(0);
   }
 }
