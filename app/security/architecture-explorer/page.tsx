@@ -124,8 +124,8 @@ export default function SecurityArchitectureExplorerPage() {
           </div>
         </div>
         <aside className="architecture-warning">
-          <div className="architecture-orbit" role="img" aria-label="Static conceptual illustration of the Vault browser, API, and encrypted storage architecture. This is not live telemetry.">
-            <div className="architecture-orbit-caption"><span>ARCHITECTURE / 01</span><span>STATIC SYSTEM MAP</span></div>
+          <div className="explorer-hero-visual" role="img" aria-label="Static conceptual illustration of the Vault browser, API, and encrypted storage architecture. This is not live telemetry.">
+            <div className="explorer-hero-caption"><span>ARCHITECTURE / 01</span><span>STATIC SYSTEM MAP</span></div>
             <svg viewBox="0 0 520 330" aria-hidden="true" focusable="false">
               <defs>
                 <linearGradient id="orbitLine" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#75e0bd" stopOpacity=".85"/><stop offset="1" stopColor="#78a8d8" stopOpacity=".22"/></linearGradient>
@@ -153,7 +153,7 @@ export default function SecurityArchitectureExplorerPage() {
               <text x="260" y="28" textAnchor="middle" fill="#7faeaa" fontSize="8" letterSpacing="2">CURRENT IMPLEMENTATION · NOT A LIVE FEED</text>
               <text x="260" y="310" textAnchor="middle" fill="#7faeaa" fontSize="8" letterSpacing="2">ENCRYPTED STORAGE · SERVER-SIDE KEY CONTROL</text>
             </svg>
-            <div className="architecture-orbit-foot"><span><i className="orbit-dot active" /> ACTIVE PATH</span><span><i className="orbit-dot boundary" /> TRUST BOUNDARY</span></div>
+            <div className="explorer-hero-foot"><span><i className="orbit-dot active" /> ACTIVE PATH</span><span><i className="orbit-dot boundary" /> TRUST BOUNDARY</span></div>
           </div>
           <span className="section-index">IMPORTANT SECURITY FACT</span>
           <strong>Current Vault CRUD is server-readable.</strong>
@@ -244,12 +244,12 @@ export default function SecurityArchitectureExplorerPage() {
         .architecture-hero h1{font-size:clamp(39px,6vw,70px);line-height:1.02;letter-spacing:-.065em;text-wrap:balance}
         .architecture-hero h1 em{font-style:normal;color:#9fe5cb;text-shadow:0 0 34px #6cc8a52b}
         .architecture-hero .security-lead{max-width:62ch}
-        .architecture-orbit{position:relative;margin:-4px -7px 21px;padding:9px 9px 7px;border:1px solid #284c50;border-radius:15px;background:radial-gradient(ellipse at 50% 48%,#17343a 0%,#0a1b25 58%,#0a1721 100%);box-shadow:inset 0 0 45px #6dc8a50a,0 18px 50px #0003;overflow:hidden}
-        .architecture-orbit:after{content:"";position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(#b5f0d10a 1px,transparent 1px),linear-gradient(90deg,#b5f0d10a 1px,transparent 1px);background-size:24px 24px;mask-image:linear-gradient(transparent,#000 18%,#000 80%,transparent)}
-        .architecture-orbit-caption,.architecture-orbit-foot{position:relative;z-index:1;display:flex;justify-content:space-between;gap:10px;color:#80aaa7;font-size:7px;font-weight:900;letter-spacing:.16em}
-        .architecture-orbit svg{display:block;width:100%;height:auto;max-height:275px;overflow:visible}
-        .architecture-orbit-foot{justify-content:center;gap:20px;padding:3px 0 8px;color:#a5c4bf;font-size:7px}
-        .architecture-orbit-foot span{display:flex;align-items:center;gap:7px}
+        .explorer-hero-visual{position:relative;margin:-4px -7px 21px;padding:9px 9px 7px;border:1px solid #284c50;border-radius:15px;background:radial-gradient(ellipse at 50% 48%,#17343a 0%,#0a1b25 58%,#0a1721 100%);box-shadow:inset 0 0 45px #6dc8a50a,0 18px 50px #0003;overflow:hidden}
+        .explorer-hero-visual:after{content:"";position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(#b5f0d10a 1px,transparent 1px),linear-gradient(90deg,#b5f0d10a 1px,transparent 1px);background-size:24px 24px;mask-image:linear-gradient(transparent,#000 18%,#000 80%,transparent)}
+        .explorer-hero-caption,.explorer-hero-foot{position:relative;z-index:1;display:flex;justify-content:space-between;gap:10px;color:#80aaa7;font-size:7px;font-weight:900;letter-spacing:.16em}
+        .explorer-hero-visual svg{display:block;width:100%;height:auto;max-height:275px;overflow:visible}
+        .explorer-hero-foot{justify-content:center;gap:20px;padding:3px 0 8px;color:#a5c4bf;font-size:7px}
+        .explorer-hero-foot span{display:flex;align-items:center;gap:7px}
         .orbit-dot{width:6px;height:6px;border-radius:50%;display:inline-block}.orbit-dot.active{background:#72d6a9;box-shadow:0 0 10px #72d6a9}.orbit-dot.boundary{background:#d9ad7d}
         .architecture-warning{padding:22px;border:1px solid #a16e4e;border-radius:12px;background:linear-gradient(145deg,#241f1d,#171d22 78%);box-shadow:0 22px 70px #0004}
         .architecture-warning strong{font-size:clamp(17px,2vw,21px)}
@@ -272,8 +272,8 @@ export default function SecurityArchitectureExplorerPage() {
         .architecture-explorer .security-nav{backdrop-filter:blur(18px);background:#091720c9;border-bottom:1px solid #25434b}
         .architecture-explorer .security-section{padding-top:clamp(32px,5vw,62px);padding-bottom:clamp(32px,5vw,62px)}
         .architecture-explorer button:focus-visible{outline:2px solid #a5f0d3;outline-offset:4px;box-shadow:0 0 0 6px #a5f0d31c}
-        @media(max-width:760px){.architecture-hero{grid-template-columns:1fr;gap:25px}.architecture-orbit{margin:0 0 16px}.architecture-orbit svg{max-height:none}.architecture-hero h1{font-size:clamp(38px,11vw,58px)}}
-        @media(max-width:420px){.architecture-orbit-caption,.architecture-orbit-foot{font-size:6px}.architecture-warning{padding:17px}.architecture-detail-panel{padding:17px}}
+        @media(max-width:760px){.architecture-hero{grid-template-columns:1fr;gap:25px}.explorer-hero-visual{margin:0 0 16px}.explorer-hero-visual svg{max-height:none}.architecture-hero h1{font-size:clamp(38px,11vw,58px)}}
+        @media(max-width:420px){.explorer-hero-caption,.explorer-hero-foot{font-size:6px}.architecture-warning{padding:17px}.architecture-detail-panel{padding:17px}}
         @media(prefers-reduced-motion:reduce){.architecture-explorer *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
         .architecture-warning{padding:23px;border:1px solid #a16e4e;border-radius:12px;background:#241f1d}
         .architecture-warning strong{display:block;margin:15px 0;color:#f0c5a3;font-size:20px;line-height:1.35}
