@@ -45,6 +45,14 @@ jobs:
             security/argon2-wasm/target/wasm32-unknown-unknown/release/vault_argon2_wasm_poc.wasm
       - name: Exercise generated WASM JavaScript boundary
         run: node security/argon2-wasm/tests/wasm-smoke.cjs
+      - name: Generate and package browser Worker WASM assets
+        run: |
+          wasm-bindgen \
+            --target web \
+            --out-dir security/argon2-wasm/pkg-web \
+            --out-name vault_argon2_wasm_poc \
+            security/argon2-wasm/target/wasm32-unknown-unknown/release/vault_argon2_wasm_poc.wasm
+          npm run package:argon2-wasm
       - name: Upload un-deployed WebAssembly build and binding artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -53,10 +61,12 @@ jobs:
             security/argon2-wasm/target/wasm32-unknown-unknown/release/vault_argon2_wasm_poc.wasm
             security/argon2-wasm/Cargo.lock
             security/argon2-wasm/pkg/
+            public/crypto/argon2/
           if-no-files-found: error
           retention-days: 7
 
   verify:
+    needs: argon2-wasm-poc
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -78,6 +88,17 @@ jobs:
       - name: Checkout
         id: checkout
         uses: actions/checkout@v4
+      - name: Download browser Worker WASM assets
+        uses: actions/download-artifact@v4
+        with:
+          name: argon2-wasm-poc-${{ github.sha }}
+          path: .
+      - name: Verify packaged browser Worker WASM assets
+        run: |
+          test -s public/crypto/argon2/vault_argon2_wasm_poc.js
+          test -s public/crypto/argon2/vault_argon2_wasm_poc_bg.wasm
+          test -s public/crypto/argon2/vault_argon2_wasm_poc.d.ts
+          test -s public/crypto/argon2/manifest.json
       - name: Set up Node.js
         id: setup_node
         uses: actions/setup-node@v4
