@@ -5,11 +5,16 @@ const mocks = vi.hoisted(() => ({
   createSupabaseAdminClient: vi.fn(),
   isSameOriginRequest: vi.fn(),
   isJsonContentType: vi.fn(),
-  readBoundedJson: vi.fn()
+  readBoundedJson: vi.fn(),
+  hasActiveResearchReviewAssignment: vi.fn()
 }));
 
 vi.mock("@/lib/security-research/workflow-auth", () => ({
   getResearchActor: mocks.getResearchActor
+}));
+vi.mock("@/lib/security-research/review-assignments", () => ({
+  hasActiveResearchReviewAssignment: mocks.hasActiveResearchReviewAssignment,
+  reviewStageForWorkflowState: (state: string) => state === "DRAFT" ? "technical" : state === "SECURITY_PRIVACY_REVIEW" ? "security_privacy" : state === "BILINGUAL_REVIEW" ? "bilingual" : null
 }));
 vi.mock("@/lib/supabase/admin", () => ({
   createSupabaseAdminClient: mocks.createSupabaseAdminClient
@@ -59,6 +64,7 @@ describe("private research route authorization", () => {
       ok: true,
       value: await req.json()
     }));
+    mocks.hasActiveResearchReviewAssignment.mockResolvedValue(false);
   });
 
   it("does not allow a Secondary account to list private research drafts", async () => {
@@ -143,4 +149,34 @@ describe("private research route authorization", () => {
     expect(response.status).toBe(403);
     expect(mocks.createSupabaseAdminClient).not.toHaveBeenCalled();
   });
+  it("does not allow an allowlisted reviewer to approve a draft without an active assignment", async () => {
+    mocks.getResearchActor.mockResolvedValue({
+      id: reviewerId,
+      isOwner: false,
+      isReviewer: true
+    });
+    const query = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      maybeSingle: vi.fn().mockResolvedValue({
+        data: { id: draftId, owner_user_id: secondaryId, workflow_state: "DRAFT", reviews: {} },
+        error: null
+      })
+    };
+    mocks.createSupabaseAdminClient.mockReturnValue({
+      from: vi.fn().mockReturnValue(query)
+    });
+
+    const response = await submitReview(request("POST", {
+      draftId,
+      stage: "technical",
+      decision: "approved",
+      notes: "Reviewed the methodology and evidence."
+    }));
+
+    expect(response.status).toBe(403);
+    expect(mocks.hasActiveResearchReviewAssignment).toHaveBeenCalledWith(draftId, "technical", reviewerId);
+    expect(query.update).toBeUndefined();
+  });
+
 });
