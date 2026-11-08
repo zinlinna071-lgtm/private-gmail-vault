@@ -39,9 +39,12 @@ From the repository root:
 ```sh
 cargo test --manifest-path security/argon2-wasm/Cargo.toml
 cargo build --manifest-path security/argon2-wasm/Cargo.toml --target wasm32-unknown-unknown --release
+cargo install wasm-bindgen-cli --version 0.2.130 --locked
+wasm-bindgen --target nodejs --out-dir security/argon2-wasm/pkg --out-name vault_argon2_wasm_poc security/argon2-wasm/target/wasm32-unknown-unknown/release/vault_argon2_wasm_poc.wasm
+node security/argon2-wasm/tests/wasm-smoke.cjs
 ```
 
-The GitHub Actions `argon2-wasm-poc` job runs the same native tests and compiles the browser target. The generated `.wasm` file is uploaded as a CI artifact for inspection; it is not deployed.
+The GitHub Actions `argon2-wasm-poc` job runs the native tests, compiles the browser target, generates Node.js bindings with the pinned `wasm-bindgen-cli` version, and runs `tests/wasm-smoke.cjs` against the generated module. The `.wasm`, generated glue, and Cargo lockfile are uploaded as a CI artifact for inspection; they are not deployed. The Node.js smoke test validates the WASM/JavaScript boundary only; it is not a browser compatibility or Worker test.
 
 ## Security limitations / next gates
 
