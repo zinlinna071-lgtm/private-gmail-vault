@@ -35,6 +35,7 @@ let wasmPromise: Promise<Argon2Module> | null = null;
 let dataKey: CryptoKey | null = null;
 let vaultContext: string | null = null;
 let operationInProgress = false;
+let lifecycleGeneration = 0;
 
 function encodeBase64(bytes: Uint8Array): string {
   let binary = "";
@@ -112,6 +113,7 @@ async function handleRequest(request: VaultWorkerRequest): Promise<void> {
       post({ type: "READY", requestId: request.requestId });
       return;
     case "LOCK":
+      lifecycleGeneration += 1;
       dataKey = null;
       vaultContext = null;
       post({ type: "LOCKED", requestId: request.requestId });
@@ -123,10 +125,17 @@ async function handleRequest(request: VaultWorkerRequest): Promise<void> {
         return;
       }
       operationInProgress = true;
+      const generation = lifecycleGeneration;
+      dataKey = null;
+      vaultContext = null;
       const publicSalt = encodeBase64(new Uint8Array(request.saltBytes));
       try {
         const kek = await deriveKek(request);
         const vaultKey = await createVaultKeyEnvelope(kek, request.vaultId);
+        if (generation !== lifecycleGeneration) {
+          responseError(request.requestId, "LOCKED");
+          return;
+        }
         dataKey = vaultKey.dataKey;
         vaultContext = request.vaultId;
         post({
@@ -148,9 +157,16 @@ async function handleRequest(request: VaultWorkerRequest): Promise<void> {
     }
     case "UNLOCK": {
       operationInProgress = true;
+      const generation = lifecycleGeneration;
+      dataKey = null;
+      vaultContext = null;
       try {
         const kek = await deriveKek(request);
         const unwrapped = await unwrapVaultDataKey(request.wrappedKeyEnvelope, kek, request.vaultId);
+        if (generation !== lifecycleGeneration) {
+          responseError(request.requestId, "LOCKED");
+          return;
+        }
         dataKey = unwrapped;
         vaultContext = request.vaultId;
         post({ type: "UNLOCKED", requestId: request.requestId });
@@ -169,10 +185,17 @@ async function handleRequest(request: VaultWorkerRequest): Promise<void> {
         responseError(request.requestId, "LOCKED");
         return;
       }
+      const generation = lifecycleGeneration;
+      const key = dataKey;
+      const context = vaultContext;
       try {
         const envelope: VaultRecordEnvelope = await encryptVaultRecord(
-          request.plaintext, dataKey, vaultContext, request.recordId
+          request.plaintext, key, context, request.recordId
         );
+        if (generation !== lifecycleGeneration || key !== dataKey) {
+          responseError(request.requestId, "LOCKED");
+          return;
+        }
         post({ type: "ENCRYPTED_RECORD", requestId: request.requestId, envelope });
       } catch {
         responseError(request.requestId, "CRYPTO_FAILED");
@@ -184,10 +207,17 @@ async function handleRequest(request: VaultWorkerRequest): Promise<void> {
         responseError(request.requestId, "LOCKED");
         return;
       }
+      const generation = lifecycleGeneration;
+      const key = dataKey;
+      const context = vaultContext;
       try {
         const plaintext = await decryptVaultRecord(
-          request.envelope, dataKey, vaultContext, request.recordId
+          request.envelope, key, context, request.recordId
         );
+        if (generation !== lifecycleGeneration || key !== dataKey) {
+          responseError(request.requestId, "LOCKED");
+          return;
+        }
         post({ type: "DECRYPTED_RECORD", requestId: request.requestId, plaintext });
       } catch {
         responseError(request.requestId, "CRYPTO_FAILED");
