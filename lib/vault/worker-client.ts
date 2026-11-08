@@ -109,27 +109,31 @@ export class VaultCryptoWorkerClient {
     this.terminate();
   }
 
-  private terminate() {
+  private terminate(reason = new Error("The Vault crypto Worker is closed.")) {
     if (this.closed) return;
     this.closed = true;
+    for (const pending of this.pending.values()) {
+      clearTimeout(pending.timeout);
+      pending.reject(reason);
+    }
+    this.pending.clear();
     this.worker.removeEventListener("message", this.onMessage);
     this.worker.removeEventListener("error", this.onError);
     this.worker.removeEventListener("messageerror", this.onMessageError);
     this.worker.terminate();
   }
 
-  private request<T extends VaultWorkerResponse["type"]>(
-    payload: Omit<Extract<VaultWorkerRequest, { type: T }>, "requestId">,
-    expectedType: T,
+  private request<K extends VaultWorkerRequest["type"], R extends VaultWorkerResponse["type"]>(
+    payload: Omit<Extract<VaultWorkerRequest, { type: K }>, "requestId">,
+    expectedType: R,
     transfer: Transferable[] = []
-  ): Promise<Extract<VaultWorkerResponse, { type: T }>> {
+  ): Promise<Extract<VaultWorkerResponse, { type: R }>> {
     if (this.closed) return Promise.reject(new Error("The Vault crypto Worker is closed."));
     const requestId = crypto.randomUUID();
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
         this.pending.delete(requestId);
-        reject(new Error("The Vault crypto operation timed out. Lock the Vault and try again."));
-        this.terminate();
+        this.terminate(new Error("The Vault crypto operation timed out. Lock the Vault and try again."));
       }, REQUEST_TIMEOUT_MS);
       this.pending.set(requestId, {
         resolve: (response) => {
@@ -137,7 +141,7 @@ export class VaultCryptoWorkerClient {
             reject(new Error("The Vault crypto Worker returned an unexpected response."));
             return;
           }
-          resolve(response as Extract<VaultWorkerResponse, { type: T }>);
+          resolve(response as Extract<VaultWorkerResponse, { type: R }>);
         },
         reject,
         timeout
@@ -219,7 +223,7 @@ export class VaultCryptoWorkerClient {
     try {
       await this.request({ type: "LOCK" }, "LOCKED");
     } finally {
-      this.terminate();
+      this.terminate(new Error("The Vault is locked."));
     }
   }
 
