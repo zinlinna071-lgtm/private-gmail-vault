@@ -14,7 +14,7 @@
 
 ## Required database setup
 
-Apply `supabase/migrations/202611080001_curator_registration_claims.sql` to the project's Supabase database before enabling this flow. The migration has **not** been applied by this code change. It creates the challenge and registration-claim tables with RLS enabled and no anon/authenticated grants, plus service-role-only atomic consume functions.
+Apply `supabase/migrations/202611080001_curator_registration_claims.sql` to the project's Supabase database before enabling this flow. The migration has **not** been applied to any Supabase database. It creates the challenge and registration-claim tables with RLS enabled and no anon/authenticated grants, plus service-role-only atomic consume functions. A disposable PostgreSQL test runner has been added to CI; it does not connect to or mutate the project's Supabase instance.
 
 Do not run this migration against production without the owner's explicit approval. Until it is applied to the intended environment, challenge bootstrap or verification will return a temporary service error because the required table or function is unavailable.
 
@@ -46,7 +46,7 @@ Do not run this migration against production without the owner's explicit approv
 - [ ] Attempt registration with a mismatched session, expired claim, or reused claim; expect rejection and no account.
 - [ ] Confirm a second use of the same claim fails, including concurrent attempts.
 - [ ] Confirm every public registration is Secondary regardless of client-supplied fields.
-- [ ] Run automated tests, typecheck, and production build; inspect CI results before any preview.
+- [ ] Run automated tests, typecheck, both PostgreSQL migration test scripts, and production build; inspect CI results before any preview.
 
 No production database, Main branch, or deployment has been changed by this implementation.
 
@@ -54,6 +54,7 @@ No production database, Main branch, or deployment has been changed by this impl
 
 The design branch now includes deterministic Vitest coverage for:
 - challenge bootstrap rejection for an explicit cross-site request;
+- PostgreSQL migration permission checks, RLS checks, session/expiry/replay rejection, and concurrent one-time challenge consumption in an isolated CI database;
 - no-store response and HttpOnly, SameSite=Strict session/challenge cookie attributes;
 - reuse of the browser session while rotating and persisting the challenge marker;
 - failure closed when challenge persistence is unavailable;
@@ -66,9 +67,11 @@ The design branch now includes deterministic Vitest coverage for:
 
 Test files:
 - `tests/curator-challenge-route.test.ts`
+- `supabase/tests/curator_registration_claims.sql`
+- `scripts/test-curator-registration-migration.sh`
 - `tests/curator-puzzle.test.ts`
 - `tests/curator-claim.test.ts`
 - `tests/curator-verify-route.test.ts`
 - updated `tests/auth-routes.test.ts`
 
-These tests have been added to the repository but have **not yet been executed in a confirmed CI or local test run**. The Vercel status check is currently failing because the linked Vercel account reports a build-rate-limit/upgrade restriction; that is not evidence of a GitHub Actions test failure. Do not describe the test suite as passing until a successful run is observed.
+These tests and the isolated PostgreSQL runner have been added to the repository but have **not yet been executed in a confirmed CI or local test run**. The Vercel status check is currently failing because the linked Vercel account reports a build-rate-limit/upgrade restriction; that is not evidence of a GitHub Actions test failure. Do not describe the test suite as passing until a successful run is observed.
