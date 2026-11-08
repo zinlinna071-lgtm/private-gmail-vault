@@ -142,6 +142,13 @@ export default function AesGcmIntegrityStory() {
       <footer className="security-footer"><div><span className="security-brand-mark">V</span><strong>PRIVATE ACCOUNT VAULT</strong></div><p>Learn by exploring. Verify before concluding.</p></footer>
 
       <style jsx>{`
+        .integrity-process{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-bottom:24px}
+        .integrity-stage{display:grid;grid-template-columns:28px 1fr;gap:3px 9px;align-items:center;min-width:0;padding:12px;border:1px solid #29434e;border-radius:9px;background:linear-gradient(145deg,#0c202b,#091722)}
+        .integrity-stage>span{grid-row:span 2;display:grid;place-items:center;width:27px;height:27px;border:1px solid #36545d;border-radius:7px;color:#7da7a5;font:800 9px ui-monospace,monospace}
+        .integrity-stage>b{color:#9bb5ba;font:800 8px ui-monospace,monospace;letter-spacing:.08em}.integrity-stage>small{color:#718f98;font-size:8px}
+        .integrity-stage.active,.integrity-stage.complete{border-color:#3d806d;background:linear-gradient(145deg,#12352f,#0a2028)}.integrity-stage.active>span,.integrity-stage.complete>span{border-color:#58b996;color:#b5f4d9}.integrity-stage.active>b,.integrity-stage.complete>b{color:#a4efd0}
+        .integrity-stage.alert{border-color:#a46d42;background:#30251b}.integrity-stage.alert>span,.integrity-stage.alert>b{color:#f1c18b}
+        .integrity-stage.active{box-shadow:0 0 22px #57d7b414}
         .integrity-lab,.integrity-limit{border:1px solid #24414c;border-radius:12px;background:#0b1b27;padding:clamp(16px,3vw,28px)}
         .integrity-heading{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap}
         .integrity-heading h2,.integrity-limit h2{font-size:clamp(24px,4vw,36px);margin:12px 0}
