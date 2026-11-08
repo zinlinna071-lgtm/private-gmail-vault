@@ -58,7 +58,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       ciphertext: encrypted.ciphertext,
       iv: encrypted.iv,
       auth_tag: encrypted.authTag
-    }).eq("id", id).eq("user_id", user.id).select("id,created_at,updated_at").maybeSingle();
+    }).eq("id", id).eq("user_id", user.id).eq("encryption_scheme", "legacy-server-v1").select("id,created_at,updated_at").maybeSingle();
     if (error) throw error;
     if (!data) return response({ error: "Account not found." }, 404);
     return response({ item: { id, ...parsed.data, createdAt: data.created_at, updatedAt: data.updated_at } });
@@ -79,7 +79,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     }
     const admin = createSupabaseAdminClient();
     const { data, error } = await admin.from("vault_items").delete()
-      .eq("id", id).eq("user_id", user.id).select("id").maybeSingle();
+      .eq("id", id).eq("user_id", user.id).eq("encryption_scheme", "legacy-server-v1").select("id").maybeSingle();
     if (error) throw error;
     if (!data) return response({ error: "Account not found." }, 404);
     return response({ success: true });
