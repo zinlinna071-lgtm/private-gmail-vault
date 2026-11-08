@@ -16,7 +16,7 @@ vi.mock("@/lib/auth/curator-claim", () => ({
   CURATOR_CHALLENGE_TTL_SECONDS: 600,
   CURATOR_SESSION_COOKIE: "vault_curator_session",
   createOpaqueToken: mocks.createOpaqueToken,
-  hashOpaqueToken: (value: string) => "sha256-" + value
+  hashOpaqueToken: (value: string) => "digest-" + value.length
 }));
 vi.mock("@/lib/supabase/admin", () => ({
   createSupabaseAdminClient: mocks.createSupabaseAdminClient
@@ -67,8 +67,8 @@ describe("Curator challenge bootstrap API", () => {
     expect(body).toEqual({ success: true, challenge: "curator-fourfold-v1" });
     expect(response.headers.get("cache-control")).toContain("no-store");
     expect(mocks.insert).toHaveBeenCalledWith(expect.objectContaining({
-      challenge_hash: "sha256-new-challenge-token",
-      session_hash: "sha256-new-session-token"
+      challenge_hash: "digest-19",
+      session_hash: "digest-17"
     }));
     expect(JSON.stringify(mocks.insert.mock.calls)).not.toContain("new-challenge-token");
     expect(sessionCookie?.value).toBe("new-session-token");
@@ -96,8 +96,8 @@ describe("Curator challenge bootstrap API", () => {
     expect(sessionCookie?.value).toBe("existing-session-token");
     expect(challengeCookie?.value).toBe("new-session-token");
     expect(mocks.insert).toHaveBeenCalledWith(expect.objectContaining({
-      challenge_hash: "sha256-new-session-token",
-      session_hash: "sha256-existing-session-token"
+      challenge_hash: "digest-17",
+      session_hash: "digest-22"
     }));
     expect(mocks.createOpaqueToken).toHaveBeenCalledOnce();
   });
