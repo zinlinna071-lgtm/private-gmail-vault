@@ -157,7 +157,7 @@ export default function AuthPanel() {
   const description = mode === "login" ? "Your secure space is one step away." : mode === "register" ? "Set up your private access credentials." : "Use your saved Recovery Code to continue.";
 
   return (
-    <div className={`auth-card${busy ? " is-busy" : ""}`}>
+    <div id="create-vault" className={`auth-card${busy ? " is-busy" : ""}`}>
       <div className="auth-card-heading">
         <div>
           <span className="auth-card-overline">PRIVATE ACCESS PORTAL</span>
