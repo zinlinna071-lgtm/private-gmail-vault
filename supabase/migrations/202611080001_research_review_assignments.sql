@@ -11,6 +11,7 @@ create table if not exists public.security_research_review_assignments (
   assigned_at timestamptz not null default now(),
   expires_at timestamptz not null,
   revoked_at timestamptz,
+  revoked_by_owner_user_id uuid references auth.users(id),
   check (expires_at > assigned_at),
   check (expires_at <= assigned_at + interval '30 days 1 minute')
 );
