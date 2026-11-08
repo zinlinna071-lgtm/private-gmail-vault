@@ -131,7 +131,7 @@ export default function AesGcmIntegrityStory() {
         </ul>
         <p lang="my">ဒါဟာ Browser ရဲ့ Web Crypto API ကို အသုံးပြုတဲ့ တကယ့် Local Operation ဖြစ်ပေမယ့် Product Security Test မဟုတ်ပါဘူး။ Vault ရဲ့ လုံခြုံရေးကို အတည်ပြုထားခြင်း မဟုတ်ပါဘူး။</p>
         <p className="integrity-reference">Technical reference: <a href="https://csrc.nist.gov/pubs/sp/800/38/d/final" target="_blank" rel="noreferrer">NIST SP 800-38D — Galois/Counter Mode (GCM)</a></p>
-        <Link href="/security/research-stories">← Back to Story 01: One nonce, one use</Link>
+        <Link href="/security/research-stories">← Back to Story 01: One nonce, one use</Link><p><Link href="/security/puzzle-arena">Continue learning · Try five safe defensive puzzles ↗</Link></p>
       </section>
 
       <footer className="security-footer"><div><span className="security-brand-mark">V</span><strong>PRIVATE ACCOUNT VAULT</strong></div><p>Learn by exploring. Verify before concluding.</p></footer>
