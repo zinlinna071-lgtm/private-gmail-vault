@@ -63,7 +63,7 @@ describe("browser-side Vault record encryption", () => {
     await expect(decryptVaultRecord(envelope, key, vaultId, "44444444-4444-4444-8444-444444444444")).rejects.toThrow();
   });
 
-  it("rejects wrong keys, malformed envelopes, and extra fields", async () => {
+  it("rejects wrong keys, malformed envelopes, extra fields, and oversized encoded input", async () => {
     const key = await createDataKey();
     const wrongKey = await createDataKey();
     const envelope = await encryptVaultRecord("secret", key, vaultId, recordId);
@@ -72,6 +72,7 @@ describe("browser-side Vault record encryption", () => {
     expect(() => validateVaultRecordEnvelope({ ...envelope, extra: true })).toThrow();
     expect(() => validateVaultRecordEnvelope({ ...envelope, version: 99 })).toThrow();
     expect(() => validateVaultRecordEnvelope({ ...envelope, iv: "not-base64" })).toThrow();
+    expect(() => validateVaultRecordEnvelope({ ...envelope, ciphertext: "A".repeat(1_000_000) })).toThrow();
   });
 
   it("rejects empty and oversized plaintext", async () => {
