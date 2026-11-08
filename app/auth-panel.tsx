@@ -104,8 +104,8 @@ export default function AuthPanel() {
         setRequiresAcknowledgement(Boolean(data.requiresAcknowledgement));
         if (mode === "recover") {
           setMessage(data.signedIn === false
-            ? "Your password was updated and the new code is pending. Sign in with your new Master Password to retrieve the same code."
-            : "Your Master Password is updated. Save this new Recovery Code, then confirm below.");
+            ? "Your password was updated and the new code is pending. Sign in with your new Vault Password to retrieve the same code."
+            : "Your Vault Password is updated. Save this new Recovery Code, then confirm below.");
         } else if (mode === "register") {
           setMessage(data.signedIn === false
             ? "Vault account created. Save this Recovery Code. Sign in afterward to retrieve it again if this response is lost."
@@ -117,7 +117,7 @@ export default function AuthPanel() {
         enterVault();
         return;
       } else {
-        setMessage("Password reset. You can now sign in with your new Master Password.");
+        setMessage("Password reset. You can now sign in with your new Vault Password.");
         setMode("login");
         setPassword("");
         setNewPassword("");
@@ -219,7 +219,7 @@ export default function AuthPanel() {
             </>
           )}
           <button className="primary-button auth-submit" type="submit" disabled={busy}>
-            {busy ? <><span className="button-spinner" aria-hidden="true" />{mode === "login" ? "Verifying access…" : mode === "register" ? "Creating secure Vault…" : "Recovering access…"}</> : mode === "register" ? "Create secure Vault" : mode === "recover" ? "Reset Vault Password" : "Sign in securely"}
+            {busy ? <><span className="button-spinner" aria-hidden="true" />{mode === "login" ? "Verifying access…" : mode === "register" ? "Creating Secondary Account…" : "Recovering access…"}</> : mode === "register" ? "Create Secondary Account" : mode === "recover" ? "Reset Vault Password" : "Sign in securely"}
           </button>
           {busy && <p className="auth-processing-note" role="status">Securely processing your request. Please keep this page open.</p>}
         </form>
@@ -247,7 +247,7 @@ export default function AuthPanel() {
             <p id="registration-notice-description" className="registration-notice-intro">Please review these points before creating your account. Your credentials have not been submitted.</p>
             <div className="registration-notice-content">
               <article><b>01</b><div><strong>Your choice, your data</strong><p>Storing account names, passwords, backup codes, or other sensitive information is entirely your choice. You decide what to place in your Vault.</p></div></article>
-              <article><b>02</b><div><strong>Protect your access</strong><p>You are responsible for safeguarding your device, Login ID, Master Password, and any Vault recovery information. Keep recovery material somewhere safe and separate.</p></div></article>
+              <article><b>02</b><div><strong>Protect your access</strong><p>You are responsible for safeguarding your device, Login ID, Vault Password, and any Vault recovery information. Keep recovery material somewhere safe and separate.</p></div></article>
               <article><b>03</b><div><strong>Recovery may not be possible</strong><p>If you lose the required unlock or recovery information, your stored records may become permanently inaccessible. Do not assume support or the Owner can restore them.</p></div></article>
               <article><b>04</b><div><strong>Understand the current security status</strong><p>Security testing has defined limits. No system is risk-free. The public Security page explains which protections are implemented, which remain unverified, and what should not yet be stored.</p><a href="/security" target="_blank" rel="noreferrer">Review Security &amp; Transparency ↗</a></div></article>
             </div>
