@@ -1,7 +1,7 @@
 # Ciphertext-Only Vault API Contract
 
 **Status:** Design contract for the client-side encryption migration  
-**Branch:** `feature/vault-authentication`  
+**Branch:** `design/cyber-visual-architecture`  
 **Production impact:** None. This document does not apply database migrations, change live data, merge, or deploy.
 
 ## 1. Security boundary
@@ -95,7 +95,7 @@ Do not silently treat legacy rows as client-side records. Before enabling the ne
 
 Do not apply this schema migration to any live Supabase project from this branch. First inspect the actual target database and obtain explicit approval for any live migration.
 
-## 6. Rollout gates
+## 6. Current implementation checkpoint\n\nThe isolated browser-only record cryptography module is implemented in `lib/vault/record-envelope.ts`. It uses Web Crypto AES-256-GCM, fresh 96-bit nonces, a 128-bit authentication tag, strict version/algorithm/envelope validation, and AAD binding to the authenticated Vault UUID, record UUID, and record type. Unit tests are defined in `tests/vault-record-envelope.test.ts` for round trips, nonce freshness, tampering, wrong keys, wrong AAD, malformed envelopes, and size/context validation. These tests have not yet been confirmed passing in CI.\n\nThis checkpoint is **not** an integrated client-side Vault: the UI and API still use the legacy server-readable path. Do not store real credentials, do not claim zero-knowledge, and do not remove the server encryption key until the KDF, key lifecycle, recovery, ciphertext-only routes, UI wiring, legacy-data handling, and independent review gates are complete.\n\n## 7. Rollout gates
 
 - Keep the existing UI and API contract in sync; do not switch the API to ciphertext-only while the UI still sends plaintext.
 - Test record creation, listing, update, delete, tampering, wrong AAD, wrong key, malformed envelopes, oversized streamed requests, cross-user access, and session expiry.
