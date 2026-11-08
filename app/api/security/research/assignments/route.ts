@@ -24,6 +24,62 @@ const expectedStates: Record<ResearchReviewStage, string> = {
   bilingual: "BILINGUAL_REVIEW"
 };
 
+export async function GET(request: Request) {
+  const actor = await getResearchActor();
+  if (!actor) return reply({ error: "Research assignment access is not configured or you are not signed in." }, 401);
+  if (!actor.isOwner) return reply({ error: "Owner access required." }, 403);
+
+  const draftId = new URL(request.url).searchParams.get("draftId");
+  if (draftId && !UUID.test(draftId)) return reply({ error: "Invalid draft ID." }, 400);
+
+  try {
+    const admin = createSupabaseAdminClient();
+    let query = admin.from("security_research_review_assignments")
+      .select("id,draft_id,stage,reviewer_user_id,assigned_by_owner_user_id,assigned_at,expires_at,revoked_at,revoked_by_owner_user_id")
+      .order("assigned_at", { ascending: false })
+      .limit(100);
+    if (draftId) query = query.eq("draft_id", draftId);
+    const { data, error } = await query;
+    if (error) return reply({ error: "Could not load reviewer assignments." }, 503);
+    return reply({ assignments: data ?? [] });
+  } catch {
+    return reply({ error: "Could not load reviewer assignments." }, 503);
+  }
+}
+
+export async function DELETE(request: Request) {
+  if (!isSameOriginRequest(request)) return reply({ error: "Invalid request origin." }, 403);
+  if (!isJsonContentType(request.headers.get("content-type"))) return reply({ error: "JSON is required." }, 415);
+
+  const actor = await getResearchActor();
+  if (!actor) return reply({ error: "Research assignment access is not configured or you are not signed in." }, 401);
+  if (!actor.isOwner) return reply({ error: "Owner access required." }, 403);
+
+  const body = await readBoundedJson(request, 8 * 1024);
+  if (!body.ok || !body.value || typeof body.value !== "object" || Array.isArray(body.value)) {
+    return reply({ error: "Invalid or oversized JSON request." }, body.ok ? 400 : body.reason === "too_large" ? 413 : 400);
+  }
+  const assignmentId = (body.value as Record<string, unknown>).assignmentId;
+  if (typeof assignmentId !== "string" || !UUID.test(assignmentId)) {
+    return reply({ error: "A valid assignment ID is required." }, 400);
+  }
+
+  try {
+    const admin = createSupabaseAdminClient();
+    const { data, error } = await admin.from("security_research_review_assignments")
+      .update({ revoked_at: new Date().toISOString(), revoked_by_owner_user_id: actor.id })
+      .eq("id", assignmentId)
+      .is("revoked_at", null)
+      .select("id,draft_id,stage,reviewer_user_id,assigned_at,expires_at,revoked_at,revoked_by_owner_user_id")
+      .maybeSingle();
+    if (error) return reply({ error: "Could not revoke the reviewer assignment." }, 503);
+    if (!data) return reply({ error: "Assignment not found or already revoked." }, 404);
+    return reply({ assignment: data });
+  } catch {
+    return reply({ error: "Could not revoke the reviewer assignment." }, 503);
+  }
+}
+
 export async function POST(request: Request) {
   if (!isSameOriginRequest(request)) return reply({ error: "Invalid request origin." }, 403);
   if (!isJsonContentType(request.headers.get("content-type"))) return reply({ error: "JSON is required." }, 415);
