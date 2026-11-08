@@ -13,7 +13,7 @@ Approval order is strictly sequential:
 5. Final owner approval.
 6. Marked READY_TO_PUBLISH for a separate publication release.
 
-Reviewers are assigned through the server-side reviewer UUID allowlist. Technical, security/privacy, and bilingual approvals must come from different reviewer accounts. Final owner approval must also come from an account that did not approve any of those reviewer stages. Authors cannot approve their own reviewer stages. Each decision is appended to review history rather than overwritten. A reviewer may approve or request changes. A changes-requested decision returns the draft to DRAFT; the author must update and resubmit it. Prior approvals remain in the audit history and an account that has approved an earlier gate cannot approve another gate for that draft.
+Reviewer eligibility and draft authorization are separate controls. The server-side reviewer UUID allowlist defines who may be assigned; an Owner must then issue an expiring assignment for a specific draft and a specific stage. An allowlisted reviewer without an active matching assignment cannot list, open, or submit a review for that draft. Assignments are valid for at most 30 days and are checked again when a review is submitted. Technical, security/privacy, and bilingual approvals must come from different reviewer accounts. Final owner approval must also come from an account that did not approve any of those reviewer stages. Authors cannot approve their own reviewer stages. Each decision is appended to review history rather than overwritten. A reviewer may approve or request changes. A changes-requested decision returns the draft to DRAFT; the author must update and resubmit it. Prior approvals remain in the audit history and an account that has approved an earlier gate cannot approve another gate for that draft.
 
 ## Access configuration
 
@@ -27,9 +27,10 @@ If the owner ID is missing or invalid, the workflow fails closed. Reviewer IDs a
 The current API supports:
 - `GET/POST /api/security/research/drafts`
 - `GET/PATCH /api/security/research/drafts/:id`
+- `POST /api/security/research/assignments` — Owner-only; assigns an allowlisted reviewer to the selected draft's currently open stage.
 - `POST /api/security/research/review`
 
-All mutations require same-origin JSON requests and an authenticated session. Owner draft reads and writes are scoped to the owner; reviewers see only their review queue and the sanitized draft content required for review. Review decisions require configured reviewer identity. The database table is service-role only with RLS enabled and no grants to anon/authenticated roles.
+All mutations require same-origin JSON requests and an authenticated session. Owner draft reads and writes are scoped to the owner; reviewers see only their review queue and the sanitized draft content required for review. Review decisions require configured reviewer identity and an active per-draft/per-stage assignment. Assignment creation also verifies the draft's current workflow stage and rejects assigning the Owner as an independent reviewer. Both research tables are service-role only with RLS enabled and no grants to anon/authenticated roles. Reviewer queue results are filtered to active assignments matching each draft's current stage.
 
 ## Draft contents
 
@@ -45,6 +46,9 @@ This separation prevents a compromised authoring endpoint or incomplete review f
 
 ## Database migration
 
-Migration: `supabase/migrations/202611070002_security_research_workflow.sql`
+Migrations:
 
-It has been added to the feature branch but is not automatically applied to any Supabase project. Apply it only to the intended non-production/preview project after owner approval and backup. The preview feature requires the server-side owner/reviewer environment variables above.
+- `supabase/migrations/202611070002_security_research_workflow.sql`
+- `supabase/migrations/202611080001_research_review_assignments.sql`
+
+Both migrations are committed to the feature branch only and are not automatically applied to any Supabase project. Apply them only to the intended non-production/preview project after owner approval and backup. The preview feature requires the server-side owner/reviewer environment variables above. The Owner workbench accepts a reviewer UUID and assignment duration; the API independently validates the UUID against the server-side allowlist.
