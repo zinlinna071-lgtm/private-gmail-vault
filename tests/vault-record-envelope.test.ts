@@ -46,8 +46,10 @@ describe("browser-side Vault record encryption", () => {
   it("rejects tampered ciphertext and authentication tags", async () => {
     const key = await createDataKey();
     const envelope = await encryptVaultRecord("secret", key, vaultId, recordId);
-    const changedCiphertext = { ...envelope, ciphertext: envelope.ciphertext.slice(0, -4) + "AAAA" };
-    const changedTag = { ...envelope, authTag: envelope.authTag.slice(0, -4) + "AAAA" };
+    const flipFirstBase64Character = (value: string) =>
+      (value[0] === "A" ? "B" : "A") + value.slice(1);
+    const changedCiphertext = { ...envelope, ciphertext: flipFirstBase64Character(envelope.ciphertext) };
+    const changedTag = { ...envelope, authTag: flipFirstBase64Character(envelope.authTag) };
 
     await expect(decryptVaultRecord(changedCiphertext, key, vaultId, recordId)).rejects.toThrow();
     await expect(decryptVaultRecord(changedTag, key, vaultId, recordId)).rejects.toThrow();
