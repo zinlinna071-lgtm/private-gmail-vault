@@ -31,11 +31,11 @@ BEGIN
 END
 $assert$;
 
-INSERT INTO public.curator_challenges (challenge_hash, session_hash, expires_at)
+INSERT INTO public.curator_challenges (challenge_hash, session_hash, created_at, expires_at)
 VALUES
-  (repeat('1',64), repeat('a',64), now() + interval '5 minutes'),
-  (repeat('2',64), repeat('a',64), now() - interval '1 minute'),
-  (repeat('3',64), repeat('a',64), now() + interval '5 minutes');
+  (repeat('1',64), repeat('a',64), now(), now() + interval '5 minutes'),
+  (repeat('2',64), repeat('a',64), now() - interval '2 minutes', now() - interval '1 minute'),
+  (repeat('3',64), repeat('a',64), now(), now() + interval '5 minutes');
 
 DO $assert$
 BEGIN
@@ -54,10 +54,10 @@ BEGIN
 END
 $assert$;
 
-INSERT INTO public.curator_registration_claims (claim_hash, session_hash, expires_at)
+INSERT INTO public.curator_registration_claims (claim_hash, session_hash, created_at, expires_at)
 VALUES
-  (repeat('4',64), repeat('c',64), now() + interval '5 minutes'),
-  (repeat('5',64), repeat('c',64), now() - interval '1 minute');
+  (repeat('4',64), repeat('c',64), now(), now() + interval '5 minutes'),
+  (repeat('5',64), repeat('c',64), now() - interval '2 minutes', now() - interval '1 minute');
 
 DO $assert$
 BEGIN
