@@ -17,7 +17,7 @@ export default function LabActivityConsole() {
   }, []);
 
   return (
-    <section className="lab-console-section" aria-labelledby="lab-console-title">
+    <section id="live-theater" className="lab-console-section" aria-labelledby="lab-console-title">
       <div className="lab-console-heading">
         <div>
           <span className="section-index">OBSERVABILITY / SOURCE STATUS</span>
