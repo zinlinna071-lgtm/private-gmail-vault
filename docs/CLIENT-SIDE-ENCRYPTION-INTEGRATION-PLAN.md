@@ -127,3 +127,22 @@ Until all gates pass, public copy must state that the current prototype uses ser
 After implementation and independent review, a defensible claim may state that the reviewed deployed application/backend has no Owner or backend decryption key or normal API capability for Secondary Vault records. Do not promise absolute security. Website deployment control, compromised devices, malicious browser extensions, phishing, and malicious client-code updates remain relevant threats.
 
 If a user loses all unlock and recovery material, the data may be permanently unrecoverable. No Owner/support bypass should be added to solve that tradeoff.
+
+
+## 9. Latest CI and application packaging checkpoint — 2026-11-08
+
+The latest branch run, `42473339553`, completed successfully:
+
+- Main `verify` job: all checks passed, including automated tests, type check, PostgreSQL migration tests (webhook, Curator, Secondary quota, and client Vault key metadata), and production build.
+- Argon2id WASM PoC job: Rust formatting, native RFC 9106/input-validation tests, WASM compilation, pinned wasm-bindgen CLI installation, generated Node bindings, JavaScript boundary smoke test, and artifact upload all passed.
+- The separate test-only browser Worker workflow previously passed in Chromium, Firefox, and WebKit (run `42471022882`).
+
+These results establish the isolated PoC and repository CI gates only. They do not establish that the generated browser WASM package is included in the Next.js/OpenNext Cloudflare production asset graph.
+
+### Packaging decision gate before application Worker implementation
+
+The application currently builds with Next.js 15 and OpenNext Cloudflare. The PoC workflow generates `pkg-web` only inside CI and uploads it as a short-retention artifact; it does not publish that generated package into the application source tree or production static assets. The application has no Rust/WASM generation step in its build scripts.
+
+Before importing the PoC into a production Worker, choose and verify a reproducible asset strategy that works in both the repository's production build and OpenNext Cloudflare output. The strategy must pin Rust, wasm-bindgen, and generated artifact hashes; avoid runtime CDN or untrusted remote WASM loading; and have a production-build test that proves the Worker JavaScript and WASM binary are present at the exact paths used by the browser. A CI-only artifact is not a production packaging solution.
+
+Do not create an application Worker that references a missing generated module, add a server-side KDF fallback, or switch the CRUD API before the asset strategy and matching browser client are verified. Keep the current server-readable disclosure active. No live migration or deployment is authorized by this checkpoint.
