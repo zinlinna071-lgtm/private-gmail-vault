@@ -189,7 +189,10 @@ The public UI now includes a session-viewer shell and a legend defining LIVE, DE
 - [x] Label the lesson ILLUSTRATIVE / SYNTHETIC; it performs no encryption, emits no telemetry, and uses no real keys, records, or external targets.
 - [ ] Bind every future empirical claim and visualization to publication evidence references.
 - [ ] Keep printable/text-first reading mode and expand the story format to evidence-backed publications.
-- [x] Link the interactive story from the public Research Library.
+- [x] Link the interactive stories from the public Research Library and cross-link the learning sequence.
+- [x] Add Story 02 at `/security/research-stories/aes-gcm-integrity`: browser-local AES-256-GCM encryption of synthetic text, followed by a one-bit ciphertext mutation and authentication-failure demonstration.
+- [x] Use a non-extractable ephemeral browser key, a fresh 96-bit nonce, and no persistence or network calls for Story 02.
+- [x] Explicitly distinguish a real local Web Crypto demonstration from a product security test or Vault audit.
 
 ### Stage 5 — safe Puzzle Arena
 - [ ] Build synthetic exercises with deterministic expected outcomes.
