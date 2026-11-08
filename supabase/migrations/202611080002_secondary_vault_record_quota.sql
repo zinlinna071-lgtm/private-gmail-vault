@@ -32,7 +32,7 @@ create or replace function public.guard_vault_profile_account_type()
 returns trigger
 language plpgsql
 set search_path = ''
-as $
+as $$
 declare
   v_table_owner name;
 begin
@@ -52,7 +52,7 @@ begin
 
   return new;
 end;
-$;
+$$;
 
 drop trigger if exists vault_profiles_guard_account_type on public.vault_profiles;
 create trigger vault_profiles_guard_account_type
