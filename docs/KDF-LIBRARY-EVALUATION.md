@@ -73,18 +73,31 @@ RustCrypto Argon2 0.6.0 is the preferred candidate for the next isolated WASM pr
 
 The project will not silently substitute PBKDF2 or scrypt for the specified Argon2id design, and it will not select a stale package merely because its API is convenient. The KEK import and DEK wrapping modules remain KDF-agnostic. They accept exactly 32 derived bytes and clear the caller-provided byte array after import.
 
-## 4. Required next review
 
-Before implementation:
+## 5. Isolated WASM proof-of-concept implementation
 
-1. Pin the RustCrypto 0.6.0 source and verify release provenance, source diff, dependencies, license, and security advisories.
-2. Build a minimal `wasm32-unknown-unknown` + `wasm-bindgen` proof of concept with only Argon2id v1.3 raw KDF support; do not expose a generic arbitrary-cost API.
-3. Run RFC 9106 Argon2id v1.3 known-answer vectors and cross-check identical outputs against an independent reference implementation.
-4. Benchmark candidate profiles (including OWASP's 19 MiB/t=2/p=1 baseline and RFC 9106's 64 MiB/t=3/p=4 memory-constrained profile) on a lower-powered Android phone and mobile Safari, measuring elapsed time, peak memory, responsiveness, and repeated-unlock behavior.
-5. Test memory-exhaustion behavior and ensure the UI cannot launch unbounded concurrent KDF operations; run KDF work in a dedicated worker.
-6. Fix KDF parameters in a versioned allowlist compiled into the client; do not accept arbitrary memory/iteration values from a database row.
-7. Store only the random salt and public KDF profile/version alongside the wrapped DEK. Never store the Vault Unlock Secret or derived KEK.
-8. Add cross-browser deterministic test vectors and verify that the same secret/salt/profile derives the same 32-byte key across supported browsers.
-9. Obtain an independent review of the selected implementation and protocol before enabling it for real credentials.
+An isolated crate has now been added at `security/argon2-wasm`:
 
-No production KDF parameters are approved in this document. The current application remains on the legacy server-readable API and must not be described as zero-knowledge.
+- `argon2 = 0.6.0`, with default features disabled and only `alloc` + `zeroize` enabled; the PHC/password-hash and random-number-generation features are not needed by this raw KDF wrapper.
+- `wasm-bindgen = 0.2.130` and `js-sys = 0.3.107` expose a typed-array boundary for browser integration.
+- The exported API accepts password bytes, an exactly 16-byte salt, and a one-byte fixed profile ID. It does not accept caller-controlled memory, iteration, parallelism, algorithm, version, or output-size parameters.
+- Profile 1 is 19 MiB / t=2 / p=1; Profile 2 is 64 MiB / t=3 / p=4. Both are benchmark candidates only, not approved production settings.
+- The 32-byte temporary Rust output buffer is cleared after copying to a JavaScript `Uint8Array`. The upstream `zeroize` feature is enabled; full zeroization coverage still requires source-level review.
+- The crate contains an RFC 9106 §5.3 Argon2id v1.3 known-answer test (m=32 KiB, t=3, p=4, with the RFC test-only secret and associated data), plus profile allowlist and input-boundary tests.
+- The exported function is synchronous. It must be run from a dedicated Worker and protected by a single-flight lock before any application integration. JavaScript-owned password buffers must be cleared by the caller.
+
+GitHub Actions now has a separate `argon2-wasm-poc` job that runs native Rust tests and compiles the `wasm32-unknown-unknown` release artifact. The artifact is uploaded for inspection only and is not deployed. The first run has not yet been confirmed at the time of this documentation update.
+
+This is a source-code PoC only. No production application import, no API switch, no database migration, no preview, and no deployment have been performed. Do not treat a successful compile or KAT as independent security approval.
+
+## 6. Remaining approval gates
+
+1. Confirm the GitHub Actions native RFC vector test passes.
+2. Confirm the browser-WASM target compiles and inspect the generated module/imports and final binary size.
+3. Add and inspect the matching `wasm-bindgen` JavaScript glue in an isolated browser harness; verify the typed-array boundary and no unexpected imports.
+4. Cross-check the RFC vector against an independent implementation, not just the same RustCrypto crate.
+5. Inspect the exact dependency lockfile and source provenance; retain the lockfile used for the reviewed artifact.
+6. Review the upstream zeroization implementation and verify what is and is not cleared on success, error, and allocation failure.
+7. Benchmark both profiles on a lower-powered Android device and mobile Safari, including peak memory, elapsed time, responsiveness, repeated unlock, and memory pressure/OOM behavior.
+8. Implement Worker serialization/cancellation and prove no unbounded concurrent KDF work is possible.
+9. Obtain independent cryptographic review before any real credential storage is enabled.
