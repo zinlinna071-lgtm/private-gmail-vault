@@ -29,6 +29,7 @@ export default function SecurityResearchPage() {
         <h1>Research with evidence.<br /><em>Knowledge for everyone.</em></h1>
         <p className="security-lead">Read approved research papers directly on this website. Every publication includes its scope, methodology, evidence, findings, remediation, and limitations.</p>
         <p className="security-lead" lang="my">အတည်ပြုထားသော သုတေသနစာတမ်းများကို ဒီ Website ပေါ်မှာ တိုက်ရိုက်ဖတ်ရှုနိုင်ပါမယ်။ စမ်းသပ်မှုအတိုင်းအတာ၊ နည်းလမ်း၊ သက်သေအထောက်အထား၊ တွေ့ရှိချက်၊ ပြုပြင်ကာကွယ်မှုနှင့် ကန့်သတ်ချက်များ ပါဝင်မယ်။</p>
+        <div className="security-hero-actions"><Link href="/security/research-stories">Explore an interactive story: AES-GCM nonce reuse ↗</Link><span>ILLUSTRATIVE · SYNTHETIC DATA</span></div>
       </section>
 
       <section className="security-section research-reading-guide" aria-labelledby="research-reading-title">
