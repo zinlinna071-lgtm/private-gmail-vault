@@ -83,9 +83,9 @@ declare
   v_record_count integer;
 begin
   if p_user_id is null or p_id is null
-     or p_ciphertext is null or btrim(p_ciphertext) = ''
-     or p_iv is null or btrim(p_iv) = ''
-     or p_auth_tag is null or btrim(p_auth_tag) = '' then
+     or p_ciphertext is null or btrim(p_ciphertext) = '' or length(p_ciphertext) > 30000
+     or p_iv is null or btrim(p_iv) = '' or length(p_iv) > 128
+     or p_auth_tag is null or btrim(p_auth_tag) = '' or length(p_auth_tag) > 128 then
     raise exception using errcode = '22023', message = 'INVALID_VAULT_ITEM';
   end if;
 
