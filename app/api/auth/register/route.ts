@@ -49,6 +49,9 @@ export async function POST(request: Request) {
       return noStoreJson({ error: "Invalid JSON request." }, { status: 400 });
     }
     const body = parsedBody.value as Record<string, unknown>;
+    if (body.responsibilityAccepted !== true) {
+      return noStoreJson({ error: "Please review and accept the Vault responsibility notice before creating an account." }, { status: 428 });
+    }
     let loginId: string;
     try {
       loginId = normalizeLoginId(String(body.loginId ?? ""));
