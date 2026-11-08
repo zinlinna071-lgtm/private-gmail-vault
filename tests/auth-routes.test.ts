@@ -245,6 +245,11 @@ describe("Vault registration and login API", () => {
     expect(body.success).toBe(true);
     expect(body.recoveryCode).toBe(recoveryCode);
     expect(body.requiresAcknowledgement).toBe(true);
+    expect(mocks.consumeClaim).toHaveBeenCalledWith("consume_curator_registration_claim", {
+      p_claim_hash: "hashed-claim-token",
+      p_session_hash: "hashed-session-token"
+    });
+    expect(mocks.deleteCookie).toHaveBeenCalledWith("vault_curator_claim");
     expect(mocks.insert).toHaveBeenCalledWith(expect.objectContaining({
       user_id: "user-123",
       login_id: "myvault",
