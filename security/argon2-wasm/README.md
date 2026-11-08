@@ -54,3 +54,26 @@ The GitHub Actions `argon2-wasm-poc` job runs the native tests, compiles the bro
 - Browser memory limits, allocation-failure behavior, responsiveness, and repeat-unlock behavior have not been measured on lower-powered Android devices or mobile Safari.
 - Cross-implementation KAT comparison, dependency provenance review, generated JS glue inspection, worker cancellation/serialization, and independent cryptographic review remain outstanding.
 - Do not add this crate to the application bundle or enable real credential storage until all KDF, key lifecycle, ciphertext-only API, recovery, migration, and audit gates pass.
+
+
+## Dedicated browser Worker proof-of-concept harness
+
+An isolated harness now exercises the Rust-generated **web-target** bindings from a real module Worker:
+
+1. Build the WASM target and generate browser glue:
+   ```sh
+   cargo build --manifest-path security/argon2-wasm/Cargo.toml --target wasm32-unknown-unknown --release
+   cargo install wasm-bindgen-cli --version 0.2.130 --locked
+   wasm-bindgen --target web --out-dir security/argon2-wasm/pkg-web --out-name vault_argon2_wasm_poc security/argon2-wasm/target/wasm32-unknown-unknown/release/vault_argon2_wasm_poc.wasm
+   ```
+2. Install the isolated browser-test dependencies and browser engines:
+   ```sh
+   cd tools/argon2id-browser-spike
+   npm install --ignore-scripts --no-audit --no-fund
+   npx playwright install chromium firefox webkit
+   node run-rust-wasm-worker-test.mjs
+   ```
+
+The harness uses a public test-only secret, transfers password and salt buffers to the Worker, checks that the main-thread buffers become detached, derives the Argon2id output inside the Worker, imports it as a non-extractable AES-GCM key, and performs a local encrypt/decrypt self-test without returning key bytes. It runs in Chromium, Firefox, and WebKit.
+
+This remains a **PoC boundary test**, not the application Worker or Vault integration. It does not test mobile devices, Worker idle/lock lifecycle, application unlock flows, key-envelope persistence, or ciphertext-only API behavior. A browser-matrix PASS must come from a completed CI run with all three engines; source presence is not test evidence.
