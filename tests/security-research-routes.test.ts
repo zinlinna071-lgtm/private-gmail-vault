@@ -6,14 +6,16 @@ const mocks = vi.hoisted(() => ({
   isSameOriginRequest: vi.fn(),
   isJsonContentType: vi.fn(),
   readBoundedJson: vi.fn(),
-  hasActiveResearchReviewAssignment: vi.fn(),\n  isConfiguredResearchReviewer: vi.fn()
+  hasActiveResearchReviewAssignment: vi.fn(),
+  isConfiguredResearchReviewer: vi.fn()
 }));
 
 vi.mock("@/lib/security-research/workflow-auth", () => ({
   getResearchActor: mocks.getResearchActor
 }));
 vi.mock("@/lib/security-research/review-assignments", () => ({
-  hasActiveResearchReviewAssignment: mocks.hasActiveResearchReviewAssignment,\n  isConfiguredResearchReviewer: mocks.isConfiguredResearchReviewer,
+  hasActiveResearchReviewAssignment: mocks.hasActiveResearchReviewAssignment,
+  isConfiguredResearchReviewer: mocks.isConfiguredResearchReviewer,
   reviewStageForWorkflowState: (state: string) => state === "DRAFT" ? "technical" : state === "SECURITY_PRIVACY_REVIEW" ? "security_privacy" : state === "BILINGUAL_REVIEW" ? "bilingual" : null
 }));
 vi.mock("@/lib/supabase/admin", () => ({
@@ -31,7 +33,8 @@ vi.mock("@/lib/auth/bounded-json", () => ({
 
 import { GET as listDrafts, POST as createDraft } from "@/app/api/security/research/drafts/route";
 import { GET as getDraft, PATCH as updateDraft } from "@/app/api/security/research/drafts/[id]/route";
-import { POST as submitReview } from "@/app/api/security/research/review/route";\nimport { GET as listAssignments, DELETE as revokeAssignment } from "@/app/api/security/research/assignments/route";
+import { POST as submitReview } from "@/app/api/security/research/review/route";
+import { GET as listAssignments, DELETE as revokeAssignment } from "@/app/api/security/research/assignments/route";
 
 const secondaryId = "22222222-2222-4222-8222-222222222222";
 const reviewerId = "33333333-3333-4333-8333-333333333333";
@@ -64,7 +67,8 @@ describe("private research route authorization", () => {
       ok: true,
       value: await req.json()
     }));
-    mocks.hasActiveResearchReviewAssignment.mockResolvedValue(false);\n    mocks.isConfiguredResearchReviewer.mockReturnValue(true);
+    mocks.hasActiveResearchReviewAssignment.mockResolvedValue(false);
+    mocks.isConfiguredResearchReviewer.mockReturnValue(true);
   });
 
   it("does not allow a Secondary account to list private research drafts", async () => {
