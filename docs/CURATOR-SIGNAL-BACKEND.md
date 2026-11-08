@@ -54,7 +54,7 @@ No production database, Main branch, or deployment has been changed by this impl
 
 The design branch now includes deterministic Vitest coverage for:
 - challenge bootstrap rejection for an explicit cross-site request;
-- PostgreSQL migration permission checks, RLS checks, session/expiry/replay rejection, and concurrent one-time challenge consumption in an isolated CI database;
+- PostgreSQL migration permission checks, RLS checks, session/expiry/replay rejection, and concurrent one-time challenge and registration-claim consumption in an isolated CI database;
 - no-store response and HttpOnly, SameSite=Strict session/challenge cookie attributes;
 - reuse of the browser session while rotating and persisting the challenge marker;
 - failure closed when challenge persistence is unavailable;
