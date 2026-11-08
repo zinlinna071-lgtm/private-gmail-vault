@@ -17,10 +17,10 @@ export default function LabActivityConsole() {
   }, []);
 
   return (
-    <section className="lab-console-section" aria-labelledby="lab-console-title">
+    <section id="live-theater" className="lab-console-section" aria-labelledby="lab-console-title">
       <div className="lab-console-heading">
         <div>
-          <span className="section-index">OBSERVABILITY / 02</span>
+          <span className="section-index">OBSERVABILITY / SOURCE STATUS</span>
           <h2 id="lab-console-title">The workstation is ready for real signals.</h2>
           <p>A high-resolution view of the system boundaries and evidence channels. Live telemetry will appear only after a verified source is connected.</p>
         </div>
@@ -77,6 +77,38 @@ export default function LabActivityConsole() {
             <div><strong>No events received</strong><p>When a real, authenticated lab source is connected, original events will be listed here with their source ID, timestamp, trace reference, and evidence link. Nothing is generated to fill this space.</p></div>
           </div>
         </div>
+        <div className="lab-session-viewer">
+          <div className="lab-panel-label"><span>04 / SESSION VIEWER</span><small>PUBLIC-SAFE EVENT PROJECTION</small></div>
+          <div className="lab-session-empty">
+            <div className="lab-session-screen" aria-hidden="true">
+              <div className="lab-screen-top"><i /><i /><i /><span>SESSION / NOT SELECTED</span></div>
+              <div className="lab-screen-lines"><i /><i /><i /><i /></div>
+              <div className="lab-screen-center"><span>NO SESSION</span><small>WAITING FOR VERIFIED SOURCE</small></div>
+            </div>
+            <div className="lab-session-copy">
+              <strong>No research session is available to watch yet.</strong>
+              <p>When an authorized test is running and its event source has passed verification, this area can present a sanitized, read-only session view. Until then, no playback or activity is fabricated.</p>
+              <p lang="my">ခွင့်ပြုထားတဲ့ Lab Test တကယ်လုပ်ဆောင်နေပြီး Event Source ကို အတည်ပြုပြီးမှသာ ဒီနေရာမှာ အများပြည်သူကြည့်ရှုနိုင်တဲ့ အချက်အလက်တွေ ပြသမယ်။ လက်ရှိမှာ ကြည့်ရှုနိုင်တဲ့ Session မရှိသေးပါဘူး။</p>
+            </div>
+          </div>
+          <div className="lab-session-contract">
+            <div><span>PUBLIC EVENT FIELDS</span><strong>Timestamp · Source ID · Trace reference · Sanitized summary · Evidence link</strong></div>
+            <div><span>NEVER EXPOSED</span><strong>Credentials · Cookies · Tokens · Private keys · Raw exploit payloads</strong></div>
+          </div>
+          <div className="lab-state-legend">
+            <div className="lab-panel-label"><span>05 / SESSION STATE DEFINITIONS</span><small>LABELS DESCRIBE DATA PROVENANCE</small></div>
+            <div className="lab-state-grid">
+              <article><b className="state-live">LIVE</b><p>Verified source; an authorized test is happening now.</p></article>
+              <article><b className="state-delayed">DELAYED</b><p>Verified events are shown after a deliberate safety delay.</p></article>
+              <article><b className="state-recorded">RECORDED</b><p>A completed session with a preserved evidence trail.</p></article>
+              <article><b className="state-illustrative">ILLUSTRATIVE</b><p>A clearly labeled conceptual explanation, not test telemetry.</p></article>
+              <article><b className="state-simulated">SIMULATED</b><p>A controlled simulation using non-production fixtures.</p></article>
+              <article><b className="state-unavailable">UNAVAILABLE</b><p>No verified source or session can currently be shown.</p></article>
+            </div>
+            <p className="lab-state-note">These are defined display states, not a report that any session is currently active. The current state remains UNAVAILABLE.</p>
+          </div>
+        </div>
+
         <div className="lab-console-disclaimer"><span>DATA INTEGRITY</span><p>No synthetic events, random metrics, fabricated timestamps, or simulated traffic are displayed. A missing source is shown as unavailable; verified test history remains linked to its original CI evidence.</p></div>
       </div>
     </section>

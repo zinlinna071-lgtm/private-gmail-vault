@@ -72,6 +72,8 @@ describe("client-side Vault key envelope", () => {
 
     await expect(unwrapVaultDataKey({ ...envelope, version: 2 }, kek, vaultId)).rejects.toThrow();
     await expect(unwrapVaultDataKey({ ...envelope, iv: "bad" }, kek, vaultId)).rejects.toThrow();
+    await expect(unwrapVaultDataKey({ ...envelope, unexpected: true }, kek, vaultId)).rejects.toThrow();
+    await expect(unwrapVaultDataKey([], kek, vaultId)).rejects.toThrow();
     await expect(unwrapVaultDataKey(null, kek, vaultId)).rejects.toThrow();
     await expect(createVaultKeyEnvelope(kek, "not-a-vault-id")).rejects.toThrow();
   });

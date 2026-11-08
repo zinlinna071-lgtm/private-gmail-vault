@@ -19,6 +19,7 @@ export default function Home() {
         </div>
         <div className="entry-nav-links">
           <Link href="/security">SECURITY</Link>
+          <Link href="/curator-preview">THE CURATOR’S SIGNAL</Link>
           <Link href="/support">RESEARCH FUND</Link>
         </div>
         <div className="entry-nav-status"><i /> AUTHENTICATION REQUIRED</div>

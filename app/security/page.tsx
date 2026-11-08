@@ -19,27 +19,39 @@ const checks = [
     name: "RFC 9106 Argon2id known-answer test",
     scope: "Node.js · isolated test harness",
     run: "42272387331",
+    date: "2026-11-06 18:37 UTC",
+    commit: "889ee746033675175dfb5496e6e57eb6ed7c3821",
     job: "RFC 9106 §5.3 known-answer test",
     href: "https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42272387331",
     detail: "The candidate implementation matched the published RFC 9106 known-answer vector.",
+    plain: "The implementation was given a standard published example and produced the expected answer. This checks that specific calculation, not the complete Vault unlock process.",
+    plainMy: "ထုတ်ပြန်ထားတဲ့ စံနမူနာတစ်ခုကို ထည့်စမ်းပြီး မျှော်မှန်းထားတဲ့ အဖြေထွက်မထွက် စစ်ထားတာပါ။ Vault တစ်ခုလုံး ဖွင့်တဲ့လုပ်ငန်းစဉ်ကို စစ်ထားတာ မဟုတ်ပါဘူး။",
     boundary: "KDF TEST"
   },
   {
     name: "Argon2id browser compatibility",
     scope: "Chromium · hosted Linux",
     run: "42281120467",
+    date: "2026-11-06 19:36 UTC",
+    commit: "70cbd9eadd3970896fc49852a07f7a28ec2dfab3",
     job: "Chromium RFC 9106 compatibility test",
     href: "https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42281120467",
     detail: "The browser RFC vector and mutation checks completed successfully in Chromium.",
+    plain: "The same kind of standard example was checked in the Chromium browser environment. It does not prove compatibility on every browser or phone.",
+    plainMy: "Chromium Browser ပတ်ဝန်းကျင်မှာ စံနမူနာနဲ့ ပြောင်းလဲစမ်းသပ်ချက်တွေကို စစ်ဆေးအောင်မြင်ခဲ့တာပါ။ Browser နဲ့ ဖုန်းအားလုံးမှာ အလုပ်လုပ်မယ်လို့ သက်သေမပြပါဘူး။",
     boundary: "BROWSER TEST"
   },
   {
     name: "Cross-engine browser verification",
     scope: "Chromium · Firefox · WebKit",
     run: "42281411743",
+    date: "2026-11-06 19:38 UTC",
+    commit: "df67887f6282e206d4a9c6b416523ab6e5c05c3e",
     job: "Chromium Firefox and WebKit RFC 9106 tests",
     href: "https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42281411743",
     detail: "The RFC vector and mutation checks completed successfully across the three hosted browser engines.",
+    plain: "The named checks completed in Chromium, Firefox, and WebKit in the recorded hosted environment. This is compatibility evidence for those checks only.",
+    plainMy: "ဖော်ပြထားတဲ့ စမ်းသပ်ချက်တွေကို Chromium၊ Firefox နဲ့ WebKit သုံးမျိုးမှာ သတ်မှတ်ထားတဲ့ Hosted ပတ်ဝန်းကျင်အတွင်း အောင်မြင်ခဲ့တာပါ။ ဒီစမ်းသပ်ချက်တွေအတွက်သာ အထောက်အထားဖြစ်ပါတယ်။",
     boundary: "CROSS-ENGINE TEST"
   }
 ];
@@ -73,7 +85,7 @@ export default function SecurityPage() {
           <span>PRIVATE ACCOUNT VAULT <small>SECURITY OPERATIONS CENTER</small></span>
         </Link>
         <nav className="security-nav-links" aria-label="Security navigation">
-          <a href="#interactive-lab">Interactive lab</a><a href="#surface">Test scope</a><Link href="/security/research">Research</Link>
+          <Link href="/security/guide">Start here</Link><a href="#live-theater">Live theater</a><a href="#interactive-lab">Interactive lab</a><a href="#surface">Test scope</a><Link href="/security/architecture">UI/UX architecture</Link><Link href="/security/research">Research</Link><Link href="/security/collaboration">Human × AI</Link><a href="#owner-privacy">Owner privacy</a><a href="#user-responsibility">Your responsibility</a>
         </nav>
         <span className="security-nav-status"><i /> PUBLIC · READ ONLY</span>
       </header>
@@ -88,23 +100,43 @@ export default function SecurityPage() {
             <span><b>PUBLIC ACCESS</b> Read-only reporting</span>
             <span><b>EVIDENCE SOURCE</b> Linked CI records</span>
           </div>
-          <div className="security-hero-actions"><a href="#interactive-lab">Try the cryptography lab <span>↓</span></a><Link href="/security/research">Research library ↗</Link></div>
+          <div className="security-hero-actions"><Link href="/security/guide">New to cybersecurity? Start here ↗</Link><a href="#interactive-lab">Try the cryptography lab <span>↓</span></a><Link href="/security/research">Research library ↗</Link></div>
         </div>
-        <div className="security-signal" aria-label="Decorative conceptual architecture illustration, not connected to live telemetry">
-          <div className="signal-grid" />
-          <div className="signal-ring signal-ring-one" /><div className="signal-ring signal-ring-two" />
-          <div className="signal-core"><span>V</span><small>VAULT MODEL</small></div>
-          <div className="signal-node signal-node-a"><i /> IDENTITY BOUNDARY</div>
-          <div className="signal-node signal-node-b"><i /> CRYPTO BOUNDARY</div>
-          <div className="signal-node signal-node-c"><i /> API BOUNDARY</div>
-          <div className="signal-scan" />
-          <div className="signal-caption">CONCEPTUAL MAP · NOT LIVE TELEMETRY · NOT A TEST RUN</div>
-        </div>
+        <aside className="security-reading-panel" aria-label="How to read this security page">
+          <span className="reading-panel-kicker">A CLEAR GUIDE · အလွယ်တကူဖတ်ရှုရန်</span>
+          <h2>Three things to look for.</h2>
+          <div className="reading-panel-item"><b>01</b><span><strong>What is being checked?</strong><small>The named feature and exact test scope.</small></span></div>
+          <div className="reading-panel-item"><b>02</b><span><strong>What evidence exists?</strong><small>The original test record, code revision, and environment.</small></span></div>
+          <div className="reading-panel-item"><b>03</b><span><strong>What is still unknown?</strong><small>Untested areas and limits are shown openly.</small></span></div>
+          <p lang="my">စမ်းသပ်ထားတဲ့အရာ၊ အထောက်အထားအစစ်နဲ့ မစစ်ဆေးရသေးတဲ့အချက်တွေကို သီးခြားခွဲပြထားပါတယ်။</p>
+        </aside>
       </section>
 
       <section className="security-notice">
         <span className="notice-icon">!</span>
-        <div><strong>Prototype status — not independently audited</strong><p>Zero-knowledge is a target architecture, not a completed feature. The current API still decrypts vault data server-side, and the legacy authentication flow remains. Do not store high-value real credentials in this prototype. No real-user account is used as a security-test target.</p></div>
+        <div><strong>Critical privacy limitation — Owner/server-readable prototype</strong><p>Owner-inaccessible encryption is a design goal, not a live guarantee. The current Vault API receives plaintext account fields and decrypts records on the server using server-held key material. A sufficiently privileged server operator can technically access plaintext through this legacy path. Do not store real or high-value credentials here. This disclosure remains until the ciphertext-only client encryption migration is complete and independently verified.</p></div>
+      </section>
+
+      <section className="security-section" id="owner-privacy">
+        <div className="security-section-heading"><div><span className="section-index">PRIVACY COMMITMENT / OWNER-INACCESSIBLE VAULT</span><h2>The Owner must not be able to read your records.</h2></div><span className="section-aside">TARGET · NOT YET VERIFIED</span></div>
+        <p className="security-lead">Our approved target architecture separates Owner administration from Secondary Vault contents. The Master/Owner may operate the private Research Lab, but must not possess a Secondary user's decryption key, impersonation path, or recovery override. Records must be encrypted in the user's browser before transmission.</p>
+        <div className="security-module-grid">
+          <article className="security-module"><span className="module-number">01</span><span className="module-status status-untested">NOT IMPLEMENTED</span><h3>Client-held keys</h3><p>Each Secondary Vault uses its own random data key, wrapped by a key derived locally from the user's Vault Unlock Secret. The server receives ciphertext and wrapped-key metadata only.</p></article>
+          <article className="security-module"><span className="module-number">02</span><span className="module-status status-untested">NOT VERIFIED</span><h3>No Owner override</h3><p>Owner tools must not include record decryption, user impersonation, secret reveal, shared master keys, or support-side recovery backdoors.</p></article>
+          <article className="security-module"><span className="module-number">03</span><span className="module-status status-untested">AUDIT REQUIRED</span><h3>Evidence before claims</h3><p>Network inspection, source review, cross-user isolation tests, cryptographic tests, deployment provenance, and independent security review must support any public guarantee.</p></article>
+        </div>
+        <p className="security-footnote">Important: this is a future privacy commitment, not a description of the running prototype. The service cannot honestly claim that its Owner or server is technically unable to read records until the release gates are complete. <a href="https://github.com/zinlinna071-lgtm/private-gmail-vault/blob/design/cyber-visual-architecture/docs/OWNER-INACCESSIBLE-VAULT-PRIVACY-GUARANTEE.md" target="_blank" rel="noreferrer">Read the full privacy guarantee, limitations, and evidence plan ↗</a>.</p>
+      </section>
+
+      <section className="security-section" id="user-responsibility">
+        <div className="security-section-heading"><div><span className="section-index">USER NOTICE / PERSONAL DATA CHOICES</span><h2>Your Vault. Your choice. Your responsibility.</h2></div><span className="section-aside">PLEASE READ BEFORE USE</span></div>
+        <p className="security-lead">Using this Vault is voluntary. You decide whether to store account identifiers, passwords, backup codes, or other sensitive information. You are not required to store any particular information, and you should only store information you have chosen to protect here.</p>
+        <div className="security-module-grid">
+          <article className="security-module"><span className="module-number">01</span><h3>You choose what to store</h3><p>The decision to place important account information in the Vault is yours. Consider the sensitivity of each item before saving it.</p></article>
+          <article className="security-module"><span className="module-number">02</span><h3>Protect your access</h3><p>Keep your device, Login ID, Master Password, Vault unlock material, and recovery information secure. Do not share them with other people.</p></article>
+          <article className="security-module"><span className="module-number">03</span><h3>Keep recovery information safe</h3><p>If required unlock or recovery information is lost, your records may become permanently inaccessible. Do not assume the Owner or support can restore them.</p></article>
+        </div>
+        <p className="security-footnote">No software can guarantee zero risk. Device compromise, malware, phishing, malicious browser extensions, service disruption, and implementation defects may affect security or availability. Read the current security limitations above before storing sensitive information. This notice explains user choices and practical responsibilities; it does not change the system's actual security status or override rights and obligations that cannot lawfully be waived.</p>
       </section>
 
       <LabActivityConsole />
@@ -128,7 +160,7 @@ export default function SecurityPage() {
 
       <section className="security-section" id="evidence">
         <div className="security-section-heading"><div><span className="section-index">02 / VERIFIED CI EVIDENCE</span><h2>Checks with inspectable records.</h2></div><span className="section-aside">HISTORICAL RUNS · NOT LIVE</span></div>
-        <p className="security-lead">The records below are completed GitHub Actions jobs that were inspected. They are historical test evidence, not a live attack feed, and their success applies only to the named checks.</p>
+        <p className="security-lead">The records below are completed GitHub Actions jobs whose status, source branch, commit, and timestamps were checked against GitHub. They are historical test evidence, not a live attack feed, and their success applies only to the named checks.</p>
         <div className="security-evidence-list">
           {checks.map((check) => (
             <article className="security-evidence" key={check.run}>
@@ -136,8 +168,10 @@ export default function SecurityPage() {
               <div className="evidence-copy">
                 <div className="evidence-boundary">{check.boundary}</div>
                 <h3>{check.name}</h3><p>{check.scope}</p>
-                <small>GitHub Actions · Run #{check.run}</small>
+                <small>GitHub Actions · Run #{check.run} · {check.date}</small>
+                <small className="evidence-provenance">SOURCE COMMIT <code>{check.commit}</code></small>
                 <p className="evidence-detail">{check.detail}</p>
+                <div className="evidence-plain-language"><strong>IN EVERYDAY TERMS</strong><p>{check.plain}</p><p lang="my">{check.plainMy}</p></div>
                 <code className="evidence-job">{check.job}</code>
               </div>
               <span className="evidence-pass">JOB PASSED</span>
@@ -146,10 +180,21 @@ export default function SecurityPage() {
           ))}
         </div>
         <p className="security-footnote">These records verify Argon2id candidate compatibility checks only. They do not constitute authentication penetration tests, do not approve production KDF parameters, and do not prove end-to-end Vault security. The page does not simulate live attacks or fabricate traffic.</p>
+        <article className="security-evidence" style={{ marginTop: 14 }}>
+          <div className="evidence-icon" aria-hidden="true">!</div>
+          <div className="evidence-copy">
+            <div className="evidence-boundary">NEW HKDF / AES-GCM BROWSER MATRIX</div>
+            <h3>Cross-browser test harness implemented — execution unresolved.</h3>
+            <p>The isolated suite is ready to check public cryptographic vectors in Chromium, Firefox, and WebKit. Three GitHub Actions runs (#1–#3) failed before any workflow step began. GitHub reported runner ID 0, empty step lists, and no available job logs.</p>
+            <p className="evidence-detail">Inspect the original records: <a href="https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42414589622" target="_blank" rel="noreferrer">Run #1</a> · <a href="https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42414724186" target="_blank" rel="noreferrer">Run #2</a> · <a href="https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42414737534" target="_blank" rel="noreferrer">Run #3</a>.</p>
+            <p className="evidence-detail">No browser-engine test ran, so this is NOT RUN / UNRESOLVED — not a cryptographic test failure and not a pass. The root cause is not exposed in the available GitHub records.</p>
+          </div>
+          <span className="module-status status-untested">NOT RUN</span>
+        </article>
       </section>
 
       <section className="security-section">
-        <div className="security-section-heading"><div><span className="section-index">04 / RESEARCH MATRIX</span><h2>What is tested — and what is not.</h2></div><span className="section-aside">REVIEW STATUS</span></div>
+        <div className="security-section-heading"><div><span className="section-index">03 / RESEARCH MATRIX</span><h2>What is tested — and what is not.</h2></div><span className="section-aside">REVIEW STATUS</span></div>
         <div className="security-module-grid">
           {modules.map(([number, title, description, status]) => (
             <article className="security-module" key={number}>
@@ -162,7 +207,7 @@ export default function SecurityPage() {
       </section>
 
       <section className="security-section security-operations">
-        <div><span className="section-index">05 / PRIVATE LAB OPERATIONS</span><h2>Controlled tests. Verifiable outcomes.</h2><p className="security-lead">Security testing is performed privately against isolated test systems. Public visitors can inspect approved outcomes, but cannot launch scans, submit payloads, or access the lab.</p></div>
+        <div><span className="section-index">04 / PRIVATE LAB OPERATIONS</span><h2>Controlled tests. Verifiable outcomes.</h2><p className="security-lead">Security testing is performed privately against isolated test systems. Public visitors can inspect approved outcomes, but cannot launch scans, submit payloads, or access the lab.</p></div>
         <div className="operation-list">
           <div><b>01</b><span><strong>Authorize & isolate</strong><small>Confirm ownership, written scope, test accounts, and non-production fixtures.</small></span><em>REQUIRED</em></div>
           <div><b>02</b><span><strong>Execute & capture</strong><small>Run controlled checks and retain test IDs, commit, runtime, and evidence.</small></span><em>PRIVATE</em></div>
@@ -172,7 +217,7 @@ export default function SecurityPage() {
       </section>
 
       <section className="security-section security-method">
-        <div><span className="section-index">06 / RESEARCH PUBLICATIONS</span><h2>Evidence becomes knowledge.</h2><p className="security-lead">Approved papers document objectives, safe methodology, isolated environment, findings, remediation, retest results, limitations, and references in English and Burmese.</p><Link href="/security/research">Open the bilingual research library ↗</Link><p className="security-footnote" style={{ marginTop: 16 }}>Authentication testing plan: <a href="https://github.com/zinlinna071-lgtm/private-gmail-vault/blob/feature/vault-authentication/docs/SECURITY-LOGIN-TEST-PLAN.md" target="_blank" rel="noreferrer">review the Vault Login Security Test Plan ↗</a></p>
+        <div><span className="section-index">05 / RESEARCH PUBLICATIONS</span><h2>Evidence becomes knowledge.</h2><p className="security-lead">Approved papers document objectives, safe methodology, isolated environment, findings, remediation, retest results, limitations, and references in English and Burmese.</p><Link href="/security/research">Open the bilingual research library ↗</Link><p className="security-footnote" style={{ marginTop: 16 }}>Authentication testing plan: <a href="https://github.com/zinlinna071-lgtm/private-gmail-vault/blob/feature/vault-authentication/docs/SECURITY-LOGIN-TEST-PLAN.md" target="_blank" rel="noreferrer">review the Vault Login Security Test Plan ↗</a></p>
           <p className="security-footnote">Preliminary source review: <a href="https://github.com/zinlinna071-lgtm/private-gmail-vault/blob/feature/vault-authentication/docs/SECURITY-LOGIN-STATIC-REVIEW.md" target="_blank" rel="noreferrer">read the Vault Login Static Review ↗</a> <span>· Static inspection only; no penetration test has been claimed.</span></p></div>
         <div className="method-steps">
           <div><b>01</b><span><strong>Draft from verified evidence</strong><small>No invented findings, fabricated telemetry, or synthetic publications.</small></span></div>

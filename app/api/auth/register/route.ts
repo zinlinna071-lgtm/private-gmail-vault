@@ -7,6 +7,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { allowAuthAttempt, AuthRateLimitError } from "@/lib/auth/rate-limit";
 import { encryptPendingRecoveryCode } from "@/lib/auth/recovery-encryption";
 import { authEmailForLoginId, createRecoveryCode, hashRecoveryCode, isSameOriginRequest, normalizeLoginId, validatePassword } from "@/lib/auth/vault";
+import { CURATOR_CLAIM_COOKIE, CURATOR_SESSION_COOKIE, hashOpaqueToken } from "@/lib/auth/curator-claim";
 
 export const runtime = "nodejs";
 
@@ -49,6 +50,9 @@ export async function POST(request: Request) {
       return noStoreJson({ error: "Invalid JSON request." }, { status: 400 });
     }
     const body = parsedBody.value as Record<string, unknown>;
+    if (body.responsibilityAccepted !== true) {
+      return noStoreJson({ error: "Please review and accept the Vault responsibility notice before creating an account." }, { status: 428 });
+    }
     let loginId: string;
     try {
       loginId = normalizeLoginId(String(body.loginId ?? ""));
@@ -65,6 +69,23 @@ export async function POST(request: Request) {
     } catch {
       return noStoreJson({ error: "Master Password must be 12–128 characters." }, { status: 400 });
     }
+
+    const cookieStore = await cookies();
+    const curatorClaim = cookieStore.get(CURATOR_CLAIM_COOKIE)?.value;
+    const curatorSession = cookieStore.get(CURATOR_SESSION_COOKIE)?.value;
+    if (!curatorClaim || !curatorSession) {
+      return noStoreJson({ error: "Complete The Curator's Signal before creating a Secondary account." }, { status: 428 });
+    }
+    failureStage = "curator-claim-consume";
+    const claimAdmin = createSupabaseAdminClient();
+    const { data: claimConsumed, error: claimError } = await claimAdmin.rpc("consume_curator_registration_claim", {
+      p_claim_hash: hashOpaqueToken(curatorClaim),
+      p_session_hash: hashOpaqueToken(curatorSession)
+    });
+    if (claimError || claimConsumed !== true) {
+      return noStoreJson({ error: "Your Curator claim is invalid, expired, or already used. Solve the challenge again." }, { status: 403 });
+    }
+    cookieStore.delete(CURATOR_CLAIM_COOKIE);
 
     failureStage = "recovery-code-generation";
     const recoveryCode = createRecoveryCode();

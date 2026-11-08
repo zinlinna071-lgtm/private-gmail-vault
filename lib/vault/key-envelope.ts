@@ -45,6 +45,7 @@ function decodeBase64(value: unknown, expectedBytes: number): Uint8Array {
   const binary = atob(value);
   const bytes = Uint8Array.from(binary, character => character.charCodeAt(0));
   if (bytes.length !== expectedBytes || encodeBase64(bytes) !== value) {
+    bytes.fill(0);
     throw new Error("Invalid Vault key envelope.");
   }
   return bytes;
@@ -111,19 +112,18 @@ export async function createVaultKeyEnvelope(
   // Generate raw key bytes directly so no extractable CryptoKey is created.
   const rawDataKey = globalThis.crypto.getRandomValues(new Uint8Array(KEY_BYTES));
   const iv = globalThis.crypto.getRandomValues(new Uint8Array(IV_BYTES));
+  const wrapBuffer = toArrayBuffer(rawDataKey);
+  const ivBuffer = toArrayBuffer(iv);
+  const aadBytes = keyEnvelopeAad(vaultId);
+  const aadBuffer = toArrayBuffer(aadBytes);
+  let wrappedBytes: ArrayBuffer | undefined;
 
   try {
-    const wrapBuffer = toArrayBuffer(rawDataKey);
-    let wrappedBytes: ArrayBuffer;
-    try {
-      wrappedBytes = await globalThis.crypto.subtle.encrypt(
-        { name: "AES-GCM", iv: toArrayBuffer(iv), additionalData: toArrayBuffer(keyEnvelopeAad(vaultId)), tagLength: 128 },
-        kek,
-        wrapBuffer
-      );
-    } finally {
-      new Uint8Array(wrapBuffer).fill(0);
-    }
+    wrappedBytes = await globalThis.crypto.subtle.encrypt(
+      { name: "AES-GCM", iv: ivBuffer, additionalData: aadBuffer, tagLength: 128 },
+      kek,
+      wrapBuffer
+    );
 
     const importBuffer = toArrayBuffer(rawDataKey);
     let dataKey: CryptoKey;
@@ -139,17 +139,24 @@ export async function createVaultKeyEnvelope(
       new Uint8Array(importBuffer).fill(0);
     }
 
+    const wrappedKey = encodeBase64(new Uint8Array(wrappedBytes));
     return {
       dataKey,
       envelope: {
         version: VAULT_KEY_ENVELOPE_VERSION,
         algorithm: VAULT_KEY_ENVELOPE_ALGORITHM,
         iv: encodeBase64(iv),
-        wrappedKey: encodeBase64(new Uint8Array(wrappedBytes))
+        wrappedKey
       }
     };
   } finally {
     rawDataKey.fill(0);
+    iv.fill(0);
+    new Uint8Array(wrapBuffer).fill(0);
+    new Uint8Array(ivBuffer).fill(0);
+    aadBytes.fill(0);
+    new Uint8Array(aadBuffer).fill(0);
+    if (wrappedBytes) new Uint8Array(wrappedBytes).fill(0);
   }
 }
 
@@ -161,32 +168,41 @@ export async function unwrapVaultDataKey(
   assertKek(kek);
   assertVaultId(vaultId);
 
-  if (
-    !envelope ||
-    typeof envelope !== "object" ||
-    (envelope as Record<string, unknown>).version !== VAULT_KEY_ENVELOPE_VERSION ||
-    (envelope as Record<string, unknown>).algorithm !== VAULT_KEY_ENVELOPE_ALGORITHM
-  ) {
+  if (!envelope || typeof envelope !== "object" || Array.isArray(envelope)) {
     throw new Error("Unsupported Vault key envelope.");
   }
 
   const candidate = envelope as Record<string, unknown>;
+  const keys = Object.keys(candidate).sort();
+  if (
+    keys.join(",") !== "algorithm,iv,version,wrappedKey" ||
+    candidate.version !== VAULT_KEY_ENVELOPE_VERSION ||
+    candidate.algorithm !== VAULT_KEY_ENVELOPE_ALGORITHM
+  ) {
+    throw new Error("Unsupported Vault key envelope.");
+  }
   const iv = decodeBase64(candidate.iv, IV_BYTES);
   const wrappedKey = decodeBase64(candidate.wrappedKey, KEY_BYTES + 16);
   const wrappedKeyBuffer = toArrayBuffer(wrappedKey);
+  const ivBuffer = toArrayBuffer(iv);
+  const aadBytes = keyEnvelopeAad(vaultId);
+  const aadBuffer = toArrayBuffer(aadBytes);
   let decryptedBuffer: ArrayBuffer;
 
   try {
     decryptedBuffer = await globalThis.crypto.subtle.decrypt(
-      { name: "AES-GCM", iv: toArrayBuffer(iv), additionalData: toArrayBuffer(keyEnvelopeAad(vaultId)), tagLength: 128 },
+      { name: "AES-GCM", iv: ivBuffer, additionalData: aadBuffer, tagLength: 128 },
       kek,
       wrappedKeyBuffer
     );
   } finally {
-    // The wrapped key is ciphertext, but clear all temporary byte copies anyway.
+    // Clear ciphertext and all temporary copies, including context buffers.
     new Uint8Array(wrappedKeyBuffer).fill(0);
+    new Uint8Array(ivBuffer).fill(0);
+    new Uint8Array(aadBuffer).fill(0);
     wrappedKey.fill(0);
     iv.fill(0);
+    aadBytes.fill(0);
   }
 
   const rawDataKey = new Uint8Array(decryptedBuffer);
@@ -207,5 +223,6 @@ export async function unwrapVaultDataKey(
     }
   } finally {
     rawDataKey.fill(0);
+    new Uint8Array(decryptedBuffer).fill(0);
   }
 }

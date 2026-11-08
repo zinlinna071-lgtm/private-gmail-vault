@@ -6,13 +6,67 @@ on:
       - main
       - "setup/**"
       - "feature/**"
+      - "design/**"
   pull_request:
 
 permissions:
   contents: read
 
 jobs:
+  argon2-wasm-poc:
+    name: Argon2id browser-WASM proof of concept
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Rust and WebAssembly target
+        uses: dtolnay/rust-toolchain@1.88.0
+        with:
+          targets: wasm32-unknown-unknown
+          components: rustfmt
+      - name: Check Rust formatting
+        run: cargo fmt --manifest-path security/argon2-wasm/Cargo.toml -- --check
+      - name: Run native RFC 9106 known-answer and input-validation tests
+        run: cargo test --manifest-path security/argon2-wasm/Cargo.toml
+      - name: Compile isolated browser WebAssembly module
+        run: cargo build --manifest-path security/argon2-wasm/Cargo.toml --target wasm32-unknown-unknown --release
+      - name: Set up Node.js for generated binding smoke tests
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install pinned wasm-bindgen CLI
+        run: cargo install wasm-bindgen-cli --version 0.2.130 --locked
+      - name: Generate Node.js bindings for isolated smoke testing
+        run: |
+          wasm-bindgen \
+            --target nodejs \
+            --out-dir security/argon2-wasm/pkg \
+            --out-name vault_argon2_wasm_poc \
+            security/argon2-wasm/target/wasm32-unknown-unknown/release/vault_argon2_wasm_poc.wasm
+      - name: Exercise generated WASM JavaScript boundary
+        run: node security/argon2-wasm/tests/wasm-smoke.cjs
+      - name: Generate and package browser Worker WASM assets
+        run: |
+          wasm-bindgen \
+            --target web \
+            --out-dir security/argon2-wasm/pkg-web \
+            --out-name vault_argon2_wasm_poc \
+            security/argon2-wasm/target/wasm32-unknown-unknown/release/vault_argon2_wasm_poc.wasm
+          npm run package:argon2-wasm
+      - name: Upload un-deployed WebAssembly build and binding artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: argon2-wasm-poc-${{ github.sha }}
+          path: |
+            security/argon2-wasm/target/wasm32-unknown-unknown/release/vault_argon2_wasm_poc.wasm
+            security/argon2-wasm/Cargo.lock
+            security/argon2-wasm/pkg/
+            public/crypto/argon2/
+          if-no-files-found: error
+          retention-days: 7
+
   verify:
+    needs: argon2-wasm-poc
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -34,6 +88,17 @@ jobs:
       - name: Checkout
         id: checkout
         uses: actions/checkout@v4
+      - name: Download browser Worker WASM assets
+        uses: actions/download-artifact@v4
+        with:
+          name: argon2-wasm-poc-${{ github.sha }}
+          path: .
+      - name: Verify packaged browser Worker WASM assets
+        run: |
+          test -s public/crypto/argon2/vault_argon2_wasm_poc.js
+          test -s public/crypto/argon2/vault_argon2_wasm_poc_bg.wasm
+          test -s public/crypto/argon2/vault_argon2_wasm_poc.d.ts
+          test -s public/crypto/argon2/manifest.json
       - name: Set up Node.js
         id: setup_node
         uses: actions/setup-node@v4
@@ -41,7 +106,7 @@ jobs:
           node-version: 22
       - name: Install dependencies
         id: install_dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps --no-audit --no-fund
       - name: Dependency security audit
         id: dependency_security_audit
         run: |
@@ -67,6 +132,15 @@ jobs:
       - name: PostgreSQL webhook migration tests
         id: postgres_migration_tests
         run: bash scripts/test-github-webhook-migration.sh
+      - name: Curator registration PostgreSQL migration tests
+        id: curator_postgres_migration_tests
+        run: bash scripts/test-curator-registration-migration.sh
+      - name: Secondary Vault quota PostgreSQL migration tests
+        id: secondary_vault_quota_tests
+        run: bash scripts/test-secondary-vault-quota.sh
+      - name: Client Vault key metadata PostgreSQL migration tests
+        id: client_vault_metadata_tests
+        run: bash scripts/test-client-vault-key-metadata.sh
       - name: Production build
         id: production_build
         run: npm run build
@@ -83,6 +157,9 @@ jobs:
           TESTS_OUTCOME: ${{ steps.automated_tests.outcome || 'not-run' }}
           TYPECHECK_OUTCOME: ${{ steps.type_check.outcome || 'not-run' }}
           POSTGRES_TESTS_OUTCOME: ${{ steps.postgres_migration_tests.outcome || 'not-run' }}
+          CURATOR_POSTGRES_OUTCOME: ${{ steps.curator_postgres_migration_tests.outcome || 'not-run' }}
+          SECONDARY_QUOTA_OUTCOME: ${{ steps.secondary_vault_quota_tests.outcome || 'not-run' }}
+          CLIENT_VAULT_METADATA_OUTCOME: ${{ steps.client_vault_metadata_tests.outcome || 'not-run' }}
           BUILD_OUTCOME: ${{ steps.production_build.outcome || 'not-run' }}
         run: |
           {
@@ -100,6 +177,9 @@ jobs:
             echo "| Automated tests | $TESTS_OUTCOME |"
             echo "| Type check | $TYPECHECK_OUTCOME |"
             echo "| PostgreSQL migration tests | $POSTGRES_TESTS_OUTCOME |"
+            echo "| Curator PostgreSQL migration tests | $CURATOR_POSTGRES_OUTCOME |"
+            echo "| Secondary Vault quota PostgreSQL tests | $SECONDARY_QUOTA_OUTCOME |"
+            echo "| Client Vault key metadata PostgreSQL tests | $CLIENT_VAULT_METADATA_OUTCOME |"
             echo "| Production build | $BUILD_OUTCOME |"
           } | tee ci-diagnostics.md
           cat ci-diagnostics.md >> "$GITHUB_STEP_SUMMARY"

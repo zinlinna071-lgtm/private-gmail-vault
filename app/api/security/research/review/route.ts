@@ -5,6 +5,7 @@ import { isJsonContentType } from "@/lib/auth/content-type";
 import { readBoundedJson } from "@/lib/auth/bounded-json";
 import { hasPriorApprovalByActor, reviewSubmissionSchema, nextResearchWorkflowState } from "@/lib/security-research/workflow";
 import { getResearchActor } from "@/lib/security-research/workflow-auth";
+import { hasActiveResearchReviewAssignment, type ResearchReviewStage } from "@/lib/security-research/review-assignments";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -42,6 +43,13 @@ export async function POST(request: Request) {
       : stage === "securityPrivacy" ? "SECURITY_PRIVACY_REVIEW"
       : stage === "bilingual" ? "BILINGUAL_REVIEW" : "OWNER_APPROVAL";
     if (draft.workflow_state !== expectedState) return reply({ error: "This review stage is not currently open." }, 409);
+
+    if (stage !== "owner") {
+      const assignmentStage: ResearchReviewStage = stage === "securityPrivacy" ? "security_privacy" : stage;
+      if (!(await hasActiveResearchReviewAssignment(draftId, assignmentStage, actor.id))) {
+        return reply({ error: "An active assignment for this draft and review stage is required." }, 403);
+      }
+    }
 
     const reviews = (draft.reviews && typeof draft.reviews === "object" && !Array.isArray(draft.reviews))
       ? draft.reviews as Record<string, unknown> : {};

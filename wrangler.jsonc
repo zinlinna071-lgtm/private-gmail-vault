@@ -7,8 +7,8 @@
   "workers_dev": true,
   "previews": {
     "vars": {
-      "NEXT_PUBLIC_SUPABASE_URL": "https://wqejgaqjagdvgkpwuhnr.supabase.co",
-      "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_DE2zZidVpfxetvYKkiFouA_tAf_s9cu"
+      "NEXT_PUBLIC_SUPABASE_URL": "https://preview-disabled.invalid",
+      "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "preview-disabled-no-project-key"
     }
   },
   "preview_urls": true,

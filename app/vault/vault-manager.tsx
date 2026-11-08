@@ -54,6 +54,12 @@ export default function VaultManager() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const inspectorRef = useRef<HTMLDialogElement>(null);
+  const firstAccountInputRef = useRef<HTMLInputElement>(null);
+  const addAccountButtonRef = useRef<HTMLButtonElement>(null);
+  const wasFormOpenRef = useRef(false);
+  const deleteRecordButtonRef = useRef<HTMLButtonElement>(null);
+  const keepRecordButtonRef = useRef<HTMLButtonElement>(null);
+  const wasDeleteConfirmOpenRef = useRef(false);
 
   const loadItems = useCallback(async () => {
     setLoading(true);
@@ -95,6 +101,24 @@ export default function VaultManager() {
     () => items.find(item => item.id === activeItemId) ?? null,
     [items, activeItemId]
   );
+
+  useEffect(() => {
+    if (showForm) {
+      firstAccountInputRef.current?.focus();
+    } else if (wasFormOpenRef.current) {
+      addAccountButtonRef.current?.focus();
+    }
+    wasFormOpenRef.current = showForm;
+  }, [showForm]);
+
+  useEffect(() => {
+    if (confirmDelete) {
+      keepRecordButtonRef.current?.focus();
+    } else if (wasDeleteConfirmOpenRef.current) {
+      deleteRecordButtonRef.current?.focus();
+    }
+    wasDeleteConfirmOpenRef.current = confirmDelete;
+  }, [confirmDelete]);
 
   useEffect(() => {
     const dialog = inspectorRef.current;
@@ -192,11 +216,13 @@ export default function VaultManager() {
 
   async function copyValue(value: string, label: string) {
     if (!value) return;
+    setError("");
+    setMessage("");
     try {
       await navigator.clipboard.writeText(value);
       setMessage(label + " copied to clipboard.");
     } catch {
-      setError("Clipboard access is unavailable. Please copy the value manually.");
+      setError("Clipboard access is unavailable. Please copy the revealed value manually.");
     }
   }
 
@@ -246,7 +272,7 @@ export default function VaultManager() {
             <option value="name">Name A–Z</option>
           </select>
         </label>
-        <button className="museum-add-button" type="button" onClick={startNew}>
+        <button ref={addAccountButtonRef} className="museum-add-button" type="button" onClick={startNew}>
           <span aria-hidden="true">＋</span> Add account
         </button>
       </div>
@@ -255,11 +281,11 @@ export default function VaultManager() {
       {message && <p className="museum-feedback is-success" role="status">{message}</p>}
 
       {showForm && (
-        <form className="museum-record-form" onSubmit={save}>
+        <form className="museum-record-form" onSubmit={save} aria-labelledby="museum-form-title">
           <div className="museum-form-heading">
             <div>
               <span className="museum-section-kicker">{editingId ? "REFINE AN ARCHIVE RECORD" : "ADD TO YOUR COLLECTION"}</span>
-              <h3>{editingId ? "Edit account record" : "A new account record"}</h3>
+              <h3 id="museum-form-title">{editingId ? "Edit account record" : "A new account record"}</h3>
               <p>Details are protected and only shown when you open this record.</p>
             </div>
             <button className="museum-close-button" type="button" onClick={closeForm} aria-label="Close form">×</button>
@@ -269,6 +295,7 @@ export default function VaultManager() {
             <label>
               <span>Account name</span>
               <input
+                ref={firstAccountInputRef}
                 autoComplete="off"
                 maxLength={100}
                 required
@@ -391,7 +418,7 @@ export default function VaultManager() {
           <div className="museum-inspector-content">
             <div className="museum-inspector-topline">
               <span>PRIVATE ARCHIVE / RECORD DETAILS</span>
-              <button className="museum-close-button" type="button" onClick={closeInspector} aria-label="Close record">×</button>
+              <button className="museum-close-button" type="button" autoFocus onClick={closeInspector} aria-label="Close record">×</button>
             </div>
             <div className="museum-inspector-art">
               <span className="museum-section-kicker">COLLECTION OBJECT</span>
@@ -406,17 +433,17 @@ export default function VaultManager() {
 
             <div className="museum-detail-fields">
               <section>
-                <div className="museum-detail-label"><span>EMAIL / USERNAME</span><button type="button" onClick={() => setShowIdentity(value => !value)}>{showIdentity ? "HIDE" : "REVEAL"}</button></div>
+                <div className="museum-detail-label"><span>EMAIL / USERNAME</span><button type="button" aria-pressed={showIdentity} onClick={() => setShowIdentity(value => !value)}>{showIdentity ? "HIDE" : "REVEAL"}</button></div>
                 <p className="museum-sensitive-value">{showIdentity ? activeItem.username || "No identifier saved" : activeItem.username ? "••••••••••••" : "Not saved"}</p>
                 {showIdentity && activeItem.username && <button className="museum-inline-action" type="button" onClick={() => void copyValue(activeItem.username, "Identifier")}>Copy identifier</button>}
               </section>
               <section>
-                <div className="museum-detail-label"><span>PASSWORD</span><button type="button" onClick={() => setShowPassword(value => !value)}>{showPassword ? "HIDE" : "REVEAL"}</button></div>
+                <div className="museum-detail-label"><span>PASSWORD</span><button type="button" aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}>{showPassword ? "HIDE" : "REVEAL"}</button></div>
                 <p className="museum-sensitive-value">{showPassword ? activeItem.password || "No password saved" : activeItem.password ? "••••••••••••" : "Not saved"}</p>
                 {showPassword && activeItem.password && <button className="museum-inline-action" type="button" onClick={() => void copyValue(activeItem.password, "Password")}>Copy password</button>}
               </section>
               <section>
-                <div className="museum-detail-label"><span>BACKUP CODES</span><button type="button" onClick={() => setShowCodes(value => !value)}>{showCodes ? "HIDE" : "REVEAL"}</button></div>
+                <div className="museum-detail-label"><span>BACKUP CODES</span><button type="button" aria-pressed={showCodes} onClick={() => setShowCodes(value => !value)}>{showCodes ? "HIDE" : "REVEAL"}</button></div>
                 <pre className="museum-sensitive-value">{showCodes ? activeItem.backupCodes || "No backup codes saved" : activeItem.backupCodes ? "••••••••••••••••" : "Not saved"}</pre>
                 {showCodes && activeItem.backupCodes && <button className="museum-inline-action" type="button" onClick={() => void copyValue(activeItem.backupCodes, "Backup codes")}>Copy backup codes</button>}
               </section>
@@ -428,13 +455,13 @@ export default function VaultManager() {
                 <p>This permanently deletes the saved account record from your Vault.</p>
                 <div>
                   <button className="museum-delete-button" type="button" disabled={deleting} onClick={() => void removeItem(activeItem.id)}>{deleting ? "Removing…" : "Confirm delete"}</button>
-                  <button className="museum-cancel-button" type="button" disabled={deleting} onClick={() => setConfirmDelete(false)}>Keep record</button>
+                  <button ref={keepRecordButtonRef} className="museum-cancel-button" type="button" disabled={deleting} onClick={() => setConfirmDelete(false)}>Keep record</button>
                 </div>
               </div>
             ) : (
               <div className="museum-inspector-actions">
                 <button className="museum-add-button" type="button" onClick={() => startEdit(activeItem)}>Edit record</button>
-                <button className="museum-delete-link" type="button" onClick={() => setConfirmDelete(true)}>Delete record</button>
+                <button ref={deleteRecordButtonRef} className="museum-delete-link" type="button" onClick={() => setConfirmDelete(true)}>Delete record</button>
               </div>
             )}
             <p className="museum-inspector-note">Private details stay concealed until you choose to reveal them. Close this panel when finished.</p>

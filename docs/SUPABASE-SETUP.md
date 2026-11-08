@@ -14,6 +14,8 @@ Migration 003 (recovery claims and encrypted pending Recovery Codes) is present 
 
 Migration 004 (Gmail token encryption format version) is present in the feature branch but has **not** been applied. It adds the `encryption_format_version` column required by the updated Gmail callback and read API. Do not apply it until a read-only live schema/data preflight is completed and the migration is separately approved. Do not deploy the feature branch against a database that has not applied the required migration.
 
+Curator registration claims migration `202611080005_curator_registration_claims.sql` is present in the design branch but has **not** been applied to any Supabase database. It must be applied to the intended environment before the Curator challenge flow can work. It creates server-only challenge/claim tables and atomic consume functions. Apply only after explicit owner approval; do not run against production without that approval.
+
 The expected result after migration 002 is:
 - vault_profiles includes login_id, recovery_code_hash, and recovery_code_salt.
 - vault_auth_rate_limits exists.

@@ -1,0 +1,118 @@
+/* Unified motion language — interaction and state transitions only.
+   Decorative motion never represents telemetry, attack activity, or security status. */
+:root {
+  --motion-quick: 140ms;
+  --motion-base: 240ms;
+  --motion-emphasis: 420ms;
+  --motion-enter: 560ms;
+  --motion-ease: cubic-bezier(.2,.75,.25,1);
+  --motion-spring: cubic-bezier(.18,.82,.22,1);
+  --surface-line: rgba(132, 177, 190, .18);
+  --surface-glow: rgba(71, 222, 190, .13);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .entry-shell .entry-nav,
+  .entry-shell .entry-copy,
+  .entry-shell .auth-card,
+  .security-shell .security-nav,
+  .security-shell .security-hero-copy,
+  .security-shell .security-section,
+  .security-shell .security-footer {
+    animation: architecture-arrive var(--motion-enter) var(--motion-ease) both;
+  }
+  .entry-shell .auth-card { animation-delay: 70ms; }
+  .security-shell .security-hero-copy { animation-delay: 70ms; }
+  .security-shell .security-section:nth-of-type(2) { animation-delay: 90ms; }
+  .security-shell .security-section:nth-of-type(3) { animation-delay: 150ms; }
+  .security-shell .security-section:nth-of-type(4) { animation-delay: 210ms; }
+  .museum-asset-card,
+  .museum-record-form,
+  .museum-inspector-content,
+  .museum-feedback,
+  .museum-empty-state,
+  .museum-delete-confirm,
+  .security-module,
+  .security-evidence,
+  .surface-step {
+    animation: architecture-arrive 380ms var(--motion-ease) both;
+  }
+  .museum-asset-card {
+    transition: transform var(--motion-base) var(--motion-spring),
+      border-color var(--motion-base) ease,
+      box-shadow var(--motion-base) ease,
+      background-color var(--motion-base) ease;
+    transform-origin: center bottom;
+  }
+  .museum-asset-card:hover,
+  .museum-asset-card:focus-visible {
+    transform: translateY(-5px);
+    border-color: rgba(104, 231, 200, .62);
+    box-shadow: 0 18px 42px rgba(0,0,0,.24), 0 0 26px var(--surface-glow);
+  }
+  .museum-asset-card:active { transform: translateY(-1px) scale(.992); }
+  .museum-artwork-orbit { transition: transform 700ms var(--motion-spring), opacity 400ms ease; }
+  .museum-asset-card:hover .museum-artwork-orbit,
+  .museum-asset-card:focus-visible .museum-artwork-orbit { transform: scale(1.08) rotate(8deg); opacity: .9; }
+  .museum-record-form,
+  .museum-feedback,
+  .museum-delete-confirm { transform-origin: top center; }
+  .museum-inspector[open] .museum-inspector-content { animation: inspector-arrive 360ms var(--motion-spring) both; }
+  .museum-inspector::backdrop { animation: backdrop-arrive 220ms ease both; }
+  .museum-add-button,
+  .museum-cancel-button,
+  .museum-delete-button,
+  .museum-close-button,
+  .museum-inline-action,
+  .museum-detail-label button,
+  .security-shell a,
+  .security-shell button {
+    transition: color var(--motion-quick) ease, background-color var(--motion-quick) ease,
+      border-color var(--motion-quick) ease, box-shadow var(--motion-base) ease,
+      transform var(--motion-quick) var(--motion-spring);
+  }
+  .museum-add-button:hover,
+  .museum-cancel-button:hover,
+  .museum-inline-action:hover { transform: translateY(-2px); }
+  .security-module,
+  .security-evidence,
+  .surface-step {
+    transition: transform var(--motion-base) var(--motion-spring),
+      border-color var(--motion-base) ease, box-shadow var(--motion-base) ease;
+  }
+  .security-module:hover,
+  .security-evidence:hover,
+  .surface-step:hover { transform: translateY(-3px); border-color: rgba(104,231,200,.4); }
+  .entry-shell .auth-form input,
+  .entry-shell .password-field,
+  .entry-shell .tab,
+  .entry-shell .primary-button { transition-duration: var(--motion-base); }
+  .entry-shell .auth-feedback-enter { animation: feedback-arrive 300ms var(--motion-spring) both; }
+  .entry-shell .auth-panel-enter { animation: inspector-arrive 360ms var(--motion-spring) both; }
+  .entry-shell .auth-heading-enter { animation: heading-arrive 320ms var(--motion-spring) both; }
+  .entry-shell .vault-entry-transition { animation: backdrop-arrive 240ms ease both; }
+}
+@keyframes architecture-arrive {
+  from { opacity: 0; transform: translate3d(0, 12px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@keyframes inspector-arrive {
+  from { opacity: 0; transform: translate3d(0, 16px, 0) scale(.985); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes feedback-arrive {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes heading-arrive {
+  from { opacity: 0; transform: translateY(7px); filter: blur(3px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+@keyframes backdrop-arrive { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

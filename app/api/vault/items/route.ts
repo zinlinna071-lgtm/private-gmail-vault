@@ -56,6 +56,7 @@ export async function GET() {
     const { data, error } = await admin.from("vault_items")
       .select("id,ciphertext,iv,auth_tag,created_at,updated_at")
       .eq("user_id", user.id)
+      .eq("encryption_scheme", "legacy-server-v1")
       .order("updated_at", { ascending: false });
     if (error) throw error;
 
@@ -105,16 +106,33 @@ export async function POST(request: Request) {
     stage = "admin_client";
     const admin = createSupabaseAdminClient();
 
-    stage = "insert";
-    const { data, error } = await admin.from("vault_items").insert({
-      id,
-      user_id: user.id,
-      ciphertext: encrypted.ciphertext,
-      iv: encrypted.iv,
-      auth_tag: encrypted.authTag
-    }).select("id,created_at,updated_at").single();
-    if (error) throw error;
-    return response({ item: { id, ...parsed.data, createdAt: data.created_at, updatedAt: data.updated_at } }, 201);
+    stage = "insert_with_quota";
+    const { data, error } = await admin.rpc("create_vault_item_with_quota", {
+      p_user_id: user.id,
+      p_id: id,
+      p_ciphertext: encrypted.ciphertext,
+      p_iv: encrypted.iv,
+      p_auth_tag: encrypted.authTag
+    });
+    if (error) {
+      const code = typeof error.code === "string" ? error.code : "";
+      const message = typeof error.message === "string" ? error.message : "";
+      if (code === "23514" && message === "VAULT_SECONDARY_LIMIT_REACHED") {
+        return response({ error: "A Secondary Vault can store up to four records." }, 409);
+      }
+      throw error;
+    }
+
+    const created = Array.isArray(data) ? data[0] : null;
+    if (!created || created.id !== id) throw new Error("Vault record insert returned no row.");
+    return response({
+      item: {
+        id,
+        ...parsed.data,
+        createdAt: created.created_at,
+        updatedAt: created.updated_at
+      }
+    }, 201);
   } catch (error) {
     logVaultFailure("POST", stage, error);
     return response({ error: "Could not save this account. Check the server encryption setup." }, 500);

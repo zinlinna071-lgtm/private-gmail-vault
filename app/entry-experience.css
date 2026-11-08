@@ -273,3 +273,62 @@
   .entry-shell .auth-card .tab { animation:none !important; }
   .entry-shell .auth-form input,.entry-shell .password-toggle,.entry-shell .primary-button,.entry-shell .secondary-button { transition:none !important; }
 }
+
+
+/* Separate pre-registration acknowledgement — intentionally distinct from Vault entry transition */
+.registration-notice-backdrop {
+  position:fixed; z-index:1000; inset:0; display:grid; place-items:center;
+  overflow-y:auto; padding:22px;
+  background:rgba(2,9,16,.82); backdrop-filter:blur(16px);
+  animation:registration-backdrop-in .22s ease both;
+}
+.registration-notice {
+  position:relative; width:min(100%,650px); max-height:min(88vh,820px); overflow-y:auto;
+  padding:clamp(20px,4vw,34px); border:1px solid #4b897f; border-radius:20px;
+  color:#e9fff8; background:linear-gradient(150deg,#102a38 0%,#0a1a28 58%,#0b2029 100%);
+  box-shadow:0 32px 110px #000b,0 0 48px #48d9b51c,inset 0 1px #c8fff21a;
+  animation:registration-dialog-in .3s cubic-bezier(.2,.8,.2,1) both;
+}
+.registration-notice-topline { display:flex; align-items:center; justify-content:space-between; gap:14px; color:#8ce5c9; font-size:9px; font-weight:900; letter-spacing:.18em; }
+.registration-notice-mark { display:grid; place-items:center; width:30px; height:30px; border:1px solid #bb9d63; border-radius:50%; color:#f2d49a; background:#6b51251c; font-size:15px; }
+.registration-notice h2 { margin:17px 0 8px; color:#f1fff9; font-size:clamp(24px,4vw,34px); line-height:1.12; letter-spacing:-.045em; }
+.registration-notice-intro { margin:0; color:#a9c2c7; font-size:12px; line-height:1.7; }
+.registration-notice-content { display:grid; gap:0; margin:22px 0 17px; border-top:1px solid #294c54; }
+.registration-notice-content article { display:grid; grid-template-columns:34px minmax(0,1fr); gap:12px; padding:15px 0; border-bottom:1px solid #294c54; }
+.registration-notice-content article>b { display:grid; place-items:center; width:29px; height:29px; border:1px solid #39786e; border-radius:9px; color:#8ce8ca; background:#153b3c; font-size:10px; }
+.registration-notice-content strong { display:block; color:#e1fff4; font-size:12px; }
+.registration-notice-content p { margin:5px 0 0; color:#a3bbc1; font-size:11px; line-height:1.7; }
+.registration-notice-content a { display:inline-block; margin-top:8px; color:#8debd0; font-size:10px; font-weight:800; text-decoration:none; }
+.registration-notice-content a:hover { color:#d0ffef; text-decoration:underline; }
+.registration-notice-final { margin:0; padding:13px 14px; border:1px solid #786342; border-radius:11px; color:#d7c8a7; background:#6a512318; font-size:10px; line-height:1.7; }
+.registration-notice-actions { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:10px; margin-top:19px; }
+.registration-notice-actions button { min-height:45px; padding:0 17px; border-radius:10px; font-size:10px; font-weight:900; cursor:pointer; }
+.registration-notice-actions .primary-button { border:1px solid #a1ffe4; color:#06251f; background:linear-gradient(100deg,#62e9c0,#a2f5e0 48%,#62d9e9); }
+.registration-notice-actions .secondary-button { border:1px solid #477a78; color:#d6fff3; background:#12343e; }
+.registration-notice-actions button:focus-visible { outline:2px solid #c1ffed; outline-offset:3px; }
+@keyframes registration-backdrop-in { from { opacity:0; } to { opacity:1; } }
+@keyframes registration-dialog-in { from { opacity:0; transform:translateY(12px) scale(.985); } to { opacity:1; transform:translateY(0) scale(1); } }
+@media(max-width:560px) {
+  .registration-notice-backdrop { align-items:end; padding:8px; }
+  .registration-notice { max-height:92vh; padding:19px 16px; border-radius:17px; }
+  .registration-notice-content article { grid-template-columns:29px minmax(0,1fr); gap:9px; padding:12px 0; }
+  .registration-notice-actions { display:grid; grid-template-columns:1fr; }
+  .registration-notice-actions button { width:100%; min-height:48px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .registration-notice-backdrop,.registration-notice { animation:none !important; }
+}
+
+/* Visible Create tab: explain the server-verified Curator gate before submission */
+.registration-gate-hint {
+  display:grid; gap:8px; margin:0 0 17px; padding:14px 15px;
+  border:1px solid #416d69; border-radius:10px;
+  background:linear-gradient(135deg,#102d32 0%,#102433 100%);
+}
+.registration-gate-hint strong { color:#9debd1; font-size:9px; font-weight:900; letter-spacing:.13em; }
+.registration-gate-hint p { margin:0; color:#b3cbd0; font-size:11px; line-height:1.75; }
+.registration-gate-hint p b { color:#e2fff3; }
+.registration-gate-hint a { width:fit-content; color:#9cebd0; font-size:10px; font-weight:900; text-decoration:none; }
+.registration-gate-hint a:hover { color:#d5fff0; text-decoration:underline; }
+.registration-gate-hint>span { color:#9debd1; font-size:9px; font-weight:900; letter-spacing:.1em; }
+.registration-gate-hint a:focus-visible { outline:2px solid #c1ffed; outline-offset:3px; border-radius:3px; }

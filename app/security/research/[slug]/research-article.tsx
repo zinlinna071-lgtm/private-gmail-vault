@@ -17,6 +17,7 @@ export function ResearchArticle({ publication }: { publication: ResearchPublicat
           <button type="button" aria-pressed={isBurmese} onClick={() => setLanguage("my")}>မြန်မာ</button>
         </div>
       </div>
+      <div className="research-article-edition" key={language}>
       <p className="research-abstract-label">{isBurmese ? "အနှစ်ချုပ်" : "ABSTRACT"}</p>
       <p className="research-abstract">{edition.abstract}</p>
       <div className="research-provenance">
@@ -37,6 +38,7 @@ export function ResearchArticle({ publication }: { publication: ResearchPublicat
         </div>
       </section>
       <p className="research-disclaimer">{isBurmese ? "ဤစာတမ်း၏ ရလဒ်များသည် ဖော်ပြထားသော စမ်းသပ်မှုအတိုင်းအတာအတွင်းသာ အကျုံးဝင်သည်။ လုံခြုံရေးအသိအမှတ်ပြုလက်မှတ် မဟုတ်ပါ။" : "Results apply only to the stated test scope. This paper is not a security certification."}</p>
+      </div>
     </article>
   );
 }

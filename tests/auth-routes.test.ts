@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   createSupabaseAdminClient: vi.fn(),
+  consumeClaim: vi.fn(),
+  deleteCookie: vi.fn(),
   allowAuthAttempt: vi.fn(),
   isSameOriginRequest: vi.fn(),
   normalizeLoginId: vi.fn(),
@@ -33,6 +35,11 @@ vi.mock("@/lib/auth/vault", () => ({
   authEmailForLoginId: mocks.authEmailForLoginId,
   createRecoveryCode: mocks.createRecoveryCode,
   hashRecoveryCode: mocks.hashRecoveryCode
+}));
+vi.mock("@/lib/auth/curator-claim", () => ({
+  CURATOR_CLAIM_COOKIE: "vault_curator_claim",
+  CURATOR_SESSION_COOKIE: "vault_curator_session",
+  hashOpaqueToken: (value: string) => "hashed-" + value
 }));
 vi.mock("@/lib/auth/recovery-encryption", () => ({
   encryptPendingRecoveryCode: mocks.encryptPendingRecoveryCode,
@@ -69,6 +76,7 @@ describe("Vault registration and login API", () => {
     vi.clearAllMocks();
     mocks.createSupabaseAdminClient.mockReturnValue({
       auth: { admin: { createUser: mocks.createUser, deleteUser: mocks.deleteUser } },
+      rpc: mocks.consumeClaim,
       from: () => ({ insert: mocks.insert, select: () => ({ eq: () => ({ maybeSingle: mocks.maybeSingle }) }) })
     });
     mocks.allowAuthAttempt.mockResolvedValue(true);
@@ -99,9 +107,55 @@ describe("Vault registration and login API", () => {
       },
       error: null
     });
-    mocks.cookies.mockResolvedValue({ getAll: () => [], set: vi.fn() });
+    mocks.consumeClaim.mockResolvedValue({ data: true, error: null });
+    mocks.deleteCookie.mockImplementation(() => undefined);
+    mocks.cookies.mockResolvedValue({
+      getAll: () => [], set: vi.fn(), delete: mocks.deleteCookie,
+      get: (name: string) => name === "vault_curator_claim" ? { value: "claim-token" }
+        : name === "vault_curator_session" ? { value: "session-token" } : undefined
+    });
     process.env.NEXT_PUBLIC_SUPABASE_URL = "https://project.supabase.co";
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "public-test-key";
+  });
+
+  it("rejects registration when the responsibility notice was not accepted", async () => {
+    const response = await register(request("/api/auth/register", {
+      loginId: "myvault",
+      password: "a-strong-master-password"
+    }));
+
+    expect(response.status).toBe(428);
+    expect(mocks.createUser).not.toHaveBeenCalled();
+    expect(mocks.consumeClaim).not.toHaveBeenCalled();
+  });
+
+  it("rejects registration when the Curator claim is missing", async () => {
+    mocks.cookies.mockResolvedValue({
+      getAll: () => [], set: vi.fn(), delete: mocks.deleteCookie,
+      get: (name: string) => name === "vault_curator_session" ? { value: "session-token" } : undefined
+    });
+    const response = await register(request("/api/auth/register", {
+      responsibilityAccepted: true,
+      loginId: "myvault",
+      password: "a-strong-master-password"
+    }));
+
+    expect(response.status).toBe(428);
+    expect(mocks.createUser).not.toHaveBeenCalled();
+    expect(mocks.consumeClaim).not.toHaveBeenCalled();
+  });
+
+  it("rejects expired, mismatched, or already-used Curator claims", async () => {
+    mocks.consumeClaim.mockResolvedValue({ data: false, error: null });
+    const response = await register(request("/api/auth/register", {
+      responsibilityAccepted: true,
+      loginId: "myvault",
+      password: "a-strong-master-password"
+    }));
+
+    expect(response.status).toBe(403);
+    expect(mocks.createUser).not.toHaveBeenCalled();
+    expect(mocks.deleteCookie).not.toHaveBeenCalled();
   });
 
   it("returns a safe client error for an invalid Login ID", async () => {
@@ -122,7 +176,7 @@ describe("Vault registration and login API", () => {
   it("returns a safe client error for a short registration Master Password", async () => {
     mocks.validatePassword.mockImplementation(() => { throw new Error("private password policy detail"); });
 
-    const response = await register(request("/api/auth/register", {
+    const response = await register(request("/api/auth/register", { responsibilityAccepted: true,
       loginId: "myvault",
       password: "short"
     }));
@@ -181,6 +235,7 @@ describe("Vault registration and login API", () => {
 
   it("creates the profile with a pending, encrypted Recovery Code", async () => {
     const response = await register(request("/api/auth/register", {
+      responsibilityAccepted: true,
       loginId: "myvault",
       password: "a-strong-master-password"
     }));
@@ -190,6 +245,11 @@ describe("Vault registration and login API", () => {
     expect(body.success).toBe(true);
     expect(body.recoveryCode).toBe(recoveryCode);
     expect(body.requiresAcknowledgement).toBe(true);
+    expect(mocks.consumeClaim).toHaveBeenCalledWith("consume_curator_registration_claim", {
+      p_claim_hash: "hashed-claim-token",
+      p_session_hash: "hashed-session-token"
+    });
+    expect(mocks.deleteCookie).toHaveBeenCalledWith("vault_curator_claim");
     expect(mocks.insert).toHaveBeenCalledWith(expect.objectContaining({
       user_id: "user-123",
       login_id: "myvault",
@@ -202,6 +262,7 @@ describe("Vault registration and login API", () => {
   it("removes the newly created auth user if profile creation fails", async () => {
     mocks.insert.mockResolvedValue({ error: new Error("insert failed") });
     const response = await register(request("/api/auth/register", {
+      responsibilityAccepted: true,
       loginId: "myvault",
       password: "a-strong-master-password"
     }));
@@ -255,6 +316,7 @@ describe("Vault registration and login API", () => {
   it("does not expose unexpected registration exception details", async () => {
     mocks.createUser.mockRejectedValue(new Error("private auth provider detail"));
     const response = await register(request("/api/auth/register", {
+      responsibilityAccepted: true,
       loginId: "myvault",
       password: "a-strong-master-password"
     }));
@@ -280,6 +342,7 @@ describe("Vault registration and login API", () => {
   it("keeps the initial Recovery Code recoverable when automatic sign-in fails", async () => {
     mocks.signInWithPassword.mockResolvedValue({ error: new Error("temporary sign-in failure") });
     const response = await register(request("/api/auth/register", {
+      responsibilityAccepted: true,
       loginId: "myvault",
       password: "a-strong-master-password"
     }));
