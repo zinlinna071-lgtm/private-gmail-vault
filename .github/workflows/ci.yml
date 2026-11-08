@@ -23,6 +23,7 @@ jobs:
         uses: dtolnay/rust-toolchain@1.86.0
         with:
           targets: wasm32-unknown-unknown
+          components: rustfmt
       - name: Check Rust formatting
         run: cargo fmt --manifest-path security/argon2-wasm/Cargo.toml -- --check
       - name: Run native RFC 9106 known-answer and input-validation tests
