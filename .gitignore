@@ -15,3 +15,6 @@ dist/
 .wrangler/
 .dev.vars*
 cloudflare-env.d.ts
+
+# Generated Argon2id browser assets (rebuilt from the pinned Rust/WASM toolchain)
+/public/crypto/argon2/
