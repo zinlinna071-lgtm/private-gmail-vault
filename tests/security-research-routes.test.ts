@@ -176,7 +176,7 @@ describe("private research route authorization", () => {
 
     expect(response.status).toBe(403);
     expect(mocks.hasActiveResearchReviewAssignment).toHaveBeenCalledWith(draftId, "technical", reviewerId);
-    expect(query.update).toBeUndefined();
+    expect("update" in query).toBe(false);
   });
 
 });
