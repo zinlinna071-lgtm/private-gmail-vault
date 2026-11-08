@@ -66,6 +66,38 @@ const puzzles: Puzzle[] = [
     myExplanation: "မှန်ပါတယ်။ Password Record တစ်ခုစီအတွက် Cryptographically Secure Random Salt အသစ် သုံးပြီး Verifier နဲ့အတူ သိမ်းပါ။ Salt ကို Password လို လျှို့ဝှက်ထားဖို့ မလိုပါဘူး။",
     hint: "A salt should prevent identical passwords from producing identical stored verifiers across accounts."
   }
+  {
+    id: "aad",
+    category: "CONTEXT BINDING",
+    title: "The misplaced record",
+    prompt: "An encrypted record was created with authenticated additional data (AAD) containing Vault ID A and Record ID 17. Someone copies the ciphertext into Record ID 42. During decryption, which context should the application supply?",
+    myPrompt: "Encrypted Record တစ်ခုကို Vault ID A နဲ့ Record ID 17 ပါတဲ့ AAD ဖြင့် ဖန်တီးထားတယ်။ တစ်ယောက်ယောက်က Ciphertext ကို Record ID 42 ထဲ ကူးထည့်လိုက်တယ်။ Decrypt လုပ်တဲ့အခါ ဘယ် Context ကို အသုံးပြုသင့်သလဲ။",
+    options: [
+      { id: "original", label: "Use the original bound context and verify the record identity." },
+      { id: "new", label: "Use Record ID 42 and accept the ciphertext if it decrypts." },
+      { id: "none", label: "Omit AAD so records can be moved freely." }
+    ],
+    answer: "original",
+    explanation: "Correct: reconstruct the expected AAD from the trusted record context and require authentication to pass. A ciphertext copied into a different record context should fail authentication. AAD does not encrypt its contents; it binds context to the authenticated operation.",
+    myExplanation: "မှန်ပါတယ်။ ယုံကြည်ရတဲ့ Record Context ကနေ မျှော်မှန်းထားတဲ့ AAD ကို ပြန်တည်ဆောက်ပြီး Authentication စစ်ဆေးရပါမယ်။ Ciphertext ကို Record တခြားတစ်ခုထဲ ကူးထည့်ထားရင် Context မကိုက်ညီမှုကြောင့် Authentication မအောင်မြင်သင့်ပါဘူး။ AAD ကိုယ်တိုင်က Encrypt လုပ်ထားတာမဟုတ်ပါဘူး။",
+    hint: "AAD is authenticated, not encrypted. Ask which trusted record identity the ciphertext was originally bound to."
+  },
+  {
+    id: "kdf",
+    category: "KEY DERIVATION",
+    title: "The forgotten KDF settings",
+    prompt: "A password-derived key is needed again months later. The verifier metadata stores only the salt, not the KDF algorithm or cost parameters. What should a robust design do?",
+    myPrompt: "လအနည်းငယ်ကြာပြီးနောက် Password ကနေ Key ပြန်ထုတ်ဖို့ လိုလာတယ်။ သိမ်းထားတဲ့ Metadata မှာ Salt ပဲရှိပြီး KDF Algorithm နဲ့ Cost Parameters မပါဘူး။ ကောင်းမွန်တဲ့ Design က ဘာလုပ်သင့်သလဲ။",
+    options: [
+      { id: "guess", label: "Guess the original algorithm and parameters from the output." },
+      { id: "store", label: "Store a versioned KDF identifier and its parameters with the salt." },
+      { id: "default", label: "Always use whatever parameters the newest release defaults to." }
+    ],
+    answer: "store",
+    explanation: "Correct: persist a versioned algorithm identifier and the parameters required to reproduce derivation, alongside the salt. Review and migrate parameters deliberately as hardware and threat models change; do not silently reinterpret old records.",
+    myExplanation: "မှန်ပါတယ်။ Salt နဲ့အတူ Version ပါတဲ့ KDF Algorithm အမည်နဲ့ ပြန်လည်တွက်ချက်ရန်လိုအပ်တဲ့ Parameters တွေကို သိမ်းထားရပါမယ်။ Hardware နဲ့ Threat Model ပြောင်းလဲလာတဲ့အခါ Parameters ကို စနစ်တကျ ပြန်လည်သုံးသပ်ပြီး Migration လုပ်ပါ။",
+    hint: "A future verifier must know exactly which algorithm and work factors produced the stored value."
+  },
 ];
 
 export default function SecurityPuzzleArenaPage() {
@@ -109,11 +141,11 @@ export default function SecurityPuzzleArenaPage() {
 
       <section className="security-hero puzzle-hero">
         <div>
-          <div className="security-kicker">PUBLIC LEARNING STUDIO · 03 CHALLENGES</div>
+          <div className="security-kicker">PUBLIC LEARNING STUDIO · 05 CHALLENGES</div>
           <h1>Think like a defender.<br /><em>Prove the reasoning.</em></h1>
           <p className="security-lead">Work through short security scenarios, choose a defensive decision, and read why it matters. These are deterministic learning puzzles—not attacks, scans, or live telemetry.</p>
           <p className="security-lead" lang="my">လုံခြုံရေးအခြေအနေတွေကို ဖတ်ရှုပြီး ကာကွယ်ရေးဆုံးဖြတ်ချက်ကို ကိုယ်တိုင်ရွေးချယ်ပါ။ အဖြေတစ်ခုစီမှာ ဘာကြောင့် မှန်/မှားသလဲဆိုတာ ရှင်းပြထားပါတယ်။ ဒါတွေဟာ သင်ခန်းစာ Puzzle တွေဖြစ်ပြီး တကယ့် Attack သို့မဟုတ် Live Telemetry မဟုတ်ပါဘူး။</p>
-          <div className="puzzle-meta"><span>LOCAL INTERACTION</span><span>NO NETWORK REQUESTS</span><span>NO PERSONAL DATA</span></div>
+          <div className="puzzle-meta"><span>LOCAL INTERACTION</span><span>NO ANSWER SUBMISSIONS</span><span>NO PERSONAL DATA</span></div>
         </div>
         <aside className="puzzle-score" aria-label="Learning progress">
           <span className="section-index">YOUR PROGRESS</span>
@@ -183,9 +215,9 @@ export default function SecurityPuzzleArenaPage() {
         <span className="section-index">SAFETY & LIMITATIONS</span>
         <h2>A learning fixture—not a security test.</h2>
         <div className="puzzle-boundary-grid">
-          <p><b>What happens</b><br />The page compares your local selection with fixed expected answers and displays authored explanations.</p>
-          <p><b>What does not happen</b><br />No cryptographic attack, network request, URL fetch, shell, code execution, account access, or telemetry collection occurs.</p>
-          <p lang="my"><b>သင်ယူရန်သာ</b><br />ရွေးချယ်ထားတဲ့ အဖြေကို သတ်မှတ်ထားတဲ့ အဖြေနဲ့ နှိုင်းယှဉ်ပြီး ရှင်းပြချက်ပြသတာသာ ဖြစ်ပါတယ်။</p>
+          <p><b>What happens</b><br />The browser compares your selection with fixed expected answers and displays authored explanations. Answers and progress remain in page memory.</p>
+          <p><b>What does not happen</b><br />No cryptographic attack, URL fetch, shell, code execution, account access, or telemetry collection occurs. Puzzle answers are checked in browser memory and are not submitted to an API; normal page delivery and navigation still use the website network.</p>
+          <p lang="my"><b>သင်ယူရန်သာ</b><br />ရွေးချယ်ထားတဲ့ အဖြေကို Browser Memory ထဲမှာပဲ စစ်ဆေးပြီး ရှင်းပြချက်ပြသတာ ဖြစ်ပါတယ်။ အဖြေတွေကို API ဆီ မပို့ပါဘူး။ Website ကို ဖွင့်ခြင်းနဲ့ စာမျက်နှာကူးပြောင်းခြင်းမှာတော့ ပုံမှန် Network အသုံးပြုမှု ရှိပါတယ်။</p>
         </div>
         <p className="puzzle-note">All scenarios are fictional and deterministic. A correct puzzle answer does not certify this application or replace an independent security review.</p>
         <Link href="/security/research-stories/aes-gcm-integrity">Continue to Story 02 · Browser-local tamper demonstration ↗</Link>
