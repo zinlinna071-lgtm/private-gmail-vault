@@ -41,11 +41,13 @@ begin
     from pg_catalog.pg_class as class
    where class.oid = 'public.vault_profiles'::regclass;
 
-  if current_user <> v_table_owner
-     and new.account_type is distinct from 'secondary' then
-    raise exception using
-      errcode = '42501',
-      message = 'OWNER_ROLE_PROVISIONING_REQUIRES_DATABASE_OWNER';
+  if current_user <> v_table_owner then
+    if (tg_op = 'INSERT' and new.account_type is distinct from 'secondary')
+       or (tg_op = 'UPDATE' and new.account_type is distinct from old.account_type) then
+      raise exception using
+        errcode = '42501',
+        message = 'OWNER_ROLE_PROVISIONING_REQUIRES_DATABASE_OWNER';
+    end if;
   end if;
 
   return new;
