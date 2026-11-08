@@ -161,7 +161,8 @@ export class VaultCryptoWorkerClient {
     if (!UUID_PATTERN.test(vaultId)) throw new Error("Invalid Vault ID.");
     const secretBuffer = encodeSecret(unlockSecret);
     const salt = crypto.getRandomValues(new Uint8Array(16));
-    const saltBuffer = salt.buffer.slice(0);
+    const saltBuffer = new ArrayBuffer(16);
+    new Uint8Array(saltBuffer).set(salt);
     salt.fill(0);
     try {
       const result = await this.request<"INITIALIZE", "INITIALIZED">(
