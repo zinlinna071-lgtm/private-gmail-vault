@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { webcrypto } from "node:crypto";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   isVaultWorkerResponse,
   parseVaultWorkerRequest
@@ -20,6 +21,8 @@ function initializeRequest() {
 }
 
 describe("Vault crypto Worker protocol", () => {
+  beforeEach(() => vi.stubGlobal("crypto", webcrypto));
+  afterEach(() => vi.unstubAllGlobals());
   it("accepts a valid initialization request with bounded transferable buffers", () => {
     const request = parseVaultWorkerRequest(initializeRequest());
     expect(request.type).toBe("INITIALIZE");
