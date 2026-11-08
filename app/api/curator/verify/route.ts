@@ -7,11 +7,9 @@ import {
 } from "@/lib/auth/curator-claim";
 import { isSameOriginRequest } from "@/lib/auth/vault";
 import { allowAuthAttempt, AuthRateLimitError } from "@/lib/auth/rate-limit";
+import { isValidCuratorSolution } from "@/lib/auth/curator-puzzle";
 
 export const runtime = "nodejs";
-
-const REQUIRED_MARKS = ["margin", "shelf", "note"];
-const REQUIRED_ORDER = ["email", "backup", "note", "password"];
 
 export async function POST(request: Request) {
   if (!isSameOriginRequest(request)) {
@@ -43,14 +41,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid puzzle response." }, { status: 400 });
   }
   const input = body as Record<string, unknown>;
-  const found = Array.isArray(input.found) ? input.found : [];
-  const order = Array.isArray(input.order) ? input.order : [];
-  const marksCorrect = found.length === REQUIRED_MARKS.length
-    && REQUIRED_MARKS.every(mark => found.includes(mark))
-    && found.every(mark => typeof mark === "string" && REQUIRED_MARKS.includes(mark));
-  const orderCorrect = order.length === REQUIRED_ORDER.length
-    && REQUIRED_ORDER.every((value, index) => order[index] === value);
-  if (!marksCorrect || !orderCorrect) {
+  if (!isValidCuratorSolution(input.found, input.order)) {
     return NextResponse.json({ error: "The archive is not aligned yet. Review the marks and try again." }, { status: 422 });
   }
 
