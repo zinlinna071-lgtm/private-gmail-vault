@@ -161,3 +161,34 @@ Commit `087054f8f1c44d1a78f7c09d3c244ee216ecc37e` adds `scripts/package-argon2-w
 The generated directory is intentionally ignored by Git and is rebuilt from source in CI. It contains no user data or credentials.
 
 This is a packaging verification gate only. The application does not yet load this WASM module, and the current test-only Worker remains separate from the future application Worker. A passing OpenNext packaging check will prove asset inclusion, not production crypto integration or safe client-side Vault behavior. The production deployment pipeline must use the same pinned build step before any future Worker import is enabled.
+
+
+## 11. Application Worker and CI checkpoint — 2026-11-08
+
+The branch now contains an application-facing Worker protocol and client wrapper:
+
+- `lib/vault/crypto-worker.ts` loads the generated browser-target Argon2id WASM glue from the same-origin `/crypto/argon2/` asset paths, derives the KEK inside the dedicated Worker, wraps or unwraps the per-Vault DEK, and performs record encryption/decryption through the non-extractable DEK.
+- `lib/vault/worker-protocol.ts` validates exact message shapes, bounded unlock buffers, fixed KDF profile IDs, Vault/record UUIDs, and encrypted-record envelope structure.
+- `lib/vault/worker-client.ts` provides a typed main-thread client with request correlation, bounded timeouts, safe error mapping, crash/message-error handling, and Worker termination after lock.
+- `tests/vault-worker-client.test.ts` covers request routing, safe error mapping, unexpected responses, crash handling, lock termination, and unreadable messages.
+
+The CI trigger for the browser Worker workflow was expanded to include `lib/vault/**` and `tests/vault-worker-*.test.ts`, so future changes to the application Worker implementation rerun the cross-browser harness.
+
+Latest branch checkpoint:
+- Commit: `721ab43be42f59b1be69387edc63ee2ee6a01662`
+- Main CI: [run 42500036801](https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42500036801) — passed, including tests, typecheck, database migration tests, and production build.
+- Browser Worker compatibility: [run 42500036915](https://github.com/zinlinna071-lgtm/private-gmail-vault/actions/runs/42500036915) — passed in Chromium, Firefox, and WebKit, including generation and packaging of browser WASM assets into the OpenNext output and execution of the application Worker bundle in the browser harness.
+
+### Remaining integration boundary
+
+These are integration primitives, not an enabled client-encrypted Vault:
+- `app/vault/vault-manager.tsx` still sends plaintext account fields to the legacy API.
+- `GET /api/vault/items` still decrypts rows on the server.
+- `POST` and `PUT` still accept plaintext fields and call `item-encryption.ts`.
+- The Worker is not yet connected to the login/unlock lifecycle or active CRUD UI.
+- The server envelope validator is not wired into the active CRUD routes.
+- The existing migration metadata columns do not classify or convert legacy records by themselves.
+
+Do not enable the Worker as a decorative unlock step while CRUD remains plaintext-to-server. The next implementation phase must coordinate: (1) a separate local Vault Unlock Secret and reviewed unlock/recovery lifecycle, (2) persistence and retrieval of the wrapped DEK and KDF metadata, (3) a user-mediated legacy-record migration, (4) ciphertext-only GET/POST/PUT routes, and (5) UI integration that encrypts before every write and decrypts only after local unlock.
+
+No production migration, production secret change, merge, or deployment was performed for this checkpoint. The active Vault remains server-readable and must not be described as zero-knowledge or used for high-value real credentials.
