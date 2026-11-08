@@ -113,6 +113,9 @@ jobs:
       - name: Curator registration PostgreSQL migration tests
         id: curator_postgres_migration_tests
         run: bash scripts/test-curator-registration-migration.sh
+      - name: Secondary Vault quota PostgreSQL migration tests
+        id: secondary_vault_quota_tests
+        run: bash scripts/test-secondary-vault-quota.sh
       - name: Production build
         id: production_build
         run: npm run build
@@ -130,6 +133,7 @@ jobs:
           TYPECHECK_OUTCOME: ${{ steps.type_check.outcome || 'not-run' }}
           POSTGRES_TESTS_OUTCOME: ${{ steps.postgres_migration_tests.outcome || 'not-run' }}
           CURATOR_POSTGRES_OUTCOME: ${{ steps.curator_postgres_migration_tests.outcome || 'not-run' }}
+          SECONDARY_QUOTA_OUTCOME: ${{ steps.secondary_vault_quota_tests.outcome || 'not-run' }}
           BUILD_OUTCOME: ${{ steps.production_build.outcome || 'not-run' }}
         run: |
           {
@@ -148,6 +152,7 @@ jobs:
             echo "| Type check | $TYPECHECK_OUTCOME |"
             echo "| PostgreSQL migration tests | $POSTGRES_TESTS_OUTCOME |"
             echo "| Curator PostgreSQL migration tests | $CURATOR_POSTGRES_OUTCOME |"
+            echo "| Secondary Vault quota PostgreSQL tests | $SECONDARY_QUOTA_OUTCOME |"
             echo "| Production build | $BUILD_OUTCOME |"
           } | tee ci-diagnostics.md
           cat ci-diagnostics.md >> "$GITHUB_STEP_SUMMARY"
