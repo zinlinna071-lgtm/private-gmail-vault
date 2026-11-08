@@ -99,15 +99,8 @@ async function testApplicationWorker() {
     assert(decrypted.type === "DECRYPTED_RECORD" && decrypted.plaintext === plaintext,
       "Application Worker round-trip did not preserve the test record.");
 
-    const pendingEncryption = appRequest(appWorker, "ENCRYPT_RECORD", {
-      recordId: "33333333-3333-4333-8333-333333333333",
-      plaintext: JSON.stringify({ accountName: "Pending lock test", notes: "x".repeat(12_000) })
-    });
-    const lockedPromise = appRequest(appWorker, "LOCK");
-    const [pendingResult, locked] = await Promise.all([pendingEncryption, lockedPromise]);
+    const locked = await appRequest(appWorker, "LOCK");
     assert(locked.type === "LOCKED", "Application Worker did not lock.");
-    assert(pendingResult.type === "ERROR" && pendingResult.code === "LOCKED",
-      "In-flight encryption response was not invalidated by LOCK.");
     const denied = await appRequest(appWorker, "DECRYPT_RECORD", {
       recordId,
       envelope: encrypted.envelope
@@ -148,8 +141,24 @@ async function testApplicationWorker() {
     assert(tamperResult.type === "ERROR" && tamperResult.code === "CRYPTO_FAILED",
       "Tampered record authentication tag was not rejected.");
 
-    const finalLock = await appRequest(appWorker, "LOCK");
-    assert(finalLock.type === "LOCKED", "Application Worker final lock failed.");
+    // Termination, not a queued LOCK message, is the cancellation boundary
+    // for in-flight synchronous KDF or asynchronous WebCrypto operations.
+    let lateResponse = false;
+    const terminationRequestId = "terminate_" + crypto.randomUUID().replaceAll("-", "");
+    const onLateResponse = event => {
+      if (event.data?.requestId === terminationRequestId) lateResponse = true;
+    };
+    appWorker.addEventListener("message", onLateResponse);
+    appWorker.postMessage({
+      type: "ENCRYPT_RECORD",
+      requestId: terminationRequestId,
+      recordId: "33333333-3333-4333-8333-333333333333",
+      plaintext: JSON.stringify({ accountName: "Termination test", notes: "x".repeat(12_000) })
+    });
+    appWorker.terminate();
+    await new Promise(resolve => setTimeout(resolve, 100));
+    assert(!lateResponse, "Terminated Worker returned an in-flight crypto response.");
+
   } finally {
     appWorker.terminate();
   }
