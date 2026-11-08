@@ -32,6 +32,39 @@ export default function SecurityResearchPage() {
         <div className="security-hero-actions"><Link href="/security/research-stories">Story 01 · Why nonce reuse is dangerous ↗</Link><Link href="/security/research-stories/aes-gcm-integrity">Story 02 · See tamper detection in your browser ↗</Link><Link href="/security/puzzle-arena">Puzzle Arena · Test your defensive reasoning ↗</Link><Link href="/security/architecture-explorer">Architecture Explorer · Follow the data and trust boundaries ↗</Link><span>ILLUSTRATIVE · SYNTHETIC DATA</span></div>
       </section>
 
+      <section className="research-explorer-feature" aria-labelledby="research-explorer-title">
+        <div className="research-explorer-copy">
+          <span className="research-explorer-kicker">INTERACTIVE LEARNING / FEATURED EXPERIENCE</span>
+          <h2 id="research-explorer-title">See the architecture.<br /><em>Question every boundary.</em></h2>
+          <p>Move beyond static documentation. Explore the current Vault data path, inspect the trust boundary, and compare implemented components with cryptographic foundations that are not integrated yet.</p>
+          <p lang="my">စာတမ်းဖတ်ရုံနဲ့ မရပ်ပါနဲ့။ လက်ရှိ Vault Data Flow၊ Trust Boundary နဲ့ မချိတ်ဆက်ရသေးတဲ့ Cryptographic Component တွေကို ကိုယ်တိုင်ရွေးချယ်လေ့လာနိုင်ပါတယ်။</p>
+          <div className="research-explorer-actions">
+            <Link href="/security/architecture-explorer">Enter Architecture Explorer <span aria-hidden="true">↗</span></Link>
+            <span>ENGLISH · မြန်မာ · KEYBOARD ACCESSIBLE</span>
+          </div>
+        </div>
+        <div className="research-explorer-art" role="img" aria-label="Static architectural illustration showing browser, API, and encrypted storage around a central trust boundary.">
+          <div className="research-explorer-art-top"><span>ARCHITECTURE STUDY / 001</span><span>STATIC MODEL</span></div>
+          <svg viewBox="0 0 480 300" aria-hidden="true" focusable="false">
+            <defs><linearGradient id="researchFlow" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#86e8c8"/><stop offset="1" stopColor="#5e9bb8"/></linearGradient></defs>
+            <circle cx="240" cy="148" r="115" fill="none" stroke="#7ed9bd" strokeOpacity=".18" strokeDasharray="3 7"/>
+            <circle cx="240" cy="148" r="78" fill="none" stroke="#7ed9bd" strokeOpacity=".35"/>
+            <path d="M95 148 H174 M306 148 H385" stroke="url(#researchFlow)" strokeWidth="1.5"/>
+            <path d="M166 141 L175 148 L166 155 M376 141 L385 148 L376 155" fill="none" stroke="#8de7c7" strokeWidth="1.5"/>
+            <path d="M240 82 L261 95 V126 C261 143 252 155 240 163 C228 155 219 143 219 126 V95 Z" fill="#123a3c" stroke="#8de7c7" strokeWidth="1.5"/>
+            <path d="M230 121 L237 128 L251 111" fill="none" stroke="#c5ffe8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <text x="240" y="190" textAnchor="middle" fill="#d7f7e9" fontSize="10" letterSpacing="2">TRUST BOUNDARY</text>
+            <rect x="14" y="119" width="82" height="58" rx="8" fill="#102c37" stroke="#4f9b82"/>
+            <text x="55" y="143" textAnchor="middle" fill="#d9f4eb" fontSize="9">BROWSER</text><text x="55" y="158" textAnchor="middle" fill="#7fb6a8" fontSize="7">CLIENT</text>
+            <rect x="384" y="119" width="82" height="58" rx="8" fill="#2a2521" stroke="#ad805d"/>
+            <text x="425" y="143" textAnchor="middle" fill="#f4e5d8" fontSize="9">API</text><text x="425" y="158" textAnchor="middle" fill="#c3a58d" fontSize="7">SERVER</text>
+            <text x="240" y="35" textAnchor="middle" fill="#7da9a3" fontSize="8" letterSpacing="2">CURRENT DATA PATH · NOT LIVE TELEMETRY</text>
+            <text x="240" y="278" textAnchor="middle" fill="#7da9a3" fontSize="8" letterSpacing="2">IMPLEMENTED · PARTIAL · PROOF OF CONCEPT</text>
+          </svg>
+          <div className="research-explorer-art-foot"><span><i className="research-state-dot active" /> ACTIVE DATA PATH</span><span><i className="research-state-dot boundary" /> SERVER TRUST</span></div>
+        </div>
+      </section>
+
       <section className="security-section research-reading-guide" aria-labelledby="research-reading-title">
         <div className="security-section-heading">
           <div><span className="section-index">HOW TO READ THE EVIDENCE</span><h2 id="research-reading-title">A result is only as broad as its test.</h2></div>
