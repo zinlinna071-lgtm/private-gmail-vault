@@ -66,7 +66,18 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3
 const MAX_UNLOCK_SECRET_BYTES = 4_096;
 const MAX_RECORD_PLAINTEXT_BYTES = 20_000;
 const MAX_ENCODED_SALT_LENGTH = 24;
-const MAX_ENCODED_WRAPPED_KEY_LENGTH = 128;
+const MAX_ENCODED_WRAPPED_KEY_LENGTH = 64;
+const BASE64_PATTERN = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
+
+function isCanonicalBase64(value: string, expectedLength: number): boolean {
+  if (value.length !== expectedLength || !BASE64_PATTERN.test(value)) return false;
+  try {
+    const decoded = atob(value);
+    return btoa(decoded) === value;
+  } catch {
+    return false;
+  }
+}
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
