@@ -112,10 +112,10 @@ function isWrappedKeyEnvelope(value: unknown): value is WrappedVaultDataKey {
   return value.version === 1 &&
     value.algorithm === "AES-256-GCM" &&
     typeof value.iv === "string" &&
-    value.iv.length === 16 &&
+    isCanonicalBase64(value.iv, 16) &&
     typeof value.wrappedKey === "string" &&
-    value.wrappedKey.length > 0 &&
-    value.wrappedKey.length <= MAX_ENCODED_WRAPPED_KEY_LENGTH;
+    value.wrappedKey.length === MAX_ENCODED_WRAPPED_KEY_LENGTH &&
+    isCanonicalBase64(value.wrappedKey, MAX_ENCODED_WRAPPED_KEY_LENGTH);
 }
 
 /**
@@ -200,7 +200,7 @@ export function isVaultWorkerResponse(input: unknown): input is VaultWorkerRespo
     case "INITIALIZED":
       return hasExactKeys(input, ["type", "requestId", "salt", "profileId", "wrappedKeyEnvelope"]) &&
         typeof input.salt === "string" &&
-        input.salt.length === MAX_ENCODED_SALT_LENGTH &&
+        isCanonicalBase64(input.salt, MAX_ENCODED_SALT_LENGTH) &&
         isProfileId(input.profileId) &&
         isWrappedKeyEnvelope(input.wrappedKeyEnvelope);
     case "ENCRYPTED_RECORD":
