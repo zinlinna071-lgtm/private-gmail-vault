@@ -13,7 +13,8 @@ const mocks = vi.hoisted(() => ({
   order: vi.fn(),
   eq: vi.fn(),
   delete: vi.fn(),
-  maybeSingle: vi.fn()
+  maybeSingle: vi.fn(),
+  rpc: vi.fn()
 }));
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -36,7 +37,7 @@ vi.mock("@/lib/auth/content-type", () => ({
   isJsonContentType: mocks.isJsonContentType
 }));
 
-import { GET } from "@/app/api/vault/items/route";
+import { GET, POST } from "@/app/api/vault/items/route";
 import { DELETE } from "@/app/api/vault/items/[id]/route";
 
 const ownerId = "11111111-1111-4111-8111-111111111111";
@@ -60,7 +61,8 @@ describe("Vault API authorization boundary", () => {
       from: () => ({
         select: mocks.select,
         delete: mocks.delete
-      })
+      }),
+      rpc: mocks.rpc
     });
 
     mocks.select.mockReturnValue(query);
@@ -76,6 +78,77 @@ describe("Vault API authorization boundary", () => {
       backupCodes: ""
     }));
     mocks.isSameOriginRequest.mockReturnValue(true);
+    mocks.isJsonContentType.mockReturnValue(true);
+    mocks.readBoundedJson.mockResolvedValue({
+      ok: true,
+      value: {
+        accountName: "Synthetic account",
+        username: "synthetic-user",
+        password: "synthetic-password",
+        backupCodes: ""
+      }
+    });
+    mocks.encryptVaultItem.mockReturnValue({
+      ciphertext: "opaque-ciphertext",
+      iv: "opaque-iv",
+      authTag: "opaque-tag"
+    });
+    mocks.rpc.mockImplementation((_name: string, args: { p_id: string }) => ({
+      data: [{
+        id: args.p_id,
+        created_at: "2026-11-08T00:00:00.000Z",
+        updated_at: "2026-11-08T00:00:00.000Z"
+      }],
+      error: null
+    }));
+  });
+
+  it("creates records through the database-enforced quota function", async () => {
+    const response = await POST(
+      new Request("https://vault.example/api/vault/items", {
+        method: "POST",
+        headers: {
+          Origin: "https://vault.example",
+          "Sec-Fetch-Site": "same-origin",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ accountName: "Synthetic account" })
+      })
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(body.item.accountName).toBe("Synthetic account");
+    expect(mocks.rpc).toHaveBeenCalledTimes(1);
+    expect(mocks.rpc).toHaveBeenCalledWith("create_vault_item_with_quota", expect.objectContaining({
+      p_user_id: ownerId,
+      p_ciphertext: "opaque-ciphertext",
+      p_iv: "opaque-iv",
+      p_auth_tag: "opaque-tag"
+    }));
+  });
+
+  it("returns a conflict when a Secondary Vault has reached four records", async () => {
+    mocks.rpc.mockResolvedValue({
+      data: null,
+      error: { code: "23514", message: "VAULT_SECONDARY_LIMIT_REACHED" }
+    });
+
+    const response = await POST(
+      new Request("https://vault.example/api/vault/items", {
+        method: "POST",
+        headers: {
+          Origin: "https://vault.example",
+          "Sec-Fetch-Site": "same-origin",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ accountName: "Fifth account" })
+      })
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(409);
+    expect(body.error).toContain("up to four records");
   });
 
   it("denies Vault reads when there is no authenticated session", async () => {
