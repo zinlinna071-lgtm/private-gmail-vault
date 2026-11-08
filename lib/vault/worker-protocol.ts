@@ -128,7 +128,7 @@ export function parseVaultWorkerRequest(input: unknown): VaultWorkerRequest {
         !isProfileId(input.profileId) ||
         !isVaultId(input.vaultId)
       ) throw new Error("INVALID_REQUEST");
-      return input as VaultWorkerRequest;
+      return input as unknown as VaultWorkerRequest;
     }
     case "UNLOCK": {
       if (
@@ -142,7 +142,7 @@ export function parseVaultWorkerRequest(input: unknown): VaultWorkerRequest {
         !isWrappedKeyEnvelope(input.wrappedKeyEnvelope) ||
         !isVaultId(input.vaultId)
       ) throw new Error("INVALID_REQUEST");
-      return input as VaultWorkerRequest;
+      return input as unknown as VaultWorkerRequest;
     }
     case "ENCRYPT_RECORD": {
       if (
@@ -152,7 +152,7 @@ export function parseVaultWorkerRequest(input: unknown): VaultWorkerRequest {
         new TextEncoder().encode(input.plaintext).byteLength < 1 ||
         new TextEncoder().encode(input.plaintext).byteLength > MAX_RECORD_PLAINTEXT_BYTES
       ) throw new Error("INVALID_REQUEST");
-      return input as VaultWorkerRequest;
+      return input as unknown as VaultWorkerRequest;
     }
     case "DECRYPT_RECORD": {
       if (
@@ -164,12 +164,12 @@ export function parseVaultWorkerRequest(input: unknown): VaultWorkerRequest {
       } catch {
         throw new Error("INVALID_REQUEST");
       }
-      return input as VaultWorkerRequest;
+      return input as unknown as VaultWorkerRequest;
     }
     case "LOCK":
     case "PING": {
       if (!hasExactKeys(input, ["type", "requestId"])) throw new Error("INVALID_REQUEST");
-      return input as VaultWorkerRequest;
+      return input as unknown as VaultWorkerRequest;
     }
     default:
       throw new Error("INVALID_REQUEST");
