@@ -318,3 +318,17 @@
 @media(prefers-reduced-motion:reduce) {
   .registration-notice-backdrop,.registration-notice { animation:none !important; }
 }
+
+/* Visible Create tab: explain the server-verified Curator gate before submission */
+.registration-gate-hint {
+  display:grid; gap:8px; margin:0 0 17px; padding:14px 15px;
+  border:1px solid #416d69; border-radius:10px;
+  background:linear-gradient(135deg,#102d32 0%,#102433 100%);
+}
+.registration-gate-hint strong { color:#9debd1; font-size:9px; font-weight:900; letter-spacing:.13em; }
+.registration-gate-hint p { margin:0; color:#b3cbd0; font-size:11px; line-height:1.75; }
+.registration-gate-hint p b { color:#e2fff3; }
+.registration-gate-hint a { width:fit-content; color:#9cebd0; font-size:10px; font-weight:900; text-decoration:none; }
+.registration-gate-hint a:hover { color:#d5fff0; text-decoration:underline; }
+.registration-gate-hint>span { color:#9debd1; font-size:9px; font-weight:900; letter-spacing:.1em; }
+.registration-gate-hint a:focus-visible { outline:2px solid #c1ffed; outline-offset:3px; border-radius:3px; }
