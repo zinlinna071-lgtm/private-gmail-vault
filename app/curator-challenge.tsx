@@ -144,7 +144,7 @@ export default function CuratorChallenge() {
         {revealed && <div className="curator-reveal" role="status"><span className="curator-reveal-mark">✧</span><div><strong>The archive has answered.</strong><p>{verificationMessage} Your one-time registration claim is valid for ten minutes and is bound to this browser session. No account has been created yet.</p><a href="/#create-vault">Continue to account creation ↗</a></div></div>}
       </section>
 
-      <footer className="curator-footer"><span>THE CURATOR'S SIGNAL</span><span>PUBLIC DISCOVERY CHALLENGE · NOT AN AUTHORIZATION CONTROL</span><a href="/">RETURN TO THE VAULT</a></footer>
+      <footer className="curator-footer"><span>THE CURATOR'S SIGNAL</span><span>PUBLIC DISCOVERY · SECONDARY REGISTRATION GATE · NO MASTER ACCESS</span><a href="/">RETURN TO THE VAULT</a></footer>
     </main>
   );
 }
