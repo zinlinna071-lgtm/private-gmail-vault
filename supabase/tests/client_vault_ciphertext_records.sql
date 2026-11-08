@@ -46,8 +46,9 @@ end;
 $$;
 
 -- The service role must not be able to relabel a legacy row as client-encrypted.
+begin;
 set local role service_role;
-do $$
+do $
 begin
   begin
     update public.vault_items
@@ -62,4 +63,4 @@ begin
   end;
 end;
 $$;
-reset role;
+commit;
