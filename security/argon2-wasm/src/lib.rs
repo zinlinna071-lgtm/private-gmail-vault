@@ -68,8 +68,18 @@ fn derive_key_bytes(
 /// This function is synchronous. Production integration must invoke it from a
 /// dedicated Worker and enforce a single in-flight derivation per vault.
 #[wasm_bindgen]
-pub fn derive_key(password: &[u8], salt: &[u8], profile_id: u8) -> Result<Uint8Array, JsValue> {
-    let mut output = derive_key_bytes(password, salt, profile_id).map_err(JsValue::from_str)?;
+pub fn derive_key(
+    mut password: Vec<u8>,
+    mut salt: Vec<u8>,
+    profile_id: u8,
+) -> Result<Uint8Array, JsValue> {
+    // Take ownership of wasm-bindgen's input vectors so their WASM-heap
+    // allocations can be zeroized before Rust drops them.
+    let derivation = derive_key_bytes(&password, &salt, profile_id);
+    password.zeroize();
+    salt.zeroize();
+
+    let mut output = derivation.map_err(JsValue::from_str)?;
     let result = Uint8Array::from(output.as_slice());
     output.zeroize();
     Ok(result)
