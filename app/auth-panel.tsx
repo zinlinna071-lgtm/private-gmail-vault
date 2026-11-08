@@ -168,8 +168,8 @@ export default function AuthPanel() {
     }
   }
 
-  const title = mode === "login" ? "Welcome back" : mode === "register" ? "Create your Vault" : "Recover access";
-  const description = mode === "login" ? "Your secure space is one step away." : mode === "register" ? "Set up your private access credentials." : "Use your saved Recovery Code to continue.";
+  const title = mode === "login" ? "Welcome back" : mode === "register" ? "Create Secondary Account" : "Recover access";
+  const description = mode === "login" ? "Your secure space is one step away." : mode === "register" ? "Create a separate account for your own Vault records." : "Use your saved Recovery Code to continue.";
 
   return (
     <div id="create-vault" className={`auth-card${busy ? " is-busy" : ""}`}>
@@ -196,10 +196,10 @@ export default function AuthPanel() {
           <input id="login-id" autoComplete="username" value={loginId} onChange={e => { setLoginId(e.target.value); if (error) setError(""); }} minLength={4} maxLength={32} pattern="[A-Za-z0-9][A-Za-z0-9._-]{3,31}" required={mode !== "login"} placeholder="Your private login ID" aria-invalid={Boolean(error)} />
           {mode !== "recover" ? (
             <>
-              <label htmlFor="master-password">Master Password</label>
+              <label htmlFor="master-password">{mode === "register" ? "Account Password" : "Vault Password"}</label>
               <div className="password-field">
-                <input id="master-password" type={showPassword ? "text" : "password"} autoComplete={mode === "register" ? "new-password" : "current-password"} value={password} onChange={e => { setPassword(e.target.value); if (error) setError(""); }} minLength={12} maxLength={128} required={mode !== "login"} placeholder="Enter your Master Password" aria-invalid={Boolean(error)} />
-                <button className="password-toggle" type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? "Hide Master Password" : "Show Master Password"} aria-pressed={showPassword} aria-controls="master-password">{showPassword ? "HIDE" : "SHOW"}</button>
+                <input id="master-password" type={showPassword ? "text" : "password"} autoComplete={mode === "register" ? "new-password" : "current-password"} value={password} onChange={e => { setPassword(e.target.value); if (error) setError(""); }} minLength={12} maxLength={128} required={mode !== "login"} placeholder={mode === "register" ? "Create an account password" : "Enter your Vault password"} aria-invalid={Boolean(error)} />
+                <button className="password-toggle" type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? "Hide Vault Password" : "Show Vault Password"} aria-pressed={showPassword} aria-controls="master-password">{showPassword ? "HIDE" : "SHOW"}</button>
               </div>
               <div className={password.length ? "password-activity is-active" : "password-activity"} aria-live="polite">
                 <span className="password-activity-bars" aria-hidden="true"><i /><i /><i /><i /></span>
@@ -211,15 +211,15 @@ export default function AuthPanel() {
             <>
               <label htmlFor="recovery-code">Recovery Code</label>
               <input id="recovery-code" autoComplete="off" value={recoveryCode} onChange={e => { setRecoveryCode(e.target.value); if (error) setError(""); }} required placeholder="Enter your saved Recovery Code" aria-invalid={Boolean(error)} />
-              <label htmlFor="new-password">New Master Password</label>
+              <label htmlFor="new-password">New Vault Password</label>
               <div className="password-field">
                 <input id="new-password" type={showNewPassword ? "text" : "password"} autoComplete="new-password" value={newPassword} onChange={e => { setNewPassword(e.target.value); if (error) setError(""); }} minLength={12} maxLength={128} required placeholder="At least 12 characters" aria-invalid={Boolean(error)} />
-                <button className="password-toggle" type="button" onClick={() => setShowNewPassword(value => !value)} aria-label={showNewPassword ? "Hide new Master Password" : "Show new Master Password"} aria-pressed={showNewPassword} aria-controls="new-password">{showNewPassword ? "HIDE" : "SHOW"}</button>
+                <button className="password-toggle" type="button" onClick={() => setShowNewPassword(value => !value)} aria-label={showNewPassword ? "Hide new Vault Password" : "Show new Vault Password"} aria-pressed={showNewPassword} aria-controls="new-password">{showNewPassword ? "HIDE" : "SHOW"}</button>
               </div>
             </>
           )}
           <button className="primary-button auth-submit" type="submit" disabled={busy}>
-            {busy ? <><span className="button-spinner" aria-hidden="true" />{mode === "login" ? "Verifying access…" : mode === "register" ? "Creating secure Vault…" : "Recovering access…"}</> : mode === "register" ? "Create secure Vault" : mode === "recover" ? "Reset Master Password" : "Sign in securely"}
+            {busy ? <><span className="button-spinner" aria-hidden="true" />{mode === "login" ? "Verifying access…" : mode === "register" ? "Creating secure Vault…" : "Recovering access…"}</> : mode === "register" ? "Create secure Vault" : mode === "recover" ? "Reset Vault Password" : "Sign in securely"}
           </button>
           {busy && <p className="auth-processing-note" role="status">Securely processing your request. Please keep this page open.</p>}
         </form>
@@ -237,7 +237,7 @@ export default function AuthPanel() {
           {requiresAcknowledgement && <button type="button" className="primary-button" disabled={busy} onClick={acknowledgeSavedCode}>{busy ? <><span className="button-spinner" aria-hidden="true" />Confirming…</> : "I have safely saved this code"}</button>}
         </div>
       )}
-      <p className="auth-footnote">Your Vault Login ID and Master Password are used only to access this private vault.</p>
+      <p className="auth-footnote">Your Vault Login ID and Vault Password are used only to access your own account.</p>
 
       {showRegistrationNotice && mounted && createPortal(
         <div className="registration-notice-backdrop" role="presentation">
