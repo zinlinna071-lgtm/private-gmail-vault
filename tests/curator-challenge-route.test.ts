@@ -42,7 +42,6 @@ describe("Curator challenge bootstrap API", () => {
     mocks.createSupabaseAdminClient.mockReturnValue({
       from: () => ({ insert: mocks.insert })
     });
-    process.env.NODE_ENV = "test";
   });
 
   it("rejects an explicitly cross-site bootstrap request", async () => {
