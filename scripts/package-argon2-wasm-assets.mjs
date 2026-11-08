@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { copyFile, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
-import { resolve, basename } from "node:path";
+import { resolve } from "node:path";
 
 const root = process.cwd();
 const source = resolve(root, "security/argon2-wasm/pkg-web");
