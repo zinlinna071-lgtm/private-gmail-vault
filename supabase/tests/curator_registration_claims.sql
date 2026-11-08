@@ -79,4 +79,6 @@ $assert$;
 INSERT INTO public.curator_challenges (challenge_hash, session_hash, expires_at)
 VALUES (repeat('6',64), repeat('e',64), now() + interval '5 minutes');
 
--- Two concurrent sessions must not both consume the same challenge.
+-- Two concurrent sessions must not both consume the same challenge or registration claim.
+INSERT INTO public.curator_registration_claims (claim_hash, session_hash, expires_at)
+VALUES (repeat('7',64), repeat('f',64), now() + interval '5 minutes');
