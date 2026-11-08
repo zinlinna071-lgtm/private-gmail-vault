@@ -97,12 +97,14 @@ Do not apply this schema migration to any live Supabase project from this branch
 
 ## 6. Current implementation checkpoint
 
-The canonical browser-only record cryptography module is `lib/vault/record-envelope.ts`. It uses Web Crypto AES-256-GCM, fresh 96-bit nonces, a 128-bit authentication tag, strict version/algorithm/envelope validation, and AAD binding to the authenticated Vault UUID, record UUID, and record type.
+The canonical browser-only record cryptography module is `lib/vault/record-envelope.ts`. It uses Web Crypto AES-256-GCM, fresh 96-bit nonces, a 128-bit authentication tag, strict version/algorithm/envelope validation, and AAD binding to the authenticated Vault UUID, record UUID, and record type. Base64 input length is bounded before decoding, and temporary plaintext, nonce, AAD, and ciphertext buffers are cleared where the browser APIs permit.
 
-`lib/vault/client-encryption.ts` is now a compatibility facade over that canonical module. It preserves the existing function names and non-extractable DEK generator used by tests, but no longer implements a second AAD domain or a competing record format. This avoids having two incompatible version-1 ciphertext formats in the codebase.
+`lib/vault/client-encryption.ts` is a compatibility facade over that canonical module. It preserves existing function names and the non-extractable DEK generator used by tests, but no longer implements a second AAD domain or a competing record format.
+
+The DEK wrapping module in `lib/vault/key-envelope.ts` uses a non-extractable AES-256-GCM KEK, a fresh 96-bit nonce, and Vault-bound AAD. Raw DEK/KEK import buffers and temporary context buffers are cleared after use where possible. Argon2id derivation is deliberately not embedded in this module.
 
 Unit tests are defined in:
-- `tests/vault-record-envelope.test.ts` — strict envelope validation, round trips, nonce freshness, tampering, wrong keys, wrong AAD, malformed envelopes, and size/context validation.
+- `tests/vault-record-envelope.test.ts` — strict envelope validation, round trips, nonce freshness, tampering, wrong keys, wrong AAD, malformed envelopes, oversized encoded input, and size/context validation.
 - `tests/client-vault-encryption.test.ts` — compatibility API and record-encryption behavior.
 - `tests/vault-key-envelope.test.ts` — KEK import, DEK wrapping/unwrapping, and context binding.
 
