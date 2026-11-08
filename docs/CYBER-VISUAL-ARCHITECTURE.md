@@ -281,3 +281,36 @@ The public experience uses a strict visual truth rule: **no invented facts, no f
 - Decorative animation must not resemble a running scan, packet stream, active attack, or live event feed.
 
 This change is presentation-only. It does not connect telemetry, change tests, modify authentication, alter encryption, touch the database, or change deployment configuration. Browser rendering, accessibility, and mobile visual QA remain unverified until actually run.
+
+
+## Product direction extension — Live Research Theater
+
+The public experience is evolving from a static evidence dashboard into an interactive research and learning environment. The goal is to let visitors watch genuine, authorized security experiments, understand the evidence, and learn through interactive stories and safe puzzles.
+
+This is an additive product direction. It does not replace the existing design system or weaken its visual truth contract.
+
+### Experience pillars
+
+- **Live Research Theater:** public read-only observation of real owner-authorized tests running only against isolated, allowlisted lab targets.
+- **Interactive Research Stories:** chapter-based publications combining readable technical writing, safe diagrams, verified evidence, measured outcomes, remediation, and retest.
+- **Learning Studio:** hands-on cryptography, authentication, secure coding, and defensive reasoning exercises using synthetic fixtures.
+- **Puzzle Arena:** explanation-first challenges that teach a specific concept without testing third-party targets or collecting real credentials.
+- **Research Archive:** bilingual publications and historical, provenance-backed sessions.
+
+### Visual state language
+
+Use persistent, accessible labels:
+- **LIVE** — current authenticated source is connected and recent events are being received.
+- **DELAYED** — source is known but the latest event is outside the freshness threshold.
+- **RECORDED** — a completed session shown from its original event history.
+- **ILLUSTRATIVE** — a conceptual explanation, not an executed test.
+- **SIMULATED / DEMO DATA** — a synthetic exercise or fixture.
+- **UNAVAILABLE** — no trusted source or current evidence exists.
+
+Never infer LIVE from an animation, browser clock, open page, or client-generated event. If the source disconnects, the visual state must change to DELAYED or UNAVAILABLE according to the server's freshness policy.
+
+### Implementation boundary
+
+The detailed event trust model, private/public separation, session scope, event integrity, public projection, puzzle isolation, publication story format, staged implementation, and release gates are defined in [Live Research Theater Architecture](./LIVE-RESEARCH-THEATER-ARCHITECTURE.md).
+
+Existing telemetry schemas, research pages, and learning components are foundations only. They do not establish that a verified public live stream or public execution sandbox is already implemented. The public audience remains read-only; only authorized operators can control tests.
