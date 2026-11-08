@@ -7,6 +7,7 @@ type Mode = "login" | "register" | "recover";
 
 export default function AuthPanel() {
   const [mode, setMode] = useState<Mode>("login");
+  const [registrationEntranceRevealed, setRegistrationEntranceRevealed] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
@@ -27,6 +28,20 @@ export default function AuthPanel() {
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => setMounted(true), []);
+
+  // The public Curator challenge returns here with this fragment after the
+  // server has issued a short-lived, session-bound registration claim.
+  // This only controls presentation; /api/auth/register remains authoritative.
+  useEffect(() => {
+    const syncRegistrationEntrance = () => {
+      const revealed = window.location.hash === "#create-vault";
+      setRegistrationEntranceRevealed(revealed);
+      setMode(current => revealed ? "register" : current === "register" ? "login" : current);
+    };
+    syncRegistrationEntrance();
+    window.addEventListener("hashchange", syncRegistrationEntrance);
+    return () => window.removeEventListener("hashchange", syncRegistrationEntrance);
+  }, []);
 
   function clearFeedback() {
     setError("");
@@ -169,7 +184,9 @@ export default function AuthPanel() {
 
       <div className="tabs" role="tablist" aria-label="Vault authentication">
         <button type="button" role="tab" aria-selected={mode === "login"} disabled={requiresAcknowledgement || busy} className={mode === "login" ? "tab active" : "tab"} onClick={() => { setMode("login"); setRegistrationAcknowledged(false); setShowRegistrationNotice(false); clearFeedback(); setIssuedCode(""); }}>Sign in</button>
+        {registrationEntranceRevealed && (
         <button type="button" role="tab" aria-selected={mode === "register"} disabled={requiresAcknowledgement || busy} className={mode === "register" ? "tab active" : "tab"} onClick={() => { setMode("register"); setRegistrationAcknowledged(false); setShowRegistrationNotice(false); clearFeedback(); setIssuedCode(""); }}>Create Vault</button>
+        )}
         <button type="button" role="tab" aria-selected={mode === "recover"} disabled={requiresAcknowledgement || busy} className={mode === "recover" ? "tab active" : "tab"} onClick={() => { setMode("recover"); setRegistrationAcknowledged(false); setShowRegistrationNotice(false); clearFeedback(); setIssuedCode(""); }}>Recover</button>
       </div>
 
