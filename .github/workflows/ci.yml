@@ -117,6 +117,9 @@ jobs:
       - name: Secondary Vault quota PostgreSQL migration tests
         id: secondary_vault_quota_tests
         run: bash scripts/test-secondary-vault-quota.sh
+      - name: Client Vault key metadata PostgreSQL migration tests
+        id: client_vault_metadata_tests
+        run: bash scripts/test-client-vault-key-metadata.sh
       - name: Production build
         id: production_build
         run: npm run build
@@ -135,6 +138,7 @@ jobs:
           POSTGRES_TESTS_OUTCOME: ${{ steps.postgres_migration_tests.outcome || 'not-run' }}
           CURATOR_POSTGRES_OUTCOME: ${{ steps.curator_postgres_migration_tests.outcome || 'not-run' }}
           SECONDARY_QUOTA_OUTCOME: ${{ steps.secondary_vault_quota_tests.outcome || 'not-run' }}
+          CLIENT_VAULT_METADATA_OUTCOME: ${{ steps.client_vault_metadata_tests.outcome || 'not-run' }}
           BUILD_OUTCOME: ${{ steps.production_build.outcome || 'not-run' }}
         run: |
           {
@@ -154,6 +158,7 @@ jobs:
             echo "| PostgreSQL migration tests | $POSTGRES_TESTS_OUTCOME |"
             echo "| Curator PostgreSQL migration tests | $CURATOR_POSTGRES_OUTCOME |"
             echo "| Secondary Vault quota PostgreSQL tests | $SECONDARY_QUOTA_OUTCOME |"
+            echo "| Client Vault key metadata PostgreSQL tests | $CLIENT_VAULT_METADATA_OUTCOME |"
             echo "| Production build | $BUILD_OUTCOME |"
           } | tee ci-diagnostics.md
           cat ci-diagnostics.md >> "$GITHUB_STEP_SUMMARY"
