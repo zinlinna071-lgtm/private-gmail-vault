@@ -26,6 +26,7 @@ describe("Vault crypto Worker protocol", () => {
   it("accepts a valid initialization request with bounded transferable buffers", () => {
     const request = parseVaultWorkerRequest(initializeRequest());
     expect(request.type).toBe("INITIALIZE");
+    if (request.type !== "INITIALIZE") throw new Error("Expected INITIALIZE request");
     expect(request.unlockSecretBuffer.byteLength).toBeGreaterThan(0);
     expect(request.saltBytes.byteLength).toBe(16);
   });
