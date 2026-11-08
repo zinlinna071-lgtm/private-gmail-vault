@@ -6,6 +6,8 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MIGRATION="$ROOT_DIR/supabase/migrations/202611080002_secondary_vault_record_quota.sql"
 SQL_TEST="$ROOT_DIR/supabase/tests/secondary_vault_record_quota.sql"
+CLIENT_MIGRATION="$ROOT_DIR/supabase/migrations/202611080004_client_vault_ciphertext_records.sql"
+CLIENT_SQL_TEST="$ROOT_DIR/supabase/tests/client_vault_ciphertext_records.sql"
 
 # CI supplies a disposable PostgreSQL service. Never point this script at production.
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
@@ -38,6 +40,8 @@ SQL
 
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$MIGRATION"
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$SQL_TEST"
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$CLIENT_MIGRATION"
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$CLIENT_SQL_TEST"
 
 tmp_dir="$(mktemp -d)"
 # The application service role may create normal Secondary profiles, but it
