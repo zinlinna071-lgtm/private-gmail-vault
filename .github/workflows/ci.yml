@@ -23,6 +23,8 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
+      - name: Check Rust formatting
+        run: cargo fmt --manifest-path security/argon2-wasm/Cargo.toml -- --check
       - name: Run native RFC 9106 known-answer and input-validation tests
         run: cargo test --manifest-path security/argon2-wasm/Cargo.toml
       - name: Compile isolated browser WebAssembly module
@@ -31,7 +33,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: argon2-wasm-poc-${{ github.sha }}
-          path: security/argon2-wasm/target/wasm32-unknown-unknown/release/vault_argon2_wasm_poc.wasm
+          path: |
+            security/argon2-wasm/target/wasm32-unknown-unknown/release/vault_argon2_wasm_poc.wasm
+            security/argon2-wasm/Cargo.lock
           if-no-files-found: error
           retention-days: 7
 
