@@ -5,6 +5,7 @@ import { isJsonContentType } from "@/lib/auth/content-type";
 import { readBoundedJson } from "@/lib/auth/bounded-json";
 import { createResearchDraftSchema } from "@/lib/security-research/workflow";
 import { getResearchActor } from "@/lib/security-research/workflow-auth";
+import { reviewStageForWorkflowState } from "@/lib/security-research/review-assignments";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -22,8 +23,21 @@ export async function GET() {
     const { data, error } = await admin.from("security_research_drafts")
       .select("id,title_en,title_my,category,workflow_state,created_at,updated_at,ready_at,reviews")
       .order("updated_at", { ascending: false }).limit(50);
-    const visible = actor.isOwner ? (data ?? []) : (data ?? []).filter((draft) => ["DRAFT", "SECURITY_PRIVACY_REVIEW", "BILINGUAL_REVIEW"].includes(draft.workflow_state));
     if (error) return reply({ error: "Research drafts are not available. Check the database migration." }, 503);
+    if (actor.isOwner) return reply({ drafts: data ?? [] });
+
+    const { data: assignments, error: assignmentError } = await admin
+      .from("security_research_review_assignments")
+      .select("draft_id,stage")
+      .eq("reviewer_user_id", actor.id)
+      .is("revoked_at", null)
+      .gt("expires_at", new Date().toISOString());
+    if (assignmentError) return reply({ error: "Reviewer assignments are not available." }, 503);
+    const assigned = new Set((assignments ?? []).map((assignment) => `${assignment.draft_id}:${assignment.stage}`));
+    const visible = (data ?? []).filter((draft) => {
+      const stage = reviewStageForWorkflowState(draft.workflow_state);
+      return stage !== null && assigned.has(`${draft.id}:${stage}`);
+    });
     return reply({ drafts: visible });
   } catch {
     return reply({ error: "Could not load research drafts." }, 503);
