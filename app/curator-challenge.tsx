@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const marks = [
   { id: "margin", title: "The Margin", location: "CHART EDGE", fragment: "The oldest story is written first.", glyph: "Ⅰ" },
@@ -22,6 +22,43 @@ export default function CuratorChallenge() {
   const [order, setOrder] = useState<string[]>(["email", "password", "backup", "note"]);
   const [revealed, setRevealed] = useState(false);
   const [showHints, setShowHints] = useState(false);
+  const [challengeReady, setChallengeReady] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [verificationError, setVerificationError] = useState("");
+  const [verificationMessage, setVerificationMessage] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/curator/challenge", { cache: "no-store" })
+      .then(async response => {
+        if (!response.ok) throw new Error("The archive challenge could not be started.");
+        return response.json();
+      })
+      .then(() => { if (active) setChallengeReady(true); })
+      .catch(error => { if (active) setVerificationError(error instanceof Error ? error.message : "The archive challenge could not be started."); });
+    return () => { active = false; };
+  }, []);
+
+  async function verifyChallenge() {
+    if (!complete || !challengeReady || verifying) return;
+    setVerifying(true);
+    setVerificationError("");
+    setVerificationMessage("");
+    try {
+      const response = await fetch("/api/curator/verify", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ found, order })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "The archive could not be verified.");
+      setRevealed(true);
+      setVerificationMessage(data.message ?? "The Curator's Signal is verified.");
+    } catch (error) {
+      setVerificationError(error instanceof Error ? error.message : "The archive could not be verified.");
+    } finally {
+      setVerifying(false);
+    }
+  }
 
   const complete = useMemo(
     () => found.length === marks.length && order.every((value, index) => value === solution[index]),
@@ -52,7 +89,7 @@ export default function CuratorChallenge() {
         <span className="curator-kicker">A QUIET ANOMALY / AN INVITATION</span>
         <h1>The Curator's <em>Signal.</em></h1>
         <p>Some archives reveal themselves only to those who notice what is almost ordinary. Explore the margins, collect the marks, and discover the shape hidden beneath the surface.</p>
-        <div className="curator-meta"><span>NO TIMER</span><span>RESUMABLE DESIGN PREVIEW</span><span>THREE ARCHIVE MARKS</span></div>
+        <div className="curator-meta"><span>NO TIMER</span><span>SERVER-VERIFIED CHALLENGE</span><span>THREE ARCHIVE MARKS</span></div>
       </section>
 
       <section className="curator-panel" aria-labelledby="marks-title">
@@ -100,13 +137,14 @@ export default function CuratorChallenge() {
         </div>
         <div className="curator-lock-actions">
           <button type="button" className="curator-hint-button" onClick={() => setShowHints(value => !value)} aria-expanded={showHints}>{showHints ? "HIDE THE CURATOR'S NOTE" : "ASK FOR A HINT"}</button>
-          <button type="button" className="curator-unlock-button" disabled={!complete} onClick={() => setRevealed(true)}>ALIGN THE ARCHIVE <span>↗</span></button>
+          <button type="button" className="curator-unlock-button" disabled={!complete || !challengeReady || verifying} onClick={verifyChallenge}>{verifying ? "VERIFYING…" : "ALIGN THE ARCHIVE"} <span>↗</span></button>
         </div>
         {showHints && <p className="curator-hint" role="status">Begin with the oldest record. The fragments point to an order of categories, not to any personal information.</p>}
-        {revealed && <div className="curator-reveal" role="status"><span className="curator-reveal-mark">✧</span><div><strong>The archive has answered.</strong><p>This visual design sequence is complete. Server-side challenge verification and the one-time Secondary registration claim are the next implementation phase. No account has been created and no access has been granted.</p></div></div>}
+        {verificationError && <p className="curator-hint" role="alert">{verificationError}</p>}
+        {revealed && <div className="curator-reveal" role="status"><span className="curator-reveal-mark">✧</span><div><strong>The archive has answered.</strong><p>{verificationMessage} Your one-time registration claim is valid for ten minutes and is bound to this browser session. No account has been created yet.</p><a href="/#create-vault">Continue to account creation ↗</a></div></div>}
       </section>
 
-      <footer className="curator-footer"><span>THE CURATOR'S SIGNAL</span><span>AN INTERACTIVE DESIGN PREVIEW · NOT A SECURITY CONTROL</span><a href="/">RETURN TO THE VAULT</a></footer>
+      <footer className="curator-footer"><span>THE CURATOR'S SIGNAL</span><span>PUBLIC DISCOVERY CHALLENGE · NOT AN AUTHORIZATION CONTROL</span><a href="/">RETURN TO THE VAULT</a></footer>
     </main>
   );
 }
