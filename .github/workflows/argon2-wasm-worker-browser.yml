@@ -78,6 +78,10 @@ jobs:
         working-directory: tools/argon2id-browser-spike
         run: npm install --legacy-peer-deps --ignore-scripts --no-audit --no-fund
 
+      - name: Bundle the application Vault crypto Worker for browser integration tests
+        working-directory: tools/argon2id-browser-spike
+        run: node build-vault-crypto-worker.mjs
+
       - name: Install Chromium, Firefox, and WebKit
         working-directory: tools/argon2id-browser-spike
         run: npx playwright install --with-deps chromium firefox webkit
