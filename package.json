@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "preview:cloudflare": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "build:cloudflare": "opennextjs-cloudflare build"
+    "build:cloudflare": "opennextjs-cloudflare build",
+    "package:argon2-wasm": "node scripts/package-argon2-wasm-assets.mjs"
   },
   "dependencies": {
     "next": "15.5.29",
