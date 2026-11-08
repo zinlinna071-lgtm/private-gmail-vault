@@ -42,7 +42,9 @@ begin
           and client_crypto_version = 1
           and client_kdf_algorithm = 'argon2id-v1.3'
           and client_kdf_profile in (1, 2)
-          and client_kdf_salt ~ '^[A-Za-z0-9+/]{22}==
+          and length(client_kdf_salt) = 24
+          and right(client_kdf_salt, 2) = '=='
+          and left(client_kdf_salt, 22) !~ '[^A-Za-z0-9+/]'
       );
   end if;
 end
@@ -63,7 +65,8 @@ comment on column public.vault_profiles.client_wrapped_dek is
 comment on column public.vault_profiles.client_key_created_at is
   'Timestamp for public key-envelope metadata lifecycle; contains no secret material.';
 
-          and client_wrapped_dek_iv ~ '^[A-Za-z0-9+/]{16}
+          and length(client_wrapped_dek_iv) = 16
+          and client_wrapped_dek_iv !~ '[^A-Za-z0-9+/]'
       );
   end if;
 end
@@ -84,7 +87,8 @@ comment on column public.vault_profiles.client_wrapped_dek is
 comment on column public.vault_profiles.client_key_created_at is
   'Timestamp for public key-envelope metadata lifecycle; contains no secret material.';
 
-          and client_wrapped_dek ~ '^[A-Za-z0-9+/]{64}
+          and length(client_wrapped_dek) = 64
+          and client_wrapped_dek !~ '[^A-Za-z0-9+/]'
       );
   end if;
 end
