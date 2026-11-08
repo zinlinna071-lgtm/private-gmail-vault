@@ -68,13 +68,8 @@ fn derive_key_bytes(
 /// This function is synchronous. Production integration must invoke it from a
 /// dedicated Worker and enforce a single in-flight derivation per vault.
 #[wasm_bindgen]
-pub fn derive_key(
-    password: &[u8],
-    salt: &[u8],
-    profile_id: u8,
-) -> Result<Uint8Array, JsValue> {
-    let mut output = derive_key_bytes(password, salt, profile_id)
-        .map_err(JsValue::from_str)?;
+pub fn derive_key(password: &[u8], salt: &[u8], profile_id: u8) -> Result<Uint8Array, JsValue> {
+    let mut output = derive_key_bytes(password, salt, profile_id).map_err(JsValue::from_str)?;
     let result = Uint8Array::from(output.as_slice());
     output.zeroize();
     Ok(result)
@@ -118,24 +113,12 @@ mod tests {
         let salt_a = [0x11; SALT_BYTES];
         let salt_b = [0x12; SALT_BYTES];
 
-        let mut first = derive_key_bytes(
-            password,
-            &salt_a,
-            PROFILE_POC_OWASP_BASELINE,
-        )
-        .expect("first derivation");
-        let mut repeated = derive_key_bytes(
-            password,
-            &salt_a,
-            PROFILE_POC_OWASP_BASELINE,
-        )
-        .expect("repeated derivation");
-        let mut other_salt = derive_key_bytes(
-            password,
-            &salt_b,
-            PROFILE_POC_OWASP_BASELINE,
-        )
-        .expect("different-salt derivation");
+        let mut first = derive_key_bytes(password, &salt_a, PROFILE_POC_OWASP_BASELINE)
+            .expect("first derivation");
+        let mut repeated = derive_key_bytes(password, &salt_a, PROFILE_POC_OWASP_BASELINE)
+            .expect("repeated derivation");
+        let mut other_salt = derive_key_bytes(password, &salt_b, PROFILE_POC_OWASP_BASELINE)
+            .expect("different-salt derivation");
 
         assert_eq!(first, repeated);
         assert_ne!(first, other_salt);
@@ -161,13 +144,8 @@ mod tests {
             .output_len(OUTPUT_BYTES)
             .data(associated_data);
         let params = builder.build().expect("RFC parameters");
-        let argon2 = Argon2::new_with_secret(
-            &secret,
-            Algorithm::Argon2id,
-            Version::V0x13,
-            params,
-        )
-        .expect("RFC secret");
+        let argon2 = Argon2::new_with_secret(&secret, Algorithm::Argon2id, Version::V0x13, params)
+            .expect("RFC secret");
 
         let mut output = [0u8; OUTPUT_BYTES];
         argon2
@@ -175,10 +153,9 @@ mod tests {
             .expect("RFC KAT derivation");
 
         let expected = [
-            0x0d, 0x64, 0x0d, 0xf5, 0x8d, 0x78, 0x76, 0x6c,
-            0x08, 0xc0, 0x37, 0xa3, 0x4a, 0x8b, 0x53, 0xc9,
-            0xd0, 0x1e, 0xf0, 0x45, 0x2d, 0x75, 0xb6, 0x5e,
-            0xb5, 0x25, 0x20, 0xe9, 0x6b, 0x01, 0xe6, 0x59,
+            0x0d, 0x64, 0x0d, 0xf5, 0x8d, 0x78, 0x76, 0x6c, 0x08, 0xc0, 0x37, 0xa3, 0x4a, 0x8b,
+            0x53, 0xc9, 0xd0, 0x1e, 0xf0, 0x45, 0x2d, 0x75, 0xb6, 0x5e, 0xb5, 0x25, 0x20, 0xe9,
+            0x6b, 0x01, 0xe6, 0x59,
         ];
         assert_eq!(output, expected);
         output.zeroize();
