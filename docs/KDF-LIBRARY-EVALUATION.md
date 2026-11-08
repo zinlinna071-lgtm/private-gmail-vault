@@ -99,11 +99,11 @@ This is a source-code PoC only. No production application import, no API switch,
 
 ## 7. Remaining approval gates
 
-1. Confirm the GitHub Actions native RFC vector test passes.
-2. Confirm the browser-WASM target compiles and inspect the generated module/imports and final binary size.
-3. Add and inspect the matching `wasm-bindgen` JavaScript glue in an isolated browser harness; verify the typed-array boundary and no unexpected imports.
+1. Restore GitHub Actions runner availability and confirm the native RFC vector and fixed-profile tests pass.
+2. Confirm the browser-WASM target compiles; inspect the generated module/imports and final binary size.
+3. Confirm the generated Node.js binding smoke test passes, then test the same module in a real browser harness; verify typed-array boundaries and no unexpected imports.
 4. Cross-check the RFC vector against an independent implementation, not just the same RustCrypto crate.
-5. Inspect the exact dependency lockfile and source provenance; retain the lockfile used for the reviewed artifact.
+5. Inspect the exact dependency lockfile and source provenance; commit and retain the lockfile used for the reviewed artifact.
 6. Review the upstream zeroization implementation and verify what is and is not cleared on success, error, and allocation failure.
 7. Benchmark both profiles on a lower-powered Android device and mobile Safari, including peak memory, elapsed time, responsiveness, repeated unlock, and memory pressure/OOM behavior.
 8. Implement Worker serialization/cancellation and prove no unbounded concurrent KDF work is possible.
