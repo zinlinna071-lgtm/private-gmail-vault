@@ -64,7 +64,7 @@ Do not return the Argon2id output, KEK, raw DEK, CryptoKey, or internal stack tr
 
 ## WASM packaging gate
 
-The current Rust crate is a PoC and CI generates Node.js bindings for its smoke test. The application Worker requires a separate browser-target build and generated browser glue. Do not import a nonexistent generated package or silently bundle a placeholder.
+The Rust crate remains a PoC. The existing CI job generates Node.js bindings for its smoke test; a separate workflow now generates `wasm-bindgen --target web` output and runs that output from a test-only module Worker in Chromium, Firefox, and WebKit. The generated `pkg-web` output is a short-lived CI artifact only and is not imported by the Next.js application. Do not wire this PoC package into production until the browser workflow passes, the generated glue is reviewed, and the Next.js/Cloudflare asset strategy is independently verified.
 
 Before application integration:
 
@@ -76,7 +76,7 @@ Before application integration:
 6. Test Chromium, Firefox, and WebKit, plus lower-powered Android and iOS Safari devices.
 7. Confirm the Argon2 profile memory/time settings are approved only after measurements and independent review.
 
-The existing CI Node smoke test is not evidence for this browser Worker packaging gate.
+The existing CI Node smoke test is not evidence for this browser Worker packaging gate. The new browser Worker harness is still test-only and does not establish application packaging or mobile-device compatibility.
 
 ## Required tests
 
