@@ -29,13 +29,29 @@ jobs:
         run: cargo test --manifest-path security/argon2-wasm/Cargo.toml
       - name: Compile isolated browser WebAssembly module
         run: cargo build --manifest-path security/argon2-wasm/Cargo.toml --target wasm32-unknown-unknown --release
-      - name: Upload un-deployed WebAssembly build artifact
+      - name: Set up Node.js for generated binding smoke tests
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install pinned wasm-bindgen CLI
+        run: cargo install wasm-bindgen-cli --version 0.2.130 --locked
+      - name: Generate Node.js bindings for isolated smoke testing
+        run: |
+          wasm-bindgen \
+            --target nodejs \
+            --out-dir security/argon2-wasm/pkg \
+            --out-name vault_argon2_wasm_poc \
+            security/argon2-wasm/target/wasm32-unknown-unknown/release/vault_argon2_wasm_poc.wasm
+      - name: Exercise generated WASM JavaScript boundary
+        run: node security/argon2-wasm/tests/wasm-smoke.cjs
+      - name: Upload un-deployed WebAssembly build and binding artifacts
         uses: actions/upload-artifact@v4
         with:
           name: argon2-wasm-poc-${{ github.sha }}
           path: |
             security/argon2-wasm/target/wasm32-unknown-unknown/release/vault_argon2_wasm_poc.wasm
             security/argon2-wasm/Cargo.lock
+            security/argon2-wasm/pkg/
           if-no-files-found: error
           retention-days: 7
 
