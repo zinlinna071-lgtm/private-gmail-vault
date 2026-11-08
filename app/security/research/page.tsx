@@ -21,7 +21,7 @@ export default function SecurityResearchPage() {
           <span className="security-brand-mark">V</span>
           <span>PRIVATE ACCOUNT VAULT <small>RESEARCH LIBRARY</small></span>
         </Link>
-        <nav className="security-nav-links" aria-label="Research navigation"><Link href="/security/architecture">UI/UX architecture</Link><Link href="/security">Security operations</Link></nav><span className="security-nav-status">ENGLISH · မြန်မာ</span>
+        <nav className="security-nav-links" aria-label="Research navigation"><Link href="/security/architecture">UI/UX architecture</Link><Link href="/security">Security operations</Link><Link href="/security/collaboration">Human × AI</Link></nav><span className="security-nav-status">ENGLISH · မြန်မာ</span>
       </header>
 
       <section className="security-hero">
