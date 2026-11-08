@@ -65,6 +65,7 @@ The design branch now includes deterministic Vitest coverage for:
 - registration rejection when the responsibility acknowledgement or Curator claim is missing;
 - rejection when the atomic claim-consume RPC reports a mismatched, expired, or previously consumed claim;
 - successful registration invoking the atomic consume RPC with hashed claim/session values and clearing the raw claim cookie.
+- direct registration denial without a claim, invalid/replayed claim denial before account creation, and rejection of client-supplied `role: owner` / `isOwner: true` escalation fields.
 
 Test files:
 - `tests/curator-challenge-route.test.ts`
@@ -73,6 +74,8 @@ Test files:
 - `tests/curator-puzzle.test.ts`
 - `tests/curator-claim.test.ts`
 - `tests/curator-verify-route.test.ts`
+- `tests/secondary-registration-route.test.ts`
+- `tests/security-research-workflow-auth.test.ts`
 - updated `tests/auth-routes.test.ts`
 
 These tests and the isolated PostgreSQL runner have been added to the repository but have **not yet been executed in a confirmed CI or local test run**. The Vercel status check is currently failing because the linked Vercel account reports a build-rate-limit/upgrade restriction; that is not evidence of a GitHub Actions test failure. Do not describe the test suite as passing until a successful run is observed.
