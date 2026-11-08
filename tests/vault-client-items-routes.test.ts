@@ -165,6 +165,7 @@ describe("ciphertext-only Vault API", () => {
   });
 
   it("updates only an owned client-v1 row and returns its opaque envelope", async () => {
+    mocks.readBoundedJson.mockResolvedValue({ ok: true, value: { envelope } });
     const response = await PUT(new Request("https://vault.example/api/vault/client-items/" + recordId, {
       method: "PUT",
       headers: requestHeaders,
