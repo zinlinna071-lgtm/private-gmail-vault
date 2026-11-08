@@ -37,11 +37,25 @@ if [[ "$results" != "false true " ]]; then
   exit 1
 fi
 
+claim_race_sql="select public.consume_curator_registration_claim(repeat('7',64), repeat('f',64));"
+psql "$DATABASE_URL" -X -A -t -v ON_ERROR_STOP=1 -c "$claim_race_sql" > "$tmp_dir/claim_one" &
+claim_pid_one=$!
+psql "$DATABASE_URL" -X -A -t -v ON_ERROR_STOP=1 -c "$claim_race_sql" > "$tmp_dir/claim_two" &
+claim_pid_two=$!
+wait "$claim_pid_one"
+wait "$claim_pid_two"
+
+claim_results="$(cat "$tmp_dir/claim_one" "$tmp_dir/claim_two" | sed '/^[[:space:]]*$/d' | sort | tr '\n' ' ')"
+if [[ "$claim_results" != "false true " ]]; then
+  echo "Concurrent registration claim consumption was not one-time: $claim_results" >&2
+  exit 1
+fi
+
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
 DELETE FROM public.curator_challenges
 WHERE challenge_hash IN (repeat('1',64), repeat('2',64), repeat('3',64), repeat('6',64));
 DELETE FROM public.curator_registration_claims
-WHERE claim_hash IN (repeat('4',64), repeat('5',64));
+WHERE claim_hash IN (repeat('4',64), repeat('5',64), repeat('7',64));
 SQL
 
 echo "Curator challenge/claim PostgreSQL migration tests passed."
