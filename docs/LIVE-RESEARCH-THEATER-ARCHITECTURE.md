@@ -149,7 +149,7 @@ Every puzzle must:
 ## 8. Existing foundation to reuse
 
 The repository already contains relevant building blocks:
-- `app/security/lab-activity-console.tsx` — truthful no-source-connected observability shell;
+- `app/security/lab-activity-console.tsx` — truthful observability shell with a public-safe session viewer placeholder, explicit session-state definitions, and a no-source-connected state;
 - `lib/security-lab/telemetry.ts` — strict bounded event schema;
 - `lib/security-research/test-run.ts` — public test-run metadata and publication gate;
 - `lib/security-research/test-run.ts` and `docs/SECURITY-TEST-RUN-CONTRACT.md` — evidence/provenance contract;
@@ -158,15 +158,15 @@ The repository already contains relevant building blocks:
 - `app/security/cryptography-learning-lab.tsx` — interactive cryptography learning surface;
 - `docs/CYBER-VISUAL-ARCHITECTURE.md` — motion, visual truth, and accessibility foundation.
 
-These are starting points, not proof that a public live stream, safe public execution sandbox, or complete research theater is already implemented.
+The public UI now includes a session-viewer shell and a legend defining LIVE, DELAYED, RECORDED, ILLUSTRATIVE, SIMULATED, and UNAVAILABLE. This is a presentation contract only. It is not proof that a public live stream, safe public execution sandbox, or complete research theater is implemented.
 
 ## 9. Staged implementation plan
 
 ### Stage 1 — truthful public experience
-- [ ] Refine the public Security page into a coherent Research Theater entry point.
-- [ ] Add explicit navigation to Live Research, Research Stories, Learning Lab, Puzzle Arena, and Research Archive.
-- [ ] Distinguish live, recorded, illustrative, simulated, and unavailable content in the design system.
-- [ ] Improve empty states so an inactive lab remains intentional and informative.
+- [x] Refine the public Security page into a coherent Research Theater entry point.
+- [ ] Add explicit navigation to Research Stories, Learning Lab, Puzzle Arena, and Research Archive.
+- [x] Define display labels for live, delayed, recorded, illustrative, simulated, and unavailable content.
+- [x] Improve the inactive-lab empty state with a public session-viewer placeholder and event provenance contract.
 - [ ] Preserve all current evidence and limitation disclosures.
 
 ### Stage 2 — verified private lab event source
@@ -215,6 +215,6 @@ These are starting points, not proof that a public live stream, safe public exec
 
 ## 11. Current status
 
-This document is an architecture plan. The existing public dashboard is not yet connected to an authenticated private-lab live event source. The lab console currently reports that telemetry is not connected. The public research library and learning components are partial foundations. The private Vault API remains server-readable until the separately planned ciphertext-only migration is completed.
+This document is an architecture plan. The public dashboard now has a session-viewer presentation shell, public event-field contract, and explicit state legend. It is still not connected to an authenticated private-lab live event source; the current session state remains UNAVAILABLE and no live or recorded session is claimed. The public research library and learning components are partial foundations. The private Vault API remains server-readable until the separately planned ciphertext-only migration is completed.
 
 No production database, production secret, deployment, or live external target is changed or authorized by this plan.
