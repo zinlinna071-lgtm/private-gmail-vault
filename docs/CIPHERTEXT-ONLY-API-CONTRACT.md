@@ -110,7 +110,7 @@ Unit tests are defined in:
 
 These tests are written but have **not** yet been confirmed passing in CI.
 
-The Argon2id implementation and its browser/mobile performance profile are not yet selected. A candidate library must be actively maintained, suitable for browser/WASM use, have a defensible review/security history, and be tested on lower-powered mobile devices before it is pinned. Do not select a package solely because it is popular or fast.
+The Argon2id implementation and its browser/mobile performance profile are not yet selected. The candidate review and rejection reasons are recorded in `docs/KDF-LIBRARY-EVALUATION.md`. A candidate library must be actively maintained, suitable for browser/WASM use, have a defensible review/security history, and be tested on lower-powered mobile devices before it is pinned. Do not select a package solely because it is popular or fast.
 
 This checkpoint is **not** an integrated client-side Vault: the UI and API still use the legacy server-readable path. Do not store real credentials, do not claim zero-knowledge, and do not remove the server encryption key until the KDF, key lifecycle, recovery, ciphertext-only routes, UI wiring, legacy-data handling, and independent review gates are complete.
 
