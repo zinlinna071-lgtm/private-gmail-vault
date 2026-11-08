@@ -45,7 +45,8 @@ describe("client Vault session orchestration", () => {
 
   it("initializes in the Worker and sends only public metadata to the API", async () => {
     const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify({ metadata }), { status: 201 }));
-    const factory = vi.fn() as unknown as () => Worker;
+    const worker = { addEventListener: vi.fn(), removeEventListener: vi.fn(), terminate: vi.fn() } as unknown as Worker;
+    const factory = vi.fn(() => worker);
 
     const client = await initializeClientVault(vaultId, "private unlock phrase", 1, {
       fetcher: fetcher as typeof fetch,
@@ -53,6 +54,8 @@ describe("client Vault session orchestration", () => {
     });
 
     expect(client).toBeDefined();
+    expect(factory).toHaveBeenCalledOnce();
+    expect(mocks.constructor).toHaveBeenCalledWith(worker);
     expect(mocks.initialize).toHaveBeenCalledWith(new TextEncoder().encode("private unlock phrase"), vaultId, 1);
     const [, request] = fetcher.mock.calls[0];
     const body = JSON.parse(request.body);
