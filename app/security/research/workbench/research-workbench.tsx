@@ -81,6 +81,14 @@ export function ResearchWorkbench({ isOwner, isReviewer }: { isOwner: boolean; i
     loadDrafts().catch((error) => setMessage(error instanceof Error ? error.message : "Could not load drafts."));
   }, [loadDrafts]);
 
+  useEffect(() => {
+    if (isOwner && selected?.id) {
+      loadAssignments(selected.id).catch((error) => setMessage(error instanceof Error ? error.message : "Could not load reviewer assignments."));
+    } else {
+      setAssignments([]);
+    }
+  }, [isOwner, selected?.id, loadAssignments]);
+
   const currentStage = useMemo(() => {
     if (!selected) return null;
     if (selected.workflow_state === "DRAFT") return "technical";
@@ -148,6 +156,7 @@ export function ResearchWorkbench({ isOwner, isReviewer }: { isOwner: boolean; i
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error ?? "Reviewer assignment could not be created.");
       setReviewerUserId("");
+      await loadAssignments(selected.id);
       setMessage("Reviewer assigned to this draft and stage. The grant expires automatically.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Reviewer assignment could not be created.");
