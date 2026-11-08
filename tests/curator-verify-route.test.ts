@@ -115,7 +115,7 @@ describe("Curator verification API", () => {
     expect(response.status).toBe(200);
     expect(body.success).toBe(true);
     expect(mocks.consumeChallenge).toHaveBeenCalledWith("consume_curator_challenge", {
-      p_challenge_hash: "sha256-challenge-token",
+      p_challenge_hash: "digest-15",
       p_session_hash: "digest-21"
     });
     expect(mocks.insert).toHaveBeenCalledWith(expect.objectContaining({
