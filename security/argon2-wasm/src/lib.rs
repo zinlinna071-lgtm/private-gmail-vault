@@ -3,7 +3,7 @@
 //! This crate is intentionally not imported by the application. Profile IDs are
 //! fixed here; callers cannot supply memory, time, or parallelism parameters.
 
-use argon2::{Algorithm, Argon2, AssociatedData, Params, ParamsBuilder, Version};
+use argon2::{Algorithm, Argon2, Params, Version};
 use js_sys::Uint8Array;
 use wasm_bindgen::prelude::*;
 use zeroize::Zeroize;
@@ -82,6 +82,7 @@ pub fn derive_key(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use argon2::{AssociatedData, ParamsBuilder};
 
     #[test]
     fn only_two_fixed_profiles_are_accepted() {
