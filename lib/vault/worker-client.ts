@@ -67,12 +67,16 @@ export class VaultCryptoWorkerClient {
   private readonly pending = new Map<string, PendingRequest>();
   private closed = false;
 
-  constructor(workerFactory: () => Worker = () => new Worker(
-    new URL("./crypto-worker.ts", import.meta.url),
-    { type: "module", name: "private-vault-crypto" }
-  )) {
-    if (typeof Worker === "undefined") throw new Error("Web Workers are not supported in this browser.");
-    this.worker = workerFactory();
+  constructor(workerFactory?: () => Worker) {
+    if (workerFactory) {
+      this.worker = workerFactory();
+    } else {
+      if (typeof Worker === "undefined") throw new Error("Web Workers are not supported in this browser.");
+      this.worker = new Worker(
+        new URL("./crypto-worker.ts", import.meta.url),
+        { type: "module", name: "private-vault-crypto" }
+      );
+    }
     this.worker.addEventListener("message", this.onMessage);
     this.worker.addEventListener("error", this.onError);
     this.worker.addEventListener("messageerror", this.onMessageError);
