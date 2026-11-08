@@ -103,9 +103,22 @@ Do not claim the legacy migration preserves confidentiality from the server: the
 
 ### Release gates
 - All relevant unit, integration, PostgreSQL, typecheck, build, browser, and mobile tests must pass with recorded evidence.
-- Resolve the GitHub Actions runner-allocation failure before relying on CI results.
+- GitHub Actions runner allocation is now functioning for this public repository; continue requiring successful branch-specific CI evidence for each integration change.
 - Complete independent cryptographic and application-security review.
 - Obtain explicit approval before applying any migration to a live database, changing production secrets, or deploying.
+
+## 8. Argon2id PoC verification checkpoint — 2026-11-08
+
+The isolated Rust Argon2id v1.3 PoC passed its CI gates on branch `design/cyber-visual-architecture`:
+
+- Native RFC 9106 §5.3 known-answer vector and input validation passed.
+- The pinned Rust toolchain compiled the WASM module.
+- Pinned `wasm-bindgen` generated the JavaScript bindings.
+- The generated JavaScript boundary smoke test passed.
+- The separate browser Worker harness passed in Chromium, Firefox, and WebKit (workflow run `42471022882`).
+- Main repository CI, including tests, typecheck, PostgreSQL migrations, and production build, passed at commit `686ac3e` (workflow run `42472354256`).
+
+This is evidence for the isolated PoC only. It does not approve a production KDF profile, prove Android/iOS performance, package WASM into the Next.js app, or enable client-side encryption in the active Vault CRUD path. The current API remains server-readable.
 
 ## 7. Public security claim boundary
 
