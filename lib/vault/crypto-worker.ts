@@ -123,6 +123,7 @@ async function handleRequest(request: VaultWorkerRequest): Promise<void> {
         return;
       }
       operationInProgress = true;
+      const publicSalt = encodeBase64(new Uint8Array(request.saltBytes));
       try {
         const kek = await deriveKek(request);
         const vaultKey = await createVaultKeyEnvelope(kek, request.vaultId);
@@ -131,7 +132,7 @@ async function handleRequest(request: VaultWorkerRequest): Promise<void> {
         post({
           type: "INITIALIZED",
           requestId: request.requestId,
-          salt: encodeBase64(new Uint8Array(request.saltBytes)),
+          salt: publicSalt,
           profileId: request.profileId,
           wrappedKeyEnvelope: vaultKey.envelope
         });
@@ -201,6 +202,15 @@ scope.onmessage = (event: MessageEvent<unknown>) => {
   try {
     request = parseVaultWorkerRequest(event.data);
   } catch {
+    if (event.data && typeof event.data === "object") {
+      const candidateBuffers = event.data as { unlockSecretBuffer?: unknown; saltBytes?: unknown };
+      if (candidateBuffers.unlockSecretBuffer instanceof ArrayBuffer) {
+        new Uint8Array(candidateBuffers.unlockSecretBuffer).fill(0);
+      }
+      if (candidateBuffers.saltBytes instanceof ArrayBuffer) {
+        new Uint8Array(candidateBuffers.saltBytes).fill(0);
+      }
+    }
     const candidate = event.data as { requestId?: unknown } | null;
     const requestId = typeof candidate?.requestId === "string" &&
       /^[A-Za-z0-9_-]{1,64}$/.test(candidate.requestId)
