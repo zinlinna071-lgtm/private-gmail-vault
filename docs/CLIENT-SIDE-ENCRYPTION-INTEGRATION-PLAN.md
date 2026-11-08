@@ -192,3 +192,32 @@ These are integration primitives, not an enabled client-encrypted Vault:
 Do not enable the Worker as a decorative unlock step while CRUD remains plaintext-to-server. The next implementation phase must coordinate: (1) a separate local Vault Unlock Secret and reviewed unlock/recovery lifecycle, (2) persistence and retrieval of the wrapped DEK and KDF metadata, (3) a user-mediated legacy-record migration, (4) ciphertext-only GET/POST/PUT routes, and (5) UI integration that encrypts before every write and decrypts only after local unlock.
 
 No production migration, production secret change, merge, or deployment was performed for this checkpoint. The active Vault remains server-readable and must not be described as zero-knowledge or used for high-value real credentials.
+
+
+## 12. Active CRUD and key-metadata review — 2026-11-08
+
+A focused source review was completed after the application Worker CI passed. The review confirms the following:
+
+### Verified existing pieces
+- `supabase/migrations/202611080003_client_vault_key_metadata.sql` adds nullable public KDF metadata and a wrapped-DEK envelope to `vault_profiles`. Its all-null-or-complete constraint prevents partially populated key metadata. It explicitly leaves existing records and active CRUD behavior unchanged.
+- `lib/vault/server-envelope-schema.ts` provides strict server-side validation for the future ciphertext envelope shape. It is not currently connected to the active Vault CRUD routes.
+- `lib/vault/record-envelope.ts` and `lib/vault/key-envelope.ts` provide browser-side AES-GCM envelope operations. The application Worker calls these primitives, but the active UI does not yet use the Worker.
+
+### Confirmed blockers — do not enable zero-knowledge claims
+- `GET /api/vault/items` selects legacy encrypted columns and calls `decryptVaultItem()` on the server, then returns credential plaintext in JSON.
+- `POST /api/vault/items` accepts `accountName`, `username`, `password`, and `backupCodes` as plaintext JSON, encrypts them using the server-held key, and returns the plaintext record.
+- `PUT /api/vault/items/[id]` follows the same plaintext-to-server encryption path.
+- `app/vault/vault-manager.tsx` sends the plaintext form object to POST/PUT and expects plaintext records from GET. No Worker unlock, ciphertext-only CRUD, or migration flow is wired into this component.
+- The key-metadata migration is schema groundwork only. No active key metadata GET/POST endpoint or user-mediated record migration was found in the reviewed paths.
+
+### Integration sequencing decision
+Do not make a partial API or UI switch. Implement and test the following as one backward-compatible staged rollout:
+1. Add authenticated, no-store endpoints for reading/writing only the current user's public KDF metadata and wrapped DEK. Validate exact fields and immutable protocol/profile allowlists; never accept raw key material or the Unlock Secret.
+2. Add a local unlock/setup lifecycle around the Worker, including lock, logout, tab-close, idle-timeout, failed-unlock, duplicate-operation, and Worker-crash handling. Verify mobile browser performance before selecting the production KDF profile.
+3. Add an explicit per-record migration state and a user-mediated migration screen. Keep legacy records readable only through a clearly identified temporary path until each encrypted replacement is fetched back and successfully decrypted locally. Never silently overwrite or delete the only readable copy.
+4. Introduce ciphertext-only API behavior behind a versioned protocol or explicit migration-completion gate. Reject plaintext credential keys at the API boundary and ensure GET never calls server decryption.
+5. Integrate every create/read/update path with the Worker and add regression tests proving plaintext credential fields never cross the network after migration. Keep delete ownership checks and transactional Secondary quota behavior intact.
+6. Only after independent review and explicit release approval, retire the server encryption key path and remove the legacy compatibility route.
+
+### Release status
+The metadata migration has passed the repository's PostgreSQL migration tests in CI, but it has not been applied to a live database. The current Vault is still server-readable. No production migration, production secret change, merge, or deployment was performed as part of this review. The PR remains a draft for review.
