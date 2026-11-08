@@ -96,6 +96,7 @@ jobs:
           name: argon2id-web-worker-poc-${{ github.sha }}
           path: |
             security/argon2-wasm/pkg-web/
+            security/argon2-wasm/browser-worker-test/vault-crypto-worker.bundle.js
             .open-next/assets/crypto/argon2/
           if-no-files-found: error
           retention-days: 7
