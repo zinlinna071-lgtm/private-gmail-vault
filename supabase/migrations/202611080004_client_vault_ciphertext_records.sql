@@ -41,7 +41,11 @@ begin
    where class.oid = 'public.vault_items'::regclass;
 
   if current_user <> v_table_owner then
-    if tg_op = 'INSERT' or new.encryption_scheme is distinct from old.encryption_scheme then
+    -- Preserve the existing server-encrypted CRUD path: service_role may
+    -- continue inserting rows that use the legacy default scheme.
+    -- Only the SECURITY DEFINER quota function may insert client-v1 rows.
+    if (tg_op = 'INSERT' and new.encryption_scheme <> 'legacy-server-v1')
+       or (tg_op = 'UPDATE' and new.encryption_scheme is distinct from old.encryption_scheme) then
       raise exception using
         errcode = '42501',
         message = 'VAULT_ENCRYPTION_SCHEME_IS_IMMUTABLE';
