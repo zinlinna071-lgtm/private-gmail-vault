@@ -21,7 +21,9 @@ Do not run this migration against production without the owner's explicit approv
 ## Security boundaries and limitations
 
 - The Curator puzzle is a public discovery ritual and abuse-friction layer, **not an authentication factor or security boundary**. Its answer is part of public client code and can be automated or reproduced.
-- The claim is a short-lived, one-time registration gate bound to the browser session; it does not grant Owner privileges.
+- The challenge cookie currently acts as a short-lived browser-flow marker: the verification endpoint checks that it is present, but does not look up a server-persisted challenge record or cryptographically validate the marker itself. Do not describe it as proof that a particular challenge was issued or completed.
+- The registration claim is the server-issued, random, short-lived, one-time token. Its SHA-256 hash is stored server-side, and consumption is bound to the browser-session cookie through an atomic database function. It does not grant Owner privileges.
+- The existing rate limiter uses trusted proxy IP information and a session-derived bucket. It is abuse friction, not a substitute for authentication or a durable identity check.
 - Public registration must continue to assign the Secondary role server-side. Never accept a role from the browser.
 - Registration still requires the separate responsibility acknowledgement.
 - The claim is consumed before Supabase account creation. If account creation subsequently fails, the user must solve the puzzle again.
@@ -47,7 +49,8 @@ No production database, Main branch, or deployment has been changed by this impl
 ## Automated test coverage added
 
 The design branch now includes deterministic Vitest coverage for:
-- exact Curator archive mark and four-ring order validation, including missing, extra, duplicate, malformed, and incorrect values;\n- verification API behavior for incorrect answers, duplicate marks, successful hashed claim issuance, and database failure;
+- exact Curator archive mark and four-ring order validation, including missing, extra, duplicate, malformed, and incorrect values;
+- verification API behavior for incorrect answers, duplicate marks, successful hashed claim issuance, and database failure;
 - generation of opaque 256-bit claim tokens and SHA-256 digest properties;
 - registration rejection when the responsibility acknowledgement or Curator claim is missing;
 - rejection when the atomic claim-consume RPC reports a mismatched, expired, or previously consumed claim;
@@ -55,7 +58,8 @@ The design branch now includes deterministic Vitest coverage for:
 
 Test files:
 - `tests/curator-puzzle.test.ts`
-- `tests/curator-claim.test.ts`\n- `tests/curator-verify-route.test.ts`
+- `tests/curator-claim.test.ts`
+- `tests/curator-verify-route.test.ts`
 - updated `tests/auth-routes.test.ts`
 
 These tests have been added to the repository but have **not yet been executed in a confirmed CI or local test run**. The Vercel status check is currently failing because the linked Vercel account reports a build-rate-limit/upgrade restriction; that is not evidence of a GitHub Actions test failure. Do not describe the test suite as passing until a successful run is observed.
