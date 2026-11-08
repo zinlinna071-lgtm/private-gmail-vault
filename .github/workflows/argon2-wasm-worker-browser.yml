@@ -53,6 +53,22 @@ jobs:
         with:
           node-version: 22
 
+      - name: Install application dependencies
+        run: npm install --legacy-peer-deps --no-audit --no-fund
+
+      - name: Package generated browser WASM assets into the Next.js public tree
+        run: npm run package:argon2-wasm
+
+      - name: Build OpenNext Cloudflare output with packaged WASM assets
+        run: npm run build:cloudflare
+
+      - name: Verify WASM assets are present in the OpenNext asset output
+        run: |
+          test -s .open-next/assets/crypto/argon2/vault_argon2_wasm_poc.js
+          test -s .open-next/assets/crypto/argon2/vault_argon2_wasm_poc_bg.wasm
+          test -s .open-next/assets/crypto/argon2/manifest.json
+          node -e 'const fs=require("fs");const p=".open-next/assets/crypto/argon2/manifest.json";const m=JSON.parse(fs.readFileSync(p,"utf8"));if(m.format!=="vault-argon2-wasm-assets"||m.files.length!==3)process.exit(1);console.log("OpenNext packaged WASM manifest verified:",m.files.map(x=>x.path).join(", "));'
+
       - name: Install isolated Playwright dependencies
         working-directory: tools/argon2id-browser-spike
         run: npm install --legacy-peer-deps --ignore-scripts --no-audit --no-fund
@@ -69,6 +85,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: argon2id-web-worker-poc-${{ github.sha }}
-          path: security/argon2-wasm/pkg-web/
+          path: |
+            security/argon2-wasm/pkg-web/
+            .open-next/assets/crypto/argon2/
           if-no-files-found: error
           retention-days: 7
