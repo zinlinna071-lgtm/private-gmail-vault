@@ -25,6 +25,38 @@ $constraint$;
 comment on column public.vault_profiles.account_type is
   'Server/database-managed account tier. Public registration is always Secondary; Owner must be provisioned out-of-band.';
 
+-- Prevent the application service role from promoting an account to Owner.
+-- Only the actual table owner (the trusted database migration/operator identity)
+-- may assign the privileged account type out-of-band.
+create or replace function public.guard_vault_profile_account_type()
+returns trigger
+language plpgsql
+set search_path = ''
+as $
+declare
+  v_table_owner name;
+begin
+  select pg_catalog.pg_get_userbyid(class.relowner)
+    into v_table_owner
+    from pg_catalog.pg_class as class
+   where class.oid = 'public.vault_profiles'::regclass;
+
+  if current_user <> v_table_owner
+     and new.account_type is distinct from 'secondary' then
+    raise exception using
+      errcode = '42501',
+      message = 'OWNER_ROLE_PROVISIONING_REQUIRES_DATABASE_OWNER';
+  end if;
+
+  return new;
+end;
+$;
+
+drop trigger if exists vault_profiles_guard_account_type on public.vault_profiles;
+create trigger vault_profiles_guard_account_type
+before insert or update of account_type on public.vault_profiles
+for each row execute function public.guard_vault_profile_account_type();
+
 create or replace function public.create_vault_item_with_quota(
   p_user_id uuid,
   p_id uuid,
