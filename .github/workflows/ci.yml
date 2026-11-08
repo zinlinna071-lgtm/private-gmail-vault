@@ -13,6 +13,28 @@ permissions:
   contents: read
 
 jobs:
+  argon2-wasm-poc:
+    name: Argon2id browser-WASM proof of concept
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Rust and WebAssembly target
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - name: Run native RFC 9106 known-answer and input-validation tests
+        run: cargo test --manifest-path security/argon2-wasm/Cargo.toml
+      - name: Compile isolated browser WebAssembly module
+        run: cargo build --manifest-path security/argon2-wasm/Cargo.toml --target wasm32-unknown-unknown --release
+      - name: Upload un-deployed WebAssembly build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: argon2-wasm-poc-${{ github.sha }}
+          path: security/argon2-wasm/target/wasm32-unknown-unknown/release/vault_argon2_wasm_poc.wasm
+          if-no-files-found: error
+          retention-days: 7
+
   verify:
     runs-on: ubuntu-latest
     services:
