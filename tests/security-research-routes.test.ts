@@ -55,7 +55,10 @@ describe("private research route authorization", () => {
     mocks.createSupabaseAdminClient.mockReturnValue({});
     mocks.isSameOriginRequest.mockReturnValue(true);
     mocks.isJsonContentType.mockReturnValue(true);
-    mocks.readBoundedJson.mockResolvedValue({ ok: true, value: {} });
+    mocks.readBoundedJson.mockImplementation(async (req: Request) => ({
+      ok: true,
+      value: await req.json()
+    }));
   });
 
   it("does not allow a Secondary account to list private research drafts", async () => {
