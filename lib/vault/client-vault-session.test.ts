@@ -4,7 +4,7 @@ const mocks = vi.hoisted(() => ({
   constructor: vi.fn(),
   initialize: vi.fn(),
   unlock: vi.fn(),
-  close: vi.fn()
+  dispose: vi.fn()
 }));
 
 vi.mock("./worker-client", () => ({
@@ -14,7 +14,7 @@ vi.mock("./worker-client", () => ({
     }
     initialize = mocks.initialize;
     unlock = mocks.unlock;
-    close = mocks.close;
+    dispose = mocks.dispose;
   }
 }));
 
@@ -53,7 +53,7 @@ describe("client Vault session orchestration", () => {
     });
 
     expect(client).toBeDefined();
-    expect(mocks.initialize).toHaveBeenCalledWith(vaultId, "private unlock phrase", 1);
+    expect(mocks.initialize).toHaveBeenCalledWith(new TextEncoder().encode("private unlock phrase"), vaultId, 1);
     const [, request] = fetcher.mock.calls[0];
     const body = JSON.parse(request.body);
     expect(body).toEqual({ profileId: 1, salt, wrappedKeyEnvelope });
@@ -68,7 +68,7 @@ describe("client Vault session orchestration", () => {
     await expect(initializeClientVault(vaultId, "secret", 1, {
       fetcher: fetcher as typeof fetch
     })).rejects.toThrow("Conflict");
-    expect(mocks.close).toHaveBeenCalledOnce();
+    expect(mocks.dispose).toHaveBeenCalledOnce();
   });
 
   it("fetches metadata before creating and unlocking the Worker", async () => {
@@ -84,8 +84,8 @@ describe("client Vault session orchestration", () => {
       credentials: "same-origin"
     }));
     expect(mocks.unlock).toHaveBeenCalledWith(
+      new TextEncoder().encode("private unlock phrase"),
       vaultId,
-      "private unlock phrase",
       salt,
       1,
       wrappedKeyEnvelope
@@ -108,6 +108,6 @@ describe("client Vault session orchestration", () => {
     await expect(unlockClientVault(vaultId, "wrong secret", {
       fetcher: fetcher as typeof fetch
     })).rejects.toThrow("Unlock failed");
-    expect(mocks.close).toHaveBeenCalledOnce();
+    expect(mocks.dispose).toHaveBeenCalledOnce();
   });
 });
