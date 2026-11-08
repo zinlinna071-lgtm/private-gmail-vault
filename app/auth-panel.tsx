@@ -70,7 +70,7 @@ export default function AuthPanel() {
 
     const endpoint = mode === "register" ? "/api/auth/register" : mode === "recover" ? "/api/auth/recovery" : "/api/auth/login";
     const payload = mode === "register"
-      ? { loginId, password }
+      ? { loginId, password, responsibilityAccepted: registrationAcknowledged }
       : mode === "recover"
         ? { loginId, recoveryCode, newPassword }
         : { loginId, password };
