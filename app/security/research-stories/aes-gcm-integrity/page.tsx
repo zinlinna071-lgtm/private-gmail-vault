@@ -168,7 +168,7 @@ export default function AesGcmIntegrityStory() {
         .integrity-result.error{border-color:#98545b;background:#301d25}.integrity-result.error>span{color:#ffadb6}
         .integrity-explanation{margin-top:20px;padding-top:18px;border-top:1px solid #203b47}.integrity-explanation b{color:#c9f3e3}.integrity-explanation p{font-size:12px;line-height:1.8;color:#9eb4be}
         .integrity-limit{margin-top:22px}.integrity-limit ul{padding-left:20px}.integrity-limit li{margin:7px 0}.integrity-limit a{color:#9cebd0}.integrity-reference{font-size:11px!important}
-        @media(max-width:640px){.integrity-grid{grid-template-columns:1fr}.integrity-actions button{flex:1 1 100%}}
+        @media(max-width:640px){.integrity-process{grid-template-columns:1fr;gap:8px}.integrity-stage{grid-template-columns:28px minmax(0,1fr);padding:11px 12px}.integrity-stage>small{grid-column:2}.integrity-grid{grid-template-columns:1fr}.integrity-actions button{flex:1 1 100%}}
       `}</style>
     </main>
   );
