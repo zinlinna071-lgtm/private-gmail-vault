@@ -132,7 +132,7 @@ export class VaultCryptoWorkerClient {
     const requestId = crypto.randomUUID();
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
-        this.pending.delete(requestId);
+        // Keep this request in the map so terminate() rejects its Promise as well.
         this.terminate(new Error("The Vault crypto operation timed out. Lock the Vault and try again."));
       }, REQUEST_TIMEOUT_MS);
       this.pending.set(requestId, {
