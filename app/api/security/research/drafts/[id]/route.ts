@@ -5,6 +5,7 @@ import { isJsonContentType } from "@/lib/auth/content-type";
 import { readBoundedJson } from "@/lib/auth/bounded-json";
 import { createResearchDraftSchema } from "@/lib/security-research/workflow";
 import { getResearchActor } from "@/lib/security-research/workflow-auth";
+import { hasActiveResearchReviewAssignment, reviewStageForWorkflowState } from "@/lib/security-research/review-assignments";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -27,9 +28,12 @@ export async function GET(_request: Request, context: Context) {
       .eq("id", id).maybeSingle();
     if (error || !data) return reply({ error: "Draft not found." }, 404);
     if (!actor.isOwner) {
-      const expected = ["DRAFT", "SECURITY_PRIVACY_REVIEW", "BILINGUAL_REVIEW"];
-      if (!actor.isReviewer || !expected.includes(data.workflow_state)) return reply({ error: "This draft is not assigned for your review." }, 403);
+      const stage = reviewStageForWorkflowState(data.workflow_state);
+      if (!actor.isReviewer || !stage) return reply({ error: "This draft is not assigned for your review." }, 403);
       if (data.owner_user_id === actor.id) return reply({ error: "Authors cannot review their own draft." }, 403);
+      if (!(await hasActiveResearchReviewAssignment(id, stage, actor.id))) {
+        return reply({ error: "No active assignment grants access to this draft at its current review stage." }, 403);
+      }
     }
     const { owner_user_id: _ownerId, ...safe } = data;
     return reply({ draft: safe });
