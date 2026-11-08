@@ -53,7 +53,9 @@ import { POST } from "@/app/api/auth/register/route";
 const registrationBody = {
   loginId: "secondary-user",
   password: "a-strong-test-password-123",
-  responsibilityAccepted: true
+  responsibilityAccepted: true,
+  role: "owner",
+  isOwner: true
 };
 
 function request() {
