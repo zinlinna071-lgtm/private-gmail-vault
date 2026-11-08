@@ -23,7 +23,7 @@ psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$SQL_TEST"
 
 tmp_dir="$(mktemp -d)"
 trap 'rm -rf "$tmp_dir"' EXIT
-race_sql="select public.consume_curator_challenge(repeat('6',64), repeat('e',64));"
+race_sql="select case when public.consume_curator_challenge(repeat('6',64), repeat('e',64)) then 'true' else 'false' end;"
 psql "$DATABASE_URL" -X -A -t -v ON_ERROR_STOP=1 -c "$race_sql" > "$tmp_dir/one" &
 pid_one=$!
 psql "$DATABASE_URL" -X -A -t -v ON_ERROR_STOP=1 -c "$race_sql" > "$tmp_dir/two" &
@@ -37,7 +37,7 @@ if [[ "$results" != "false true " ]]; then
   exit 1
 fi
 
-claim_race_sql="select public.consume_curator_registration_claim(repeat('7',64), repeat('f',64));"
+claim_race_sql="select case when public.consume_curator_registration_claim(repeat('7',64), repeat('f',64)) then 'true' else 'false' end;"
 psql "$DATABASE_URL" -X -A -t -v ON_ERROR_STOP=1 -c "$claim_race_sql" > "$tmp_dir/claim_one" &
 claim_pid_one=$!
 psql "$DATABASE_URL" -X -A -t -v ON_ERROR_STOP=1 -c "$claim_race_sql" > "$tmp_dir/claim_two" &
