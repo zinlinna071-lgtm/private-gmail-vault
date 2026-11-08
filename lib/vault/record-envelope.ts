@@ -37,7 +37,14 @@ function encodeBase64(bytes: Uint8Array): string {
 }
 
 function decodeBase64(value: unknown, minBytes: number, maxBytes: number): Uint8Array {
-  if (typeof value !== "string" || value.length === 0 || !BASE64_PATTERN.test(value)) {
+  const minEncodedLength = Math.ceil(minBytes / 3) * 4;
+  const maxEncodedLength = Math.ceil(maxBytes / 3) * 4;
+  if (
+    typeof value !== "string" ||
+    value.length < minEncodedLength ||
+    value.length > maxEncodedLength ||
+    !BASE64_PATTERN.test(value)
+  ) {
     throw new Error("Invalid Vault record envelope.");
   }
   let bytes: Uint8Array;
@@ -47,6 +54,7 @@ function decodeBase64(value: unknown, minBytes: number, maxBytes: number): Uint8
     throw new Error("Invalid Vault record envelope.");
   }
   if (bytes.length < minBytes || bytes.length > maxBytes || encodeBase64(bytes) !== value) {
+    bytes.fill(0);
     throw new Error("Invalid Vault record envelope.");
   }
   return bytes;
@@ -120,11 +128,15 @@ export async function encryptVaultRecord(
   }
 
   const iv = globalThis.crypto.getRandomValues(new Uint8Array(IV_BYTES));
+  const plaintextBuffer = toArrayBuffer(plainBytes);
+  const ivBuffer = toArrayBuffer(iv);
+  const aadBytes = recordAad(vaultId, recordId);
+  const aadBuffer = toArrayBuffer(aadBytes);
   try {
     const encrypted = new Uint8Array(await globalThis.crypto.subtle.encrypt(
-      { name: "AES-GCM", iv: toArrayBuffer(iv), additionalData: toArrayBuffer(recordAad(vaultId, recordId)), tagLength: 128 },
+      { name: "AES-GCM", iv: ivBuffer, additionalData: aadBuffer, tagLength: 128 },
       dataKey,
-      toArrayBuffer(plainBytes)
+      plaintextBuffer
     ));
     try {
       return {
@@ -139,6 +151,10 @@ export async function encryptVaultRecord(
     }
   } finally {
     plainBytes.fill(0);
+    new Uint8Array(plaintextBuffer).fill(0);
+    new Uint8Array(ivBuffer).fill(0);
+    aadBytes.fill(0);
+    new Uint8Array(aadBuffer).fill(0);
     iv.fill(0);
   }
 }
@@ -158,11 +174,16 @@ export async function decryptVaultRecord(
   const combined = new Uint8Array(ciphertext.length + tag.length);
   combined.set(ciphertext);
   combined.set(tag, ciphertext.length);
+
+  const ivBuffer = toArrayBuffer(iv);
+  const aadBytes = recordAad(vaultId, recordId);
+  const aadBuffer = toArrayBuffer(aadBytes);
+  const combinedBuffer = toArrayBuffer(combined);
   try {
     const plaintext = await globalThis.crypto.subtle.decrypt(
-      { name: "AES-GCM", iv: toArrayBuffer(iv), additionalData: toArrayBuffer(recordAad(vaultId, recordId)), tagLength: 128 },
+      { name: "AES-GCM", iv: ivBuffer, additionalData: aadBuffer, tagLength: 128 },
       dataKey,
-      toArrayBuffer(combined)
+      combinedBuffer
     );
     if (plaintext.byteLength > VAULT_RECORD_MAX_PLAINTEXT_BYTES) {
       new Uint8Array(plaintext).fill(0);
@@ -178,5 +199,9 @@ export async function decryptVaultRecord(
     ciphertext.fill(0);
     tag.fill(0);
     combined.fill(0);
+    new Uint8Array(ivBuffer).fill(0);
+    aadBytes.fill(0);
+    new Uint8Array(aadBuffer).fill(0);
+    new Uint8Array(combinedBuffer).fill(0);
   }
 }
