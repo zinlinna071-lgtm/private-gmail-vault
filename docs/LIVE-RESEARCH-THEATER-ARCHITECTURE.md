@@ -184,10 +184,12 @@ The public UI now includes a session-viewer shell and a legend defining LIVE, DE
 - [ ] Never expose private runner controls or raw diagnostics.
 
 ### Stage 4 — interactive research stories
-- [ ] Add chapter-based publication components with accessible motion.
-- [ ] Bind every claim and visualization to publication evidence references.
-- [ ] Keep printable/text-first reading mode.
-- [ ] Add interactive diagrams and safe evidence exploration.
+- [x] Add a chapter-based AES-GCM nonce-reuse lesson at `/security/research-stories` with accessible chapter navigation and reduced-motion handling.
+- [x] Add a decision exercise that explains why nonce reuse is unsafe and requires a fresh unique nonce per encryption under the same key.
+- [x] Label the lesson ILLUSTRATIVE / SYNTHETIC; it performs no encryption, emits no telemetry, and uses no real keys, records, or external targets.
+- [ ] Bind every future empirical claim and visualization to publication evidence references.
+- [ ] Keep printable/text-first reading mode and expand the story format to evidence-backed publications.
+- [x] Link the interactive story from the public Research Library.
 
 ### Stage 5 — safe Puzzle Arena
 - [ ] Build synthetic exercises with deterministic expected outcomes.
