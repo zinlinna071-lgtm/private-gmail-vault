@@ -195,10 +195,13 @@ The public UI now includes a session-viewer shell and a legend defining LIVE, DE
 - [x] Explicitly distinguish a real local Web Crypto demonstration from a product security test or Vault audit.
 
 ### Stage 5 — safe Puzzle Arena
-- [ ] Build synthetic exercises with deterministic expected outcomes.
-- [ ] Enforce sandbox resource and network boundaries.
-- [ ] Add explanation-first feedback and accessible keyboard controls.
-- [ ] Keep public exercises isolated from Vault auth, data, and secrets.
+- [x] Add the first public Puzzle Arena at `/security/puzzle-arena` with five deterministic synthetic scenarios: AES-GCM nonce uniqueness, authenticated-decryption failure handling, per-record password salts, AAD context binding, and versioned KDF parameters.
+- [x] Keep answers, hints, progress, and scoring in browser memory; answers are not submitted to an API and no user-supplied secrets or code are accepted.
+- [x] Provide explanation-first feedback in English and Burmese, keyboard-operable controls, visible progress, reset, and reduced-motion handling.
+- [x] Link the Puzzle Arena from the Research Library and both interactive AES-GCM stories.
+- [ ] Enforce sandbox resource and network boundaries before introducing any exercise that executes code or security tests.
+- [x] Keep this initial exercise isolated from Vault auth, data, and secrets; it does not execute code or contact external targets.
+- [x] Describe network boundaries accurately: normal website delivery/navigation still uses the network, while puzzle answers remain local.
 
 ### Stage 6 — quality and release gates
 - [ ] Cross-device visual and responsive QA.
@@ -220,6 +223,6 @@ The public UI now includes a session-viewer shell and a legend defining LIVE, DE
 
 ## 11. Current status
 
-This document is an architecture plan. The public dashboard now has a session-viewer presentation shell, public event-field contract, and explicit state legend. It is still not connected to an authenticated private-lab live event source; the current session state remains UNAVAILABLE and no live or recorded session is claimed. The public research library and learning components are partial foundations. The private Vault API remains server-readable until the separately planned ciphertext-only migration is completed.
+This document is an architecture plan. The public dashboard now has a session-viewer presentation shell, public event-field contract, and explicit state legend. It is still not connected to an authenticated private-lab live event source; the current session state remains UNAVAILABLE and no live or recorded session is claimed. The public research library, two interactive AES-GCM stories, and a five-challenge browser-local synthetic Puzzle Arena are partial learning foundations. The Puzzle Arena does not execute code or contact external targets; its answers are not submitted to an API. The private Vault API remains server-readable until the separately planned ciphertext-only migration is completed.
 
 No production database, production secret, deployment, or live external target is changed or authorized by this plan.
