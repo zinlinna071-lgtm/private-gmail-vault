@@ -17,10 +17,9 @@ const server = createServer(async (request, response) => {
   try {
     const pathname = decodeURIComponent(new URL(request.url, "http://127.0.0.1").pathname);
     const relative = normalize(pathname).replace(/^([/\\]|\.\.(?:[/\\]|$))+/g, "");
-    const assetRelative = relative.startsWith("crypto/argon2/")
-      ? resolve("public", relative)
-      : relative;
-    const file = resolve(staticRoot, assetRelative);
+    const file = relative.startsWith("crypto/argon2/")
+      ? resolve(staticRoot, "public", relative)
+      : resolve(staticRoot, relative);
     if (file !== staticRoot && !file.startsWith(staticRoot + sep)) {
       response.writeHead(403).end("Forbidden");
       return;
