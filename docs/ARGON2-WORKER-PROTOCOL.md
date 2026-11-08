@@ -56,8 +56,8 @@ Do not return the Argon2id output, KEK, raw DEK, CryptoKey, or internal stack tr
 - Do not queue unbounded KDF requests; reject a concurrent request with `BUSY`.
 - Record operations are accepted only in the unlocked state.
 - A failed unlock leaves the Worker locked.
-- `LOCK` clears the in-memory key reference and rejects pending record operations.
-- Logout, explicit lock, idle timeout, page visibility policy, and fatal Worker errors must trigger lock/termination.
+- `LOCK` clears the in-memory key reference when the Worker can process the message. Generation checks suppress record-operation results if the lock message is processed before completion.
+- Argon2id runs synchronously and blocks that Worker event loop. A queued `LOCK` message cannot interrupt an active KDF, and WebCrypto promise completion may race with a queued message. For immediate cancellation on explicit lock, logout, idle timeout, or fatal Worker errors, the main thread must terminate the Worker and create a fresh locked Worker if needed.
 - Worker termination is the strongest practical lifecycle boundary available to this web design, but it cannot guarantee physical erasure of browser engine memory.
 - Do not automatically unlock from browser storage, URL parameters, remembered passwords, or authentication cookies.
 - No fallback to the legacy server encryption API is permitted if Worker initialization, WASM loading, or KDF execution fails.
@@ -130,3 +130,6 @@ The client factory is not yet called by the Vault UI. No unlock interface, persi
 Workflow run `42474053331` completed successfully. It generated the pinned browser-target wasm-bindgen assets, copied them into the Next.js public tree, built the OpenNext Cloudflare output, verified the WASM JS/binary/manifest under `.open-next/assets/crypto/argon2/`, and passed the isolated Chromium, Firefox, and WebKit Worker harness.
 
 This proves the current WASM asset packaging path and isolated browser PoC. It does not yet prove the new application Worker runtime is bundled, loaded, or used by Vault CRUD.
+
+
+The browser integration harness now also exercises the application Worker source bundled with esbuild, including initialize/unlock, record encryption/decryption, wrong-secret rejection, tampered-tag rejection, idle LOCK behavior, and termination during a high-cost KDF attempt. These checks are pending the current CI run; do not treat them as passing until Chromium, Firefox, and WebKit all complete.
