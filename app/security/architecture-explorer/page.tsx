@@ -94,7 +94,7 @@ const statusText: Record<Layer["status"], string> = {
 export default function SecurityArchitectureExplorerPage() {
   const [selectedId, setSelectedId] = useState("api");
   const [showBurmese, setShowBurmese] = useState(true);
-  const selected = useMemo(() => layers.find((layer) => layer.id === selectedId) ?? layers[0], [selectedId]);
+  const selected = useMemo(() => layers.find((layer) => layer.id === selectedId) ?? layers[0]!, [selectedId]);
 
   return (
     <main className="security-shell architecture-explorer">
