@@ -11,7 +11,7 @@ type DraftSummary = {
   updated_at: string;
   ready_at?: string | null;
 };
-type DraftDetail = DraftSummary & { content: unknown; reviews: Record<string, Array<{ decision: string; notes: string; reviewerUserId: string; reviewedAt: string }>> };
+type DraftDetail = DraftSummary & { content: unknown; reviews: Record<string, Array<{ decision: string; notes: string; reviewerUserId: string; reviewedAt: string }>> };\ntype ReviewerAssignment = { id: string; draft_id: string; stage: string; reviewer_user_id: string; assigned_at: string; expires_at: string; revoked_at: string | null; revoked_by_owner_user_id?: string | null };
 
 const contentTemplate = {
   researchQuestion: { en: "", my: "" },
@@ -45,7 +45,7 @@ export function ResearchWorkbench({ isOwner, isReviewer }: { isOwner: boolean; i
   const [category, setCategory] = useState("Authentication");
   const [contentText, setContentText] = useState(JSON.stringify(contentTemplate, null, 2));
   const [reviewNotes, setReviewNotes] = useState("");
-  const [reviewerUserId, setReviewerUserId] = useState("");
+  const [reviewerUserId, setReviewerUserId] = useState("");\n  const [assignments, setAssignments] = useState<ReviewerAssignment[]>([]);
   const [assignmentDays, setAssignmentDays] = useState("7");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -57,7 +57,7 @@ export function ResearchWorkbench({ isOwner, isReviewer }: { isOwner: boolean; i
     setDrafts(payload.drafts ?? []);
   }, []);
 
-  const loadDraft = useCallback(async (id: string) => {
+  const loadAssignments = useCallback(async (draftId: string) => {\n    const response = await fetch(`/api/security/research/assignments?draftId=${encodeURIComponent(draftId)}`, { cache: "no-store" });\n    const payload = await response.json();\n    if (!response.ok) throw new Error(payload.error ?? "Could not load reviewer assignments.");\n    setAssignments(payload.assignments ?? []);\n  }, []);\n\n  const loadDraft = useCallback(async (id: string) => {
     const response = await fetch(`/api/security/research/drafts/${id}`, { cache: "no-store" });
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.error ?? "Could not load this draft.");
@@ -145,6 +145,23 @@ export function ResearchWorkbench({ isOwner, isReviewer }: { isOwner: boolean; i
     } finally { setBusy(false); }
   }
 
+  async function revokeAssignment(assignmentId: string) {
+    if (!selected) return;
+    setBusy(true); setMessage("");
+    try {
+      const response = await fetch("/api/security/research/assignments", {
+        method: "DELETE", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assignmentId })
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error ?? "Assignment could not be revoked.");
+      await loadAssignments(selected.id);
+      setMessage("Reviewer assignment revoked. Access is denied on the next request.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Assignment could not be revoked.");
+    } finally { setBusy(false); }
+  }
+
   async function submitReview(decision: "approved" | "changes-requested") {
     if (!selected || !currentStage) return;
     setBusy(true); setMessage("");
@@ -214,6 +231,23 @@ export function ResearchWorkbench({ isOwner, isReviewer }: { isOwner: boolean; i
                   <div className="research-workbench-actions">
                     <button disabled={busy || !reviewerUserId.trim()} onClick={assignReviewer}>ASSIGN TO CURRENT STAGE</button>
                   </div>
+                </div>
+              )}
+              {isOwner && (
+                <div className="research-workbench-form">
+                  <h4>Reviewer assignment history</h4>
+                  {assignments.length === 0 ? <p>No assignments recorded for this draft.</p> : assignments.map((assignment) => {
+                    const status = assignment.revoked_at ? "REVOKED" : Date.parse(assignment.expires_at) <= Date.now() ? "EXPIRED" : "ACTIVE";
+                    return (
+                      <div className="research-workbench-review-record" key={assignment.id}>
+                        <strong>{assignment.stage.replaceAll("_", " ")} · {status}</strong>
+                        <p>Reviewer: <code>{assignment.reviewer_user_id}</code></p>
+                        <p>Assigned: {new Date(assignment.assigned_at).toLocaleString()} · Expires: {new Date(assignment.expires_at).toLocaleString()}</p>
+                        {assignment.revoked_at && <p>Revoked: {new Date(assignment.revoked_at).toLocaleString()}</p>}
+                        {status === "ACTIVE" && <button className="secondary" disabled={busy} onClick={() => revokeAssignment(assignment.id)}>REVOKE ACCESS</button>}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
               {Object.entries(selected.reviews ?? {}).flatMap(([stage, history]) =>
