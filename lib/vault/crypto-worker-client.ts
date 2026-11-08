@@ -117,12 +117,12 @@ export class VaultCryptoWorkerClient {
     const secretCopy = new Uint8Array(unlockSecret);
     unlockSecret.fill(0);
     const salt = crypto.getRandomValues(new Uint8Array(16));
-    const secretBuffer = toTransferableBuffer(secretCopy);
-    const saltBuffer = toTransferableBuffer(salt);
-    secretCopy.fill(0);
-    salt.fill(0);
+    let secretBuffer: ArrayBuffer | null = null;
+    let saltBuffer: ArrayBuffer | null = null;
 
     try {
+      secretBuffer = toTransferableBuffer(secretCopy);
+      saltBuffer = toTransferableBuffer(salt);
       const response = await this.send({
         type: "INITIALIZE",
         unlockSecretBuffer: secretBuffer,
@@ -138,8 +138,10 @@ export class VaultCryptoWorkerClient {
         wrappedKeyEnvelope: response.wrappedKeyEnvelope
       };
     } finally {
-      if (secretBuffer.byteLength) new Uint8Array(secretBuffer).fill(0);
-      if (saltBuffer.byteLength) new Uint8Array(saltBuffer).fill(0);
+      secretCopy.fill(0);
+      salt.fill(0);
+      if (secretBuffer?.byteLength) new Uint8Array(secretBuffer).fill(0);
+      if (saltBuffer?.byteLength) new Uint8Array(saltBuffer).fill(0);
     }
   }
 
@@ -155,13 +157,19 @@ export class VaultCryptoWorkerClient {
     }
     const secretCopy = new Uint8Array(unlockSecret);
     unlockSecret.fill(0);
-    const salt = decodeSalt(saltBase64);
-    const secretBuffer = toTransferableBuffer(secretCopy);
-    const saltBuffer = toTransferableBuffer(salt);
-    secretCopy.fill(0);
-    salt.fill(0);
+    let salt: Uint8Array;
+    try {
+      salt = decodeSalt(saltBase64);
+    } catch (error) {
+      secretCopy.fill(0);
+      throw error;
+    }
+    let secretBuffer: ArrayBuffer | null = null;
+    let saltBuffer: ArrayBuffer | null = null;
 
     try {
+      secretBuffer = toTransferableBuffer(secretCopy);
+      saltBuffer = toTransferableBuffer(salt);
       const response = await this.send({
         type: "UNLOCK",
         unlockSecretBuffer: secretBuffer,
@@ -173,8 +181,10 @@ export class VaultCryptoWorkerClient {
       if (response.type === "ERROR") throw new Error(response.code);
       if (response.type !== "UNLOCKED") throw new Error("Unexpected Vault Worker response.");
     } finally {
-      if (secretBuffer.byteLength) new Uint8Array(secretBuffer).fill(0);
-      if (saltBuffer.byteLength) new Uint8Array(saltBuffer).fill(0);
+      secretCopy.fill(0);
+      salt.fill(0);
+      if (secretBuffer?.byteLength) new Uint8Array(secretBuffer).fill(0);
+      if (saltBuffer?.byteLength) new Uint8Array(saltBuffer).fill(0);
     }
   }
 
