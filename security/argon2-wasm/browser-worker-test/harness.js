@@ -1,5 +1,5 @@
 const result = document.querySelector("#result");
-const worker = new Worker("/argon2-wasm/browser-worker-test/worker.js", { type: "module" });
+const worker = new Worker("/security/argon2-wasm/browser-worker-test/worker.js", { type: "module" });
 
 function waitFor(type, timeoutMs = 120000) {
   return new Promise((resolve, reject) => {
