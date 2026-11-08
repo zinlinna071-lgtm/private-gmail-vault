@@ -45,6 +45,11 @@ begin
           and length(client_kdf_salt) = 24
           and right(client_kdf_salt, 2) = '=='
           and left(client_kdf_salt, 22) !~ '[^A-Za-z0-9+/]'
+          and length(client_wrapped_dek_iv) = 16
+          and client_wrapped_dek_iv !~ '[^A-Za-z0-9+/]'
+          and length(client_wrapped_dek) = 64
+          and client_wrapped_dek !~ '[^A-Za-z0-9+/]'
+          and client_key_created_at is not null
       );
   end if;
 end
