@@ -203,6 +203,14 @@ The public UI now includes a session-viewer shell and a legend defining LIVE, DE
 - [x] Keep this initial exercise isolated from Vault auth, data, and secrets; it does not execute code or contact external targets.
 - [x] Describe network boundaries accurately: normal website delivery/navigation still uses the network, while puzzle answers remain local.
 
+### Stage 7 — interactive security architecture explorer
+- [x] Add `/security/architecture-explorer` with selectable components and a current CRUD data-flow map.
+- [x] Distinguish implemented server-readable CRUD, browser crypto modules not integrated into CRUD, and isolated Argon2id WASM proof of concept.
+- [x] Explain current create/update and read paths without presenting a diagram as live telemetry.
+- [x] Provide English and Burmese explanations, keyboard-operable selection, responsive layout, and reduced-motion support.
+- [x] Link the explorer from the public Research Library.
+- [ ] Independently verify the component map against the final client-side encryption integration before changing any implementation status.
+
 ### Stage 6 — quality and release gates
 - [ ] Cross-device visual and responsive QA.
 - [ ] Keyboard-only and assistive-technology testing.
@@ -223,6 +231,6 @@ The public UI now includes a session-viewer shell and a legend defining LIVE, DE
 
 ## 11. Current status
 
-This document is an architecture plan. The public dashboard now has a session-viewer presentation shell, public event-field contract, and explicit state legend. It is still not connected to an authenticated private-lab live event source; the current session state remains UNAVAILABLE and no live or recorded session is claimed. The public research library, two interactive AES-GCM stories, and a five-challenge browser-local synthetic Puzzle Arena are partial learning foundations. The Puzzle Arena does not execute code or contact external targets; its answers are not submitted to an API. The private Vault API remains server-readable until the separately planned ciphertext-only migration is completed.
+This document is an architecture plan. The public dashboard now has a session-viewer presentation shell, public event-field contract, and explicit state legend. It is still not connected to an authenticated private-lab live event source; the current session state remains UNAVAILABLE and no live or recorded session is claimed. The public research library, two interactive AES-GCM stories, and a five-challenge browser-local synthetic Puzzle Arena are partial learning foundations. An interactive Architecture Explorer is also available at `/security/architecture-explorer`; it documents the current server-readable CRUD path and separates it from client crypto modules that are not yet integrated and the isolated Argon2id WASM proof of concept. The Puzzle Arena does not execute code or contact external targets; its answers are not submitted to an API. The private Vault API remains server-readable until the separately planned ciphertext-only migration is completed.
 
 No production database, production secret, deployment, or live external target is changed or authorized by this plan.
