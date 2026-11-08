@@ -109,3 +109,24 @@ This checkpoint does not change the implementation boundary below: there is stil
 ## Current implementation boundary
 
 An isolated Rust Argon2id WASM Worker harness now exists under `security/argon2-wasm/browser-worker-test/`. It exercises the generated `--target web` bindings in a dedicated module Worker, transfers and clears test input buffers, imports the derived result as a non-extractable AES-GCM key, and performs a Worker-local self-test without returning key bytes. A Playwright workflow is defined to run Chromium, Firefox, and WebKit; the test-only browser Worker workflow passed in Chromium, Firefox, and WebKit on 2026-11-08 (`42471022882`). This confirms the isolated PoC harness, not production Next.js asset packaging or mobile-device compatibility.\n\nThis is **not** the production Vault Worker: no application Worker client, production unlock UI, integrated key-envelope lifecycle, ciphertext-only CRUD integration, or production key metadata migration exists yet. The active API still receives plaintext fields and decrypts server-side. The Vault must continue to display the existing privacy limitation and must not be used for real/high-value credentials until the complete migration and independent review are finished.
+
+
+## Application Worker runtime scaffold — 2026-11-08
+
+The first application Worker runtime source now exists at `lib/vault/crypto-worker.ts`, with a client-side Worker factory at `lib/vault/crypto-worker-client.ts`.
+
+The runtime:
+- Loads the pinned browser-target WASM glue and binary from the verified `/crypto/argon2/` public asset path.
+- Runs Argon2id and imports the result as a non-extractable KEK inside the Worker.
+- Creates or unwraps a random DEK and retains it only in Worker scope.
+- Encrypts/decrypts record envelopes inside the Worker.
+- Transfers no raw KDF output, KEK, DEK, or CryptoKey to the main thread.
+- Clears transferred secret/salt buffers, uses generic unlock errors, and invalidates in-flight crypto responses when LOCK occurs.
+
+The client factory is not yet called by the Vault UI. No unlock interface, persistence adapter, ciphertext-only API, or legacy API retirement has been implemented. The runtime source still requires a dedicated real-browser integration harness, generated bundle inspection, mobile performance/OOM tests, and independent security review. The Worker factory must not be treated as proof that a deployed application is using client-side encryption.
+
+## Verified OpenNext asset packaging — 2026-11-08
+
+Workflow run `42474053331` completed successfully. It generated the pinned browser-target wasm-bindgen assets, copied them into the Next.js public tree, built the OpenNext Cloudflare output, verified the WASM JS/binary/manifest under `.open-next/assets/crypto/argon2/`, and passed the isolated Chromium, Firefox, and WebKit Worker harness.
+
+This proves the current WASM asset packaging path and isolated browser PoC. It does not yet prove the new application Worker runtime is bundled, loaded, or used by Vault CRUD.
