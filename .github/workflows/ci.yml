@@ -20,7 +20,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Set up Rust and WebAssembly target
-        uses: dtolnay/rust-toolchain@1.86.0
+        uses: dtolnay/rust-toolchain@1.88.0
         with:
           targets: wasm32-unknown-unknown
           components: rustfmt
@@ -85,7 +85,7 @@ jobs:
           node-version: 22
       - name: Install dependencies
         id: install_dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps --no-audit --no-fund
       - name: Dependency security audit
         id: dependency_security_audit
         run: |
