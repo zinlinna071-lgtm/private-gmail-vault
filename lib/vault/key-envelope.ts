@@ -168,16 +168,19 @@ export async function unwrapVaultDataKey(
   assertKek(kek);
   assertVaultId(vaultId);
 
-  if (
-    !envelope ||
-    typeof envelope !== "object" ||
-    (envelope as Record<string, unknown>).version !== VAULT_KEY_ENVELOPE_VERSION ||
-    (envelope as Record<string, unknown>).algorithm !== VAULT_KEY_ENVELOPE_ALGORITHM
-  ) {
+  if (!envelope || typeof envelope !== "object" || Array.isArray(envelope)) {
     throw new Error("Unsupported Vault key envelope.");
   }
 
   const candidate = envelope as Record<string, unknown>;
+  const keys = Object.keys(candidate).sort();
+  if (
+    keys.join(",") !== "algorithm,iv,version,wrappedKey" ||
+    candidate.version !== VAULT_KEY_ENVELOPE_VERSION ||
+    candidate.algorithm !== VAULT_KEY_ENVELOPE_ALGORITHM
+  ) {
+    throw new Error("Unsupported Vault key envelope.");
+  }
   const iv = decodeBase64(candidate.iv, IV_BYTES);
   const wrappedKey = decodeBase64(candidate.wrappedKey, KEY_BYTES + 16);
   const wrappedKeyBuffer = toArrayBuffer(wrappedKey);
