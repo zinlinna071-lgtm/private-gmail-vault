@@ -59,6 +59,9 @@ create trigger vault_profiles_guard_account_type
 before insert or update of account_type on public.vault_profiles
 for each row execute function public.guard_vault_profile_account_type();
 
+revoke all on function public.guard_vault_profile_account_type()
+  from public, anon, authenticated, service_role;
+
 create or replace function public.create_vault_item_with_quota(
   p_user_id uuid,
   p_id uuid,
