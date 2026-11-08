@@ -4,7 +4,7 @@ set -euo pipefail
 : "${DATABASE_URL:?DATABASE_URL must point to a disposable PostgreSQL database}"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-MIGRATION="$ROOT_DIR/supabase/migrations/202611080001_curator_registration_claims.sql"
+MIGRATION="$ROOT_DIR/supabase/migrations/202611080005_curator_registration_claims.sql"
 SQL_TEST="$ROOT_DIR/supabase/tests/curator_registration_claims.sql"
 
 # CI uses a disposable PostgreSQL service. Never point this script at production.
