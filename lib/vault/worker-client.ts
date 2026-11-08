@@ -193,7 +193,8 @@ export class VaultCryptoWorkerClient {
     if (!UUID_PATTERN.test(vaultId)) throw new Error("Invalid Vault ID.");
     const secretBuffer = encodeSecret(unlockSecret);
     const salt = decodeSalt(saltBase64);
-    const saltBuffer = salt.buffer.slice(0);
+    const saltBuffer = new ArrayBuffer(16);
+    new Uint8Array(saltBuffer).set(salt);
     salt.fill(0);
     try {
       await this.request<"UNLOCK", "UNLOCKED">(
