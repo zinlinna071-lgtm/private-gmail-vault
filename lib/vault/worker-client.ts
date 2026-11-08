@@ -164,7 +164,7 @@ export class VaultCryptoWorkerClient {
     const saltBuffer = salt.buffer.slice(0);
     salt.fill(0);
     try {
-      const result = await this.request(
+      const result = await this.request<"INITIALIZE", "INITIALIZED">(
         { type: "INITIALIZE", vaultId, profileId, unlockSecretBuffer: secretBuffer, saltBytes: saltBuffer },
         "INITIALIZED",
         [secretBuffer, saltBuffer]
@@ -175,8 +175,9 @@ export class VaultCryptoWorkerClient {
         wrappedKeyEnvelope: result.wrappedKeyEnvelope
       };
     } catch (error) {
-      new Uint8Array(secretBuffer).fill(0);
-      new Uint8Array(saltBuffer).fill(0);
+      // Transferred ArrayBuffers are detached on this thread; the Worker owns and clears them.
+      try { new Uint8Array(secretBuffer).fill(0); } catch { /* already transferred */ }
+      try { new Uint8Array(saltBuffer).fill(0); } catch { /* already transferred */ }
       throw error;
     }
   }
@@ -194,7 +195,7 @@ export class VaultCryptoWorkerClient {
     const saltBuffer = salt.buffer.slice(0);
     salt.fill(0);
     try {
-      await this.request(
+      await this.request<"UNLOCK", "UNLOCKED">(
         { type: "UNLOCK", vaultId, profileId, unlockSecretBuffer: secretBuffer, saltBytes: saltBuffer, wrappedKeyEnvelope },
         "UNLOCKED",
         [secretBuffer, saltBuffer]
@@ -208,20 +209,20 @@ export class VaultCryptoWorkerClient {
 
   async encryptRecord(recordId: string, plaintext: string): Promise<VaultRecordEnvelope> {
     if (!UUID_PATTERN.test(recordId)) throw new Error("Invalid Vault record ID.");
-    const result = await this.request({ type: "ENCRYPT_RECORD", recordId, plaintext }, "ENCRYPTED_RECORD");
+    const result = await this.request<"ENCRYPT_RECORD", "ENCRYPTED_RECORD">({ type: "ENCRYPT_RECORD", recordId, plaintext }, "ENCRYPTED_RECORD");
     return result.envelope;
   }
 
   async decryptRecord(recordId: string, envelope: VaultRecordEnvelope): Promise<string> {
     if (!UUID_PATTERN.test(recordId)) throw new Error("Invalid Vault record ID.");
-    const result = await this.request({ type: "DECRYPT_RECORD", recordId, envelope }, "DECRYPTED_RECORD");
+    const result = await this.request<"DECRYPT_RECORD", "DECRYPTED_RECORD">({ type: "DECRYPT_RECORD", recordId, envelope }, "DECRYPTED_RECORD");
     return result.plaintext;
   }
 
   async lock(): Promise<void> {
     if (this.closed) return;
     try {
-      await this.request({ type: "LOCK" }, "LOCKED");
+      await this.request<"LOCK", "LOCKED">({ type: "LOCK" }, "LOCKED");
     } finally {
       this.terminate(new Error("The Vault is locked."));
     }
