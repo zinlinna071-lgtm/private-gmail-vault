@@ -11,6 +11,7 @@
 5. The server validates the exact expected mark set and order, then calls `consume_curator_challenge`. The database atomically consumes the challenge only when its hash, session hash, expiry, and unused state all match.
 6. After successful challenge consumption, the server creates a random registration claim. Only its SHA-256 hash and the browser-session hash are stored in `curator_registration_claims`; the raw claim is returned only as an HttpOnly cookie.
 7. Registration requires the existing responsibility acknowledgement and the claim/session cookies. It calls `consume_curator_registration_claim`, another atomic database function. The claim must be unexpired, match the browser session, and be unused.
+8. After the server consumes the claim, it creates an ordinary Secondary account. Client-supplied role or Owner flags are ignored; Master/Owner Research Lab access is independently allowlisted by `SECURITY_RESEARCH_OWNER_USER_ID`.
 
 ## Required database setup
 
@@ -20,7 +21,7 @@ Do not run this migration against production without the owner's explicit approv
 
 ## Security boundaries and limitations
 
-- The Curator puzzle is a public discovery ritual and abuse-friction layer, **not an authentication factor or security boundary**. Its answer is part of public client code and can be automated or reproduced.
+- The Curator puzzle is a public discovery experience, not an identity check or authentication factor: its answer is present in public client code and can be automated or reproduced. However, completing it is a mandatory **server-verified registration gate** for creating a Secondary account. The gate issues only a short-lived, session-bound, one-time registration claim; it never grants a signed-in session, Vault record access, or Master/Owner privileges.
 - Challenge and claim tokens are generated with cryptographically secure randomness. Only SHA-256 hashes are stored in the database; raw values are delivered in HttpOnly cookies.
 - Challenge consumption is server-side and atomic. A challenge must match the browser-session hash, be unexpired, and be unused. Replaying it or presenting it with a different session fails.
 - Registration claims are also server-side, session-bound, short-lived, and atomically one-time. They do not grant Owner privileges.
