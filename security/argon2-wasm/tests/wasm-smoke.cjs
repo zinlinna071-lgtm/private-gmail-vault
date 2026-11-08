@@ -19,17 +19,17 @@ assert.notDeepEqual(otherSalt, first, "different salts produce different KDF out
 
 assert.throws(
   () => derive_key(password, new Uint8Array(15), 1),
-  "rejects salts shorter than 16 bytes",
 );
 assert.throws(
   () => derive_key(password, saltA, 255),
-  "rejects unknown fixed profile IDs",
 );
 assert.throws(
   () => derive_key(new Uint8Array(0), saltA, 1),
-  "rejects empty passwords",
 );
 
+first.fill(0);
+repeated.fill(0);
+otherSalt.fill(0);
 password.fill(0);
 saltA.fill(0);
 saltB.fill(0);
