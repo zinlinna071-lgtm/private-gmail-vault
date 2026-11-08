@@ -67,7 +67,7 @@ async function readJson(response: Response): Promise<Record<string, unknown>> {
 }
 
 function createWorker(factory?: WorkerFactory) {
-  return new VaultCryptoWorkerClient(factory);
+  return new VaultCryptoWorkerClient(factory ? factory() : undefined);
 }
 
 /**
