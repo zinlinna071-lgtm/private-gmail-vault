@@ -11,7 +11,8 @@ type DraftSummary = {
   updated_at: string;
   ready_at?: string | null;
 };
-type DraftDetail = DraftSummary & { content: unknown; reviews: Record<string, Array<{ decision: string; notes: string; reviewerUserId: string; reviewedAt: string }>> };\ntype ReviewerAssignment = { id: string; draft_id: string; stage: string; reviewer_user_id: string; assigned_at: string; expires_at: string; revoked_at: string | null; revoked_by_owner_user_id?: string | null };
+type DraftDetail = DraftSummary & { content: unknown; reviews: Record<string, Array<{ decision: string; notes: string; reviewerUserId: string; reviewedAt: string }>> };
+type ReviewerAssignment = { id: string; draft_id: string; stage: string; reviewer_user_id: string; assigned_at: string; expires_at: string; revoked_at: string | null; revoked_by_owner_user_id?: string | null };
 
 const contentTemplate = {
   researchQuestion: { en: "", my: "" },
@@ -45,7 +46,8 @@ export function ResearchWorkbench({ isOwner, isReviewer }: { isOwner: boolean; i
   const [category, setCategory] = useState("Authentication");
   const [contentText, setContentText] = useState(JSON.stringify(contentTemplate, null, 2));
   const [reviewNotes, setReviewNotes] = useState("");
-  const [reviewerUserId, setReviewerUserId] = useState("");\n  const [assignments, setAssignments] = useState<ReviewerAssignment[]>([]);
+  const [reviewerUserId, setReviewerUserId] = useState("");
+  const [assignments, setAssignments] = useState<ReviewerAssignment[]>([]);
   const [assignmentDays, setAssignmentDays] = useState("7");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -57,7 +59,14 @@ export function ResearchWorkbench({ isOwner, isReviewer }: { isOwner: boolean; i
     setDrafts(payload.drafts ?? []);
   }, []);
 
-  const loadAssignments = useCallback(async (draftId: string) => {\n    const response = await fetch(`/api/security/research/assignments?draftId=${encodeURIComponent(draftId)}`, { cache: "no-store" });\n    const payload = await response.json();\n    if (!response.ok) throw new Error(payload.error ?? "Could not load reviewer assignments.");\n    setAssignments(payload.assignments ?? []);\n  }, []);\n\n  const loadDraft = useCallback(async (id: string) => {
+  const loadAssignments = useCallback(async (draftId: string) => {
+    const response = await fetch(`/api/security/research/assignments?draftId=${encodeURIComponent(draftId)}`, { cache: "no-store" });
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error ?? "Could not load reviewer assignments.");
+    setAssignments(payload.assignments ?? []);
+  }, []);
+
+  const loadDraft = useCallback(async (id: string) => {
     const response = await fetch(`/api/security/research/drafts/${id}`, { cache: "no-store" });
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.error ?? "Could not load this draft.");
