@@ -62,8 +62,16 @@ export default function AuthPanel() {
     event.preventDefault();
     if (busy) return;
 
-    // Registration credentials stay in the form. No account-creation request
-    // is sent until the user explicitly accepts the separate responsibility notice.
+    // Keep Create visible, but never submit registration until the server-issued
+    // Curator claim is present. The URL fragment only reveals the form; the API
+    // independently validates the session-bound, one-time claim.
+    if (mode === "register" && !registrationEntranceRevealed) {
+      showError("Account creation is gated. Solve The Curator's Signal first. Your entered details have not been submitted or saved; return here and enter them again after the challenge.");
+      return;
+    }
+
+    // Registration credentials stay in the form until the user explicitly
+    // accepts the separate responsibility notice.
     if (mode === "register" && !registrationAcknowledged) {
       setShowRegistrationNotice(true);
       return;
@@ -184,11 +192,18 @@ export default function AuthPanel() {
 
       <div className="tabs" role="tablist" aria-label="Vault authentication">
         <button type="button" role="tab" aria-selected={mode === "login"} disabled={requiresAcknowledgement || busy} className={mode === "login" ? "tab active" : "tab"} onClick={() => { setMode("login"); setRegistrationAcknowledged(false); setShowRegistrationNotice(false); clearFeedback(); setIssuedCode(""); }}>Sign in</button>
-        {registrationEntranceRevealed && (
-        <button type="button" role="tab" aria-selected={mode === "register"} disabled={requiresAcknowledgement || busy} className={mode === "register" ? "tab active" : "tab"} onClick={() => { setMode("register"); setRegistrationAcknowledged(false); setShowRegistrationNotice(false); clearFeedback(); setIssuedCode(""); }}>Create Vault</button>
-        )}
+        <button type="button" role="tab" aria-selected={mode === "register"} disabled={requiresAcknowledgement || busy} className={mode === "register" ? "tab active" : "tab"} onClick={() => { setMode("register"); setRegistrationAcknowledged(false); setShowRegistrationNotice(false); clearFeedback(); setIssuedCode(""); }}>Create</button>
         <button type="button" role="tab" aria-selected={mode === "recover"} disabled={requiresAcknowledgement || busy} className={mode === "recover" ? "tab active" : "tab"} onClick={() => { setMode("recover"); setRegistrationAcknowledged(false); setShowRegistrationNotice(false); clearFeedback(); setIssuedCode(""); }}>Recover</button>
       </div>
+
+      {mode === "register" && !requiresAcknowledgement && (
+        <div className="registration-gate-hint">
+          <strong>SECONDARY ACCOUNT REGISTRATION GATE</strong>
+          <p>You can enter your details here. Before an account can be created, you must solve <b>The Curator's Signal</b> and pass server verification. Your details are not sent or saved before that step.</p>
+          {!registrationEntranceRevealed && <a href="/curator-preview">Explore The Curator's Signal ↗</a>}
+          {registrationEntranceRevealed && <span>CHALLENGE CLAIM PRESENT · CONTINUE BELOW</span>}
+        </div>
+      )}
 
       {!requiresAcknowledgement && (
         <form ref={formRef} onSubmit={submit} className="auth-form" aria-busy={busy}>
