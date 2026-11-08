@@ -95,7 +95,24 @@ Do not silently treat legacy rows as client-side records. Before enabling the ne
 
 Do not apply this schema migration to any live Supabase project from this branch. First inspect the actual target database and obtain explicit approval for any live migration.
 
-## 6. Current implementation checkpoint\n\nThe isolated browser-only record cryptography module is implemented in `lib/vault/record-envelope.ts`. It uses Web Crypto AES-256-GCM, fresh 96-bit nonces, a 128-bit authentication tag, strict version/algorithm/envelope validation, and AAD binding to the authenticated Vault UUID, record UUID, and record type. Unit tests are defined in `tests/vault-record-envelope.test.ts` for round trips, nonce freshness, tampering, wrong keys, wrong AAD, malformed envelopes, and size/context validation. These tests have not yet been confirmed passing in CI.\n\nThis checkpoint is **not** an integrated client-side Vault: the UI and API still use the legacy server-readable path. Do not store real credentials, do not claim zero-knowledge, and do not remove the server encryption key until the KDF, key lifecycle, recovery, ciphertext-only routes, UI wiring, legacy-data handling, and independent review gates are complete.\n\n## 7. Rollout gates
+## 6. Current implementation checkpoint
+
+The canonical browser-only record cryptography module is `lib/vault/record-envelope.ts`. It uses Web Crypto AES-256-GCM, fresh 96-bit nonces, a 128-bit authentication tag, strict version/algorithm/envelope validation, and AAD binding to the authenticated Vault UUID, record UUID, and record type.
+
+`lib/vault/client-encryption.ts` is now a compatibility facade over that canonical module. It preserves the existing function names and non-extractable DEK generator used by tests, but no longer implements a second AAD domain or a competing record format. This avoids having two incompatible version-1 ciphertext formats in the codebase.
+
+Unit tests are defined in:
+- `tests/vault-record-envelope.test.ts` — strict envelope validation, round trips, nonce freshness, tampering, wrong keys, wrong AAD, malformed envelopes, and size/context validation.
+- `tests/client-vault-encryption.test.ts` — compatibility API and record-encryption behavior.
+- `tests/vault-key-envelope.test.ts` — KEK import, DEK wrapping/unwrapping, and context binding.
+
+These tests are written but have **not** yet been confirmed passing in CI.
+
+The Argon2id implementation and its browser/mobile performance profile are not yet selected. A candidate library must be actively maintained, suitable for browser/WASM use, have a defensible review/security history, and be tested on lower-powered mobile devices before it is pinned. Do not select a package solely because it is popular or fast.
+
+This checkpoint is **not** an integrated client-side Vault: the UI and API still use the legacy server-readable path. Do not store real credentials, do not claim zero-knowledge, and do not remove the server encryption key until the KDF, key lifecycle, recovery, ciphertext-only routes, UI wiring, legacy-data handling, and independent review gates are complete.
+
+## 7. Rollout gates
 
 - Keep the existing UI and API contract in sync; do not switch the API to ciphertext-only while the UI still sends plaintext.
 - Test record creation, listing, update, delete, tampering, wrong AAD, wrong key, malformed envelopes, oversized streamed requests, cross-user access, and session expiry.
