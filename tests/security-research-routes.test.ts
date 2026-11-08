@@ -183,4 +183,53 @@ describe("private research route authorization", () => {
     expect("update" in query).toBe(false);
   });
 
+
+  it("does not allow a reviewer to list Owner assignment records", async () => {
+    mocks.getResearchActor.mockResolvedValue({ id: reviewerId, isOwner: false, isReviewer: true });
+    const response = await listAssignments(new Request("https://vault.example/api/security/research/assignments"));
+    expect(response.status).toBe(403);
+    expect(mocks.createSupabaseAdminClient).not.toHaveBeenCalled();
+  });
+
+  it("allows the Owner to list assignments scoped to a valid draft", async () => {
+    mocks.getResearchActor.mockResolvedValue({ id: secondaryId, isOwner: true, isReviewer: false });
+    const query: any = {
+      select: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      then: (resolve: (value: unknown) => unknown) => resolve({ data: [], error: null })
+    };
+    mocks.createSupabaseAdminClient.mockReturnValue({ from: vi.fn().mockReturnValue(query) });
+    const response = await listAssignments(new Request(`https://vault.example/api/security/research/assignments?draftId=${draftId}`));
+    expect(response.status).toBe(200);
+    expect(query.eq).toHaveBeenCalledWith("draft_id", draftId);
+  });
+
+  it("does not allow a non-Owner to revoke an assignment", async () => {
+    mocks.getResearchActor.mockResolvedValue({ id: reviewerId, isOwner: false, isReviewer: true });
+    const response = await revokeAssignment(request("DELETE", { assignmentId: draftId }));
+    expect(response.status).toBe(403);
+    expect(mocks.createSupabaseAdminClient).not.toHaveBeenCalled();
+  });
+
+  it("records the Owner and timestamp when revoking an active assignment", async () => {
+    mocks.getResearchActor.mockResolvedValue({ id: secondaryId, isOwner: true, isReviewer: false });
+    const query = {
+      update: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      is: vi.fn().mockReturnThis(),
+      select: vi.fn().mockReturnThis(),
+      maybeSingle: vi.fn().mockResolvedValue({
+        data: { id: draftId, revoked_by_owner_user_id: secondaryId, revoked_at: "2026-11-08T00:00:00.000Z" },
+        error: null
+      })
+    };
+    mocks.createSupabaseAdminClient.mockReturnValue({ from: vi.fn().mockReturnValue(query) });
+    const response = await revokeAssignment(request("DELETE", { assignmentId: draftId }));
+    expect(response.status).toBe(200);
+    expect(query.update).toHaveBeenCalledWith(expect.objectContaining({ revoked_by_owner_user_id: secondaryId }));
+    expect(query.is).toHaveBeenCalledWith("revoked_at", null);
+  });
+
 });
