@@ -12,7 +12,7 @@ create table if not exists public.security_research_review_assignments (
   expires_at timestamptz not null,
   revoked_at timestamptz,
   check (expires_at > assigned_at),
-  check (expires_at <= assigned_at + interval '30 days')
+  check (expires_at <= assigned_at + interval '30 days 1 minute')
 );
 
 create index if not exists security_research_review_assignments_reviewer_active_idx
