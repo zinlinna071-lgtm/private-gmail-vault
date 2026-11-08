@@ -49,6 +49,9 @@ No production database, Main branch, or deployment has been changed by this impl
 ## Automated test coverage added
 
 The design branch now includes deterministic Vitest coverage for:
+- challenge bootstrap rejection for an explicit cross-site request;
+- no-store response and HttpOnly, SameSite=Strict session/challenge cookie attributes;
+- reuse of the browser session while rotating the challenge marker;
 - exact Curator archive mark and four-ring order validation, including missing, extra, duplicate, malformed, and incorrect values;
 - verification API behavior for incorrect answers, duplicate marks, successful hashed claim issuance, and database failure;
 - generation of opaque 256-bit claim tokens and SHA-256 digest properties;
@@ -57,6 +60,7 @@ The design branch now includes deterministic Vitest coverage for:
 - successful registration invoking the atomic consume RPC with hashed claim/session values and clearing the raw claim cookie.
 
 Test files:
+- `tests/curator-challenge-route.test.ts`
 - `tests/curator-puzzle.test.ts`
 - `tests/curator-claim.test.ts`
 - `tests/curator-verify-route.test.ts`
