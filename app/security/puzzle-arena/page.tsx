@@ -112,6 +112,7 @@ export default function SecurityPuzzleArenaPage() {
     [answers]
   );
   const completed = puzzles.filter((puzzle) => answers[puzzle.id] !== undefined).length;
+  const accuracy = completed === 0 ? 0 : Math.round((score / completed) * 100);
 
   function choose(optionId: string) {
     if (answers[current.id] !== undefined) return;
@@ -151,14 +152,16 @@ export default function SecurityPuzzleArenaPage() {
           <span className="section-index">YOUR PROGRESS</span>
           <strong>{score}<small> / {puzzles.length}</small></strong>
           <p>{completed} of {puzzles.length} challenges answered</p>
-          <div className="puzzle-progress"><span style={{ width: (completed / puzzles.length * 100) + "%" }} /></div>
-          <small>Score reflects correct first answers only.</small>
+          <div className="puzzle-progress" role="progressbar" aria-label="Challenges completed" aria-valuemin={0} aria-valuemax={puzzles.length} aria-valuenow={completed}><span style={{ width: (completed / puzzles.length * 100) + "%" }} /></div>
+          <div className="puzzle-score-details"><span><b>{Math.round((completed / puzzles.length) * 100)}%</b><small> completion</small></span><span><b>{accuracy}%</b><small> accuracy</small></span></div>
+          <small>Accuracy uses answered challenges only. First answers are locked to keep feedback meaningful.</small>
         </aside>
       </section>
 
       <section className="security-section puzzle-workspace" aria-labelledby="puzzle-title">
         <aside className="puzzle-index">
-          <span className="section-index">CHALLENGE INDEX</span>
+          <div className="puzzle-index-heading"><span className="section-index">CHALLENGE INDEX</span><small>Choose a module · work at your own pace</small></div>
+          <div className="puzzle-index-track" aria-hidden="true"><span style={{ width: (completed / puzzles.length * 100) + "%" }} /></div>
           {puzzles.map((puzzle, index) => {
             const done = answers[puzzle.id] !== undefined;
             const passed = answers[puzzle.id] === puzzle.answer;
@@ -166,7 +169,7 @@ export default function SecurityPuzzleArenaPage() {
               <button key={puzzle.id} type="button" className={active === index ? "puzzle-tab active" : "puzzle-tab"} onClick={() => setActive(index)} aria-current={active === index ? "step" : undefined}>
                 <span>0{index + 1} · {puzzle.category}</span>
                 <b>{puzzle.title}</b>
-                <small>{done ? (passed ? "CORRECT" : "REVIEWED") : "NOT ANSWERED"}</small>
+                <small className={done ? (passed ? "puzzle-tab-state passed" : "puzzle-tab-state reviewed") : "puzzle-tab-state"}><i aria-hidden="true" />{done ? (passed ? "CORRECT" : "REVIEWED") : "NOT ANSWERED"}</small>
               </button>
             );
           })}
@@ -174,7 +177,8 @@ export default function SecurityPuzzleArenaPage() {
         </aside>
 
         <article className="puzzle-card" aria-live="polite">
-          <div className="puzzle-card-top"><span className="section-index">CHALLENGE 0{active + 1} / {puzzles.length}</span><span className="puzzle-sim-label">SYNTHETIC SCENARIO</span></div>
+          <div className="puzzle-card-top"><span className="section-index">CHALLENGE 0{active + 1} / {puzzles.length}</span><span className="puzzle-sim-label">SYNTHETIC SCENARIO · LOCAL ONLY</span></div>
+          <div className="puzzle-step-track" aria-label={`Challenge ${active + 1} of ${puzzles.length}`}><span style={{ width: (((active + 1) / puzzles.length) * 100) + "%" }} /></div>
           <h2 id="puzzle-title">{current.title}</h2>
           <p>{current.prompt}</p>
           <p lang="my">{current.myPrompt}</p>
@@ -230,12 +234,12 @@ export default function SecurityPuzzleArenaPage() {
         .puzzle-meta{display:flex;flex-wrap:wrap;gap:9px;margin-top:24px}
         .puzzle-meta span,.puzzle-sim-label{padding:7px 9px;border:1px solid #315261;border-radius:5px;color:#91b9bd;font-size:8px;font-weight:800;letter-spacing:.12em}
         .puzzle-score,.puzzle-index,.puzzle-card,.puzzle-boundary{border:1px solid #294454;border-radius:13px;background:#0b1b27;padding:clamp(17px,3vw,26px)}
-        .puzzle-score strong{display:block;margin:18px 0 5px;color:#a6efd2;font-size:54px;letter-spacing:-.06em}
+        .puzzle-score strong{display:block;margin:18px 0 5px;color:#a6efd2;font-size:54px;letter-spacing:-.06em;text-shadow:0 0 34px #67d8b433}.puzzle-score-details{display:flex;gap:18px;margin:14px 0 2px;padding:12px 0;border-block:1px solid #203b47}.puzzle-score-details span{display:grid;gap:3px}.puzzle-score-details b{color:#c5eee0;font-size:16px}.puzzle-score-details small{color:#7896a0;font-size:9px}
         .puzzle-score strong small{color:#658c8e;font-size:20px}
         .puzzle-score p,.puzzle-score>small{color:#91a8b4;font-size:11px;line-height:1.7}
         .puzzle-progress{height:5px;margin:18px 0;background:#1c3440;border-radius:9px;overflow:hidden}
         .puzzle-progress span{display:block;height:100%;background:#62c8a4;transition:width .25s ease}
-        .puzzle-workspace{display:grid;grid-template-columns:minmax(220px,.65fr) 1.5fr;gap:16px;align-items:start}
+        .puzzle-workspace{display:grid;grid-template-columns:minmax(220px,.65fr) 1.5fr;gap:16px;align-items:start}.puzzle-index-heading{display:grid;gap:7px}.puzzle-index-heading>small{color:#79939e;font-size:10px;line-height:1.5}.puzzle-index-track,.puzzle-step-track{height:3px;overflow:hidden;border-radius:99px;background:#1c3540}.puzzle-index-track span,.puzzle-step-track span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#4eaa91,#a5efd2);transition:width .3s ease}.puzzle-step-track{margin:17px 0 23px}.puzzle-tab-state{display:flex;align-items:center;gap:7px}.puzzle-tab-state i{width:6px;height:6px;border-radius:50%;background:#607984}.puzzle-tab-state.passed i{background:#72d6ae;box-shadow:0 0 10px #72d6ae66}.puzzle-tab-state.reviewed i{background:#d4a36f}
         .puzzle-index{display:grid;gap:10px}
         .puzzle-tab{display:grid;gap:8px;text-align:left;padding:13px;border:1px solid #263f4b;border-radius:8px;background:#0c202c;color:#dce9ed;cursor:pointer}
         .puzzle-tab.active{border-color:#66c7a8;background:#102b31}
@@ -251,7 +255,7 @@ export default function SecurityPuzzleArenaPage() {
         .puzzle-option>b{display:grid;place-items:center;flex:0 0 30px;height:30px;border:1px solid #42616a;border-radius:6px;color:#9dd8c7}
         .puzzle-option-copy{display:grid;gap:5px;min-width:0}.puzzle-option-copy>span{font-size:12px;line-height:1.6}.puzzle-option-copy>small{margin:0;color:#91a8b4;font-size:11px;line-height:1.6;letter-spacing:0;font-weight:500}.puzzle-option>small{margin-left:auto;color:#9cebd0;font-size:8px;font-weight:900;letter-spacing:.08em}
         .puzzle-option small{margin-left:auto;color:#9cebd0;font-size:8px;font-weight:900;letter-spacing:.08em}
-        .puzzle-option:disabled{cursor:default;opacity:.85}
+        .puzzle-option:disabled{cursor:default;opacity:.9}.puzzle-option:not(:disabled){transition:transform .18s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease}.puzzle-option:not(:disabled):hover{transform:translateY(-2px);border-color:#69b99f;background:#102b32;box-shadow:0 10px 28px #0003}
         .puzzle-option.correct{border-color:#4b9c7c;background:#102d2b}
         .puzzle-option.incorrect{border-color:#a36a55;background:#30231f}
         .puzzle-hint-area{padding:14px;border-top:1px solid #203b47}
@@ -269,8 +273,9 @@ export default function SecurityPuzzleArenaPage() {
         .puzzle-boundary-grid b{color:#c3eadc}
         .puzzle-boundary>a{color:#9cebd0;font-size:11px;font-weight:800;text-decoration:none}
         .puzzle-note{font-size:11px}
-        @media(max-width:760px){.puzzle-hero{grid-template-columns:1fr}.puzzle-workspace{grid-template-columns:1fr}.puzzle-boundary-grid{grid-template-columns:1fr}}
-        @media(prefers-reduced-motion:reduce){.puzzle-progress span{transition:none}}
+        @media(max-width:760px){.puzzle-hero{grid-template-columns:1fr}.puzzle-workspace{grid-template-columns:1fr}.puzzle-index{grid-template-columns:repeat(2,minmax(0,1fr))}.puzzle-index-heading,.puzzle-index-track,.puzzle-reset{grid-column:1/-1}.puzzle-tab{min-width:0}.puzzle-boundary-grid{grid-template-columns:1fr}}
+        @media(max-width:480px){.puzzle-index{grid-template-columns:1fr}.puzzle-tab{padding:12px}.puzzle-card{padding:17px}.puzzle-controls button{flex:1;min-width:0}.puzzle-option{align-items:flex-start}.puzzle-option>small{max-width:72px;text-align:right}}
+        @media(prefers-reduced-motion:reduce){.puzzle-progress span,.puzzle-index-track span,.puzzle-step-track span,.puzzle-option:not(:disabled){transition:none}.puzzle-option:not(:disabled):hover{transform:none}}
       `}</style>
     </main>
   );
