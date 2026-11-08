@@ -58,7 +58,7 @@ describe("Curator verification API", () => {
     mocks.isSameOriginRequest.mockReturnValue(true);
     mocks.allowAuthAttempt.mockResolvedValue(true);
     mocks.createOpaqueToken.mockReturnValue("opaque-claim-token");
-    mocks.hashOpaqueToken.mockImplementation((value: string) => "sha256-" + value);
+    mocks.hashOpaqueToken.mockImplementation((value: string) => "digest-" + value.length);
     mocks.insert.mockResolvedValue({ error: null });
     mocks.consumeChallenge.mockResolvedValue({ data: true, error: null });
     mocks.createSupabaseAdminClient.mockReturnValue({
@@ -102,8 +102,8 @@ describe("Curator verification API", () => {
     expect(response.status).toBe(403);
     expect(body.error).toContain("expired or was already used");
     expect(mocks.consumeChallenge).toHaveBeenCalledWith("consume_curator_challenge", {
-      p_challenge_hash: "sha256-challenge-token",
-      p_session_hash: "sha256-browser-session-token"
+      p_challenge_hash: "digest-15",
+      p_session_hash: "digest-21"
     });
     expect(mocks.insert).not.toHaveBeenCalled();
   });
@@ -116,10 +116,10 @@ describe("Curator verification API", () => {
     expect(body.success).toBe(true);
     expect(mocks.consumeChallenge).toHaveBeenCalledWith("consume_curator_challenge", {
       p_challenge_hash: "sha256-challenge-token",
-      p_session_hash: "sha256-browser-session-token"
+      p_session_hash: "digest-21"
     });
     expect(mocks.insert).toHaveBeenCalledWith(expect.objectContaining({
-      claim_hash: "sha256-opaque-claim-token",
+      claim_hash: "digest-18",
       session_hash: "sha256-browser-session-token"
     }));
     expect(JSON.stringify(mocks.insert.mock.calls)).not.toContain("opaque-claim-token");
