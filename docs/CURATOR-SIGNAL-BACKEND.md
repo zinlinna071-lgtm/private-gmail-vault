@@ -43,3 +43,19 @@ Do not run this migration against production without the owner's explicit approv
 - [ ] Run automated tests, typecheck, and production build; inspect CI results before any preview.
 
 No production database, Main branch, or deployment has been changed by this implementation.
+
+## Automated test coverage added
+
+The design branch now includes deterministic Vitest coverage for:
+- exact Curator archive mark and four-ring order validation, including missing, extra, duplicate, malformed, and incorrect values;
+- generation of opaque 256-bit claim tokens and SHA-256 digest properties;
+- registration rejection when the responsibility acknowledgement or Curator claim is missing;
+- rejection when the atomic claim-consume RPC reports a mismatched, expired, or previously consumed claim;
+- successful registration invoking the atomic consume RPC with hashed claim/session values and clearing the raw claim cookie.
+
+Test files:
+- `tests/curator-puzzle.test.ts`
+- `tests/curator-claim.test.ts`
+- updated `tests/auth-routes.test.ts`
+
+These tests have been added to the repository but have **not yet been executed in a confirmed CI or local test run**. The Vercel status check is currently failing because the linked Vercel account reports a build-rate-limit/upgrade restriction; that is not evidence of a GitHub Actions test failure. Do not describe the test suite as passing until a successful run is observed.
