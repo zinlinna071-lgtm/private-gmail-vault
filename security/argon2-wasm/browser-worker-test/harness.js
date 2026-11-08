@@ -149,12 +149,21 @@ async function testApplicationWorker() {
       if (event.data?.requestId === terminationRequestId) lateResponse = true;
     };
     appWorker.addEventListener("message", onLateResponse);
+    const terminationSecret = new TextEncoder().encode(unlockText);
+    const terminationSecretBuffer = terminationSecret.buffer;
+    const terminationSaltBuffer = Uint8Array.from(
+      atob(initialized.salt), c => c.charCodeAt(0)
+    ).buffer;
     appWorker.postMessage({
-      type: "ENCRYPT_RECORD",
+      type: "UNLOCK",
       requestId: terminationRequestId,
-      recordId: "33333333-3333-4333-8333-333333333333",
-      plaintext: JSON.stringify({ accountName: "Termination test", notes: "x".repeat(12_000) })
-    });
+      unlockSecretBuffer: terminationSecretBuffer,
+      saltBytes: terminationSaltBuffer,
+      profileId: 2,
+      wrappedKeyEnvelope: initialized.wrappedKeyEnvelope,
+      vaultId
+    }, [terminationSecretBuffer, terminationSaltBuffer]);
+    await new Promise(resolve => setTimeout(resolve, 20));
     appWorker.terminate();
     await new Promise(resolve => setTimeout(resolve, 100));
     assert(!lateResponse, "Terminated Worker returned an in-flight crypto response.");
