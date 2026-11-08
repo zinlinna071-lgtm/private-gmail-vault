@@ -85,7 +85,7 @@ export default function SecurityPage() {
           <span>PRIVATE ACCOUNT VAULT <small>SECURITY OPERATIONS CENTER</small></span>
         </Link>
         <nav className="security-nav-links" aria-label="Security navigation">
-          <Link href="/security/guide">Start here</Link><a href="#interactive-lab">Interactive lab</a><a href="#surface">Test scope</a><Link href="/security/architecture">UI/UX architecture</Link><Link href="/security/research">Research</Link><a href="#owner-privacy">Owner privacy</a>
+          <Link href="/security/guide">Start here</Link><a href="#interactive-lab">Interactive lab</a><a href="#surface">Test scope</a><Link href="/security/architecture">UI/UX architecture</Link><Link href="/security/research">Research</Link><a href="#owner-privacy">Owner privacy</a><a href="#user-responsibility">Your responsibility</a>
         </nav>
         <span className="security-nav-status"><i /> PUBLIC · READ ONLY</span>
       </header>
@@ -126,6 +126,17 @@ export default function SecurityPage() {
           <article className="security-module"><span className="module-number">03</span><span className="module-status status-untested">AUDIT REQUIRED</span><h3>Evidence before claims</h3><p>Network inspection, source review, cross-user isolation tests, cryptographic tests, deployment provenance, and independent security review must support any public guarantee.</p></article>
         </div>
         <p className="security-footnote">Important: this is a future privacy commitment, not a description of the running prototype. The service cannot honestly claim that its Owner or server is technically unable to read records until the release gates are complete. <a href="https://github.com/zinlinna071-lgtm/private-gmail-vault/blob/design/cyber-visual-architecture/docs/OWNER-INACCESSIBLE-VAULT-PRIVACY-GUARANTEE.md" target="_blank" rel="noreferrer">Read the full privacy guarantee, limitations, and evidence plan ↗</a>.</p>
+      </section>
+
+      <section className="security-section" id="user-responsibility">
+        <div className="security-section-heading"><div><span className="section-index">USER NOTICE / PERSONAL DATA CHOICES</span><h2>Your Vault. Your choice. Your responsibility.</h2></div><span className="section-aside">PLEASE READ BEFORE USE</span></div>
+        <p className="security-lead">Using this Vault is voluntary. You decide whether to store account identifiers, passwords, backup codes, or other sensitive information. You are not required to store any particular information, and you should only store information you have chosen to protect here.</p>
+        <div className="security-module-grid">
+          <article className="security-module"><span className="module-number">01</span><h3>You choose what to store</h3><p>The decision to place important account information in the Vault is yours. Consider the sensitivity of each item before saving it.</p></article>
+          <article className="security-module"><span className="module-number">02</span><h3>Protect your access</h3><p>Keep your device, Login ID, Master Password, Vault unlock material, and recovery information secure. Do not share them with other people.</p></article>
+          <article className="security-module"><span className="module-number">03</span><h3>Keep recovery information safe</h3><p>If required unlock or recovery information is lost, your records may become permanently inaccessible. Do not assume the Owner or support can restore them.</p></article>
+        </div>
+        <p className="security-footnote">No software can guarantee zero risk. Device compromise, malware, phishing, malicious browser extensions, service disruption, and implementation defects may affect security or availability. Read the current security limitations above before storing sensitive information. This notice explains user choices and practical responsibilities; it does not change the system's actual security status or override rights and obligations that cannot lawfully be waived.</p>
       </section>
 
       <LabActivityConsole />
