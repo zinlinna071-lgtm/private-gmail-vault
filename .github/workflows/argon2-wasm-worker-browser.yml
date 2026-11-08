@@ -6,6 +6,8 @@ on:
       - design/cyber-visual-architecture
     paths:
       - "security/argon2-wasm/**"
+      - "lib/vault/**"
+      - "tests/vault-worker-*.test.ts"
       - "tools/argon2id-browser-spike/**"
       - "scripts/package-argon2-wasm-assets.mjs"
       - "package.json"
