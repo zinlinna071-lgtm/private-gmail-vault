@@ -90,7 +90,14 @@ GitHub Actions now has a separate `argon2-wasm-poc` job that runs native Rust te
 
 This is a source-code PoC only. No production application import, no API switch, no database migration, no preview, and no deployment have been performed. Do not treat a successful compile or KAT as independent security approval.
 
-## 6. Remaining approval gates
+## 6. Source references
+
+- [RustCrypto Argon2 0.6.0 documentation](https://docs.rs/argon2/0.6.0/argon2/)
+- [RustCrypto Argon2 0.6.0 feature flags](https://docs.rs/crate/argon2/0.6.0/features)
+- [RustCrypto Argon2 0.6.0 changelog](https://github.com/RustCrypto/password-hashes/blob/master/argon2/CHANGELOG.md)
+- [RFC 9106](https://www.rfc-editor.org/rfc/rfc9106)
+
+## 7. Remaining approval gates
 
 1. Confirm the GitHub Actions native RFC vector test passes.
 2. Confirm the browser-WASM target compiles and inspect the generated module/imports and final binary size.
