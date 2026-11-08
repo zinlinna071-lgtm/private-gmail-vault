@@ -235,6 +235,7 @@ describe("Vault registration and login API", () => {
 
   it("creates the profile with a pending, encrypted Recovery Code", async () => {
     const response = await register(request("/api/auth/register", {
+      responsibilityAccepted: true,
       loginId: "myvault",
       password: "a-strong-master-password"
     }));
@@ -256,6 +257,7 @@ describe("Vault registration and login API", () => {
   it("removes the newly created auth user if profile creation fails", async () => {
     mocks.insert.mockResolvedValue({ error: new Error("insert failed") });
     const response = await register(request("/api/auth/register", {
+      responsibilityAccepted: true,
       loginId: "myvault",
       password: "a-strong-master-password"
     }));
@@ -309,6 +311,7 @@ describe("Vault registration and login API", () => {
   it("does not expose unexpected registration exception details", async () => {
     mocks.createUser.mockRejectedValue(new Error("private auth provider detail"));
     const response = await register(request("/api/auth/register", {
+      responsibilityAccepted: true,
       loginId: "myvault",
       password: "a-strong-master-password"
     }));
@@ -334,6 +337,7 @@ describe("Vault registration and login API", () => {
   it("keeps the initial Recovery Code recoverable when automatic sign-in fails", async () => {
     mocks.signInWithPassword.mockResolvedValue({ error: new Error("temporary sign-in failure") });
     const response = await register(request("/api/auth/register", {
+      responsibilityAccepted: true,
       loginId: "myvault",
       password: "a-strong-master-password"
     }));
