@@ -91,6 +91,21 @@ The existing CI Node smoke test is not evidence for this browser Worker packagin
 - API receives only ciphertext envelopes and public metadata after integration; network inspection verifies no plaintext fields are sent.
 - Worker is terminated on logout and explicit lock; idle timeout behavior is tested.
 
+
+## Protocol implementation checkpoint — 2026-11-08
+
+A strict TypeScript contract has now been added at `lib/vault/worker-protocol.ts`:
+
+- Discriminated request/response unions cover the message types above.
+- Request parsing rejects unknown fields and message types, malformed request/Vault/record IDs, unsupported KDF profile IDs, invalid transferable buffer sizes, and malformed record envelopes.
+- Response validation rejects extra fields and any response shape that attempts to return key material.
+- Error responses are limited to stable non-sensitive codes.
+- The contract contains no Worker runtime, KDF implementation, network access, or Vault API integration.
+
+A focused test file was added at `tests/vault-worker-protocol.test.ts` for accepted and rejected message shapes. **These tests have been written but have not been executed or confirmed passing** because the repository's GitHub Actions runner allocation issue remains unresolved and no local test run has been performed.
+
+This checkpoint does not change the implementation boundary below: there is still no application Worker source/client, browser-target WASM package, unlock UI, or ciphertext-only CRUD path. Do not treat the protocol module as an enabled security feature.
+
 ## Current implementation boundary
 
 No Worker source, Worker client, browser WASM bundle, Vault unlock UI, ciphertext-only CRUD integration, or production key metadata migration is implemented by this document. The current active API still receives plaintext fields and decrypts server-side. The Vault must continue to display the existing privacy limitation and must not be used for real/high-value credentials until the complete migration and independent review are finished.
